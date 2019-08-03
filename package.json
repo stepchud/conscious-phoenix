@@ -1,6 +1,9 @@
 {
-  "repository": {},
+  "name": "conscious-phoenix",
+  "description": "A Game of Self Development",
+  "repository": "github:stepchud/conscious-phoenix",
   "license": "MIT",
+  "private": true,
   "scripts": {
     "deploy": "webpack --mode production",
     "watch": "webpack --mode development --watch"
@@ -27,5 +30,9 @@
     "uglifyjs-webpack-plugin": "^1.2.4",
     "webpack": "4.28.4",
     "webpack-cli": "^3.2.1"
+  },
+  "engines": {
+    "node": "10.16.1",
+    "yarn": "1.17.3"
   }
 }
