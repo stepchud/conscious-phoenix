@@ -3,13 +3,15 @@
 // its own CSS file.
 import css from "../css/app.css"
 
+import 'phoenix_html'
+
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured
 // in "webpack.config.js".
 //
 // Import dependencies
 //
-import "phoenix_html"
+import ConsciousBoardgame from './conscious-react/conscious_boardgame'
 
 // Import local files
 //

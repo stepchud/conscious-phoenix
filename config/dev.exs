@@ -26,7 +26,8 @@ config :conscious_phoenix, ConsciousPhoenixWeb.Endpoint,
       "--mode",
       "development",
       "--watch-stdin",
-      cd: Path.expand("../assets", __DIR__)
+      "--colors",
+      # cd: Path.expand("../assets", __DIR__)
     ]
   ]
 
