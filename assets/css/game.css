@@ -3,12 +3,57 @@
   word-wrap: break-word;
 }
 
+.board-spaces span {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 1px;
+}
+
+.board-spaces span.wild {
+  background-color: #C62168;
+}
+
+.board-spaces span.food {
+  background-color: #F6D155;
+}
+
+.board-spaces span.air {
+  background-color: #95DEE3;
+}
+
+.board-spaces span.impression {
+  background-color: #FA9A85;
+}
+
+.board-spaces span.card {
+  background-color: #D1B894;
+}
+
+.board-spaces span.law {
+  background-color: #264E36;
+}
+
+.board-spaces span.decay {
+  background-color: grey;
+}
+
+.board-spaces span.player {
+  box-shadow: 0 0 0 2px black;
+}
+
 .dice {
+  display: inline-block;
+  height: 35px;
+  width: 35px;
+  font-weight: bold;
+  text-align: center;
   margin-right: 10px;
   padding: 5px 10px;
   border-radius: 5px;
-  background-color: black;
-  color: red;
+  background-color: #F0EAD6;
+  color: #223A5E;
 }
 
 .cards { margin-bottom: 15px; }
