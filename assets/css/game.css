@@ -1,46 +1,5 @@
-.board-spaces {
-  margin: 10px 0;
-  word-wrap: break-word;
-}
-
-.board-spaces span {
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  display: inline-block;
-  margin: 1px;
-}
-
-.board-spaces span.wild {
-  background-color: #C62168;
-}
-
-.board-spaces span.food {
-  background-color: #F6D155;
-}
-
-.board-spaces span.air {
-  background-color: #95DEE3;
-}
-
-.board-spaces span.impression {
-  background-color: #FA9A85;
-}
-
-.board-spaces span.card {
-  background-color: #D1B894;
-}
-
-.board-spaces span.law {
-  background-color: #264E36;
-}
-
-.board-spaces span.decay {
-  background-color: grey;
-}
-
-.board-spaces span.player {
-  box-shadow: 0 0 0 2px black;
+.section {
+  margin-bottom: 15px;
 }
 
 .dice {
@@ -56,18 +15,61 @@
   color: #223A5E;
 }
 
-.cards { margin-bottom: 15px; }
+.board {
+  word-wrap: break-word;
+}
+
+.board span {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 1px;
+}
+
+.board span.wild {
+  background-color: #C62168;
+}
+
+.board span.food {
+  background-color: #F6D155;
+}
+
+.board span.air {
+  background-color: #95DEE3;
+}
+
+.board span.impression {
+  background-color: #FA9A85;
+}
+
+.board span.card {
+  background-color: #D1B894;
+}
+
+.board span.law {
+  background-color: #264E36;
+}
+
+.board span.decay {
+  background-color: grey;
+}
+
+.board span.player {
+  box-shadow: 0 0 0 2px black;
+}
 
 .cards .card {
   border: 2px solid black;
-  padding: 8px 4px;
+  border-radius: 5px;
+  padding: 4px;
   margin-right: 3px;
   display: inline-block;
+  position: relative;
 }
 
 .cards .card.selected {
   border: 2px dashed black;
-  font-weight: bold;
 }
 
 .cards .card.law {
@@ -75,7 +77,86 @@
   vertical-align: bottom;
 }
 
-.being .card {
-  margin-left: 5px;
-  margin-right: 4px;
+.card-state {
+  position: absolute;
+  font-weight: bold;
+  top: -22px;
+}
+
+.card-img {
+  vertical-align: middle;
+  height: 67px;
+  width: 53px;
+}
+
+span.laws {
+  margin: 0 1.0em;
+}
+
+.note {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  top: 1px;
+  left: 1px;
+}
+
+.fd div {
+  display: inline-block;
+  position: relative;
+}
+.astral, .mental {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  top: 1px;
+  left: 1px;
+}
+.mental {
+  margin-left: 4px;
+}
+.astral.piece {
+  background-color: green;
+}
+.mental.piece {
+  background-color: red;
+}
+.note.food {
+  background-color: yellow;
+}
+.note.air {
+  background-color: lightblue;
+}
+.note.impression {
+  background-color: red;
+}
+
+.note .chip, .being .piece {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: black;
+}
+
+.being .card, .being .holder {
+  margin-right: 8px;
+}
+
+.being .pieces {
+  height: 1em;
+}
+
+.being .holder {
+  width: 65px;
+  padding-left: 10px;
+  display: inline-block;
+}
+
+.being .piece {
+  margin: 2px 2px;
+  vertical-align: top;
 }
