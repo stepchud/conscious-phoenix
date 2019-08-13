@@ -33,7 +33,7 @@ const Buttons = ({
   const selLaws = selectedLaws(laws.in_play)
   const selLawCards = map(selLaws, 'c.card')
   const selParts = selectedParts(ep.parts)
-  const hasUnobeyedLaws = unobeyedLaws(laws.in_play).length
+  const hasUnobeyedLaws = !!unobeyedLaws(laws.in_play).length
   const cardsPlay =
     selCards.length <= ep.card_plays &&
     playable(selCards.concat(selLawCards)) &&
@@ -49,11 +49,13 @@ const Buttons = ({
   const buttons = []
   if (currentTurn===TURNS.randomLaw) {
     buttons.push(<button key={buttons.length} onClick={() => { actions.onRandomLaw() }}>One by random...</button>)
-  } else if (currentTurn!==TURNS.choiceLaw) {
-    if (currentTurn===TURNS.death) {
-      buttons.push(<button key={buttons.length} onClick={actions.onEndDeath}>End Death</button>)
-    } else {
-      buttons.push(<button key={buttons.length} onClick={actions.onRollClick}>Roll Dice</button>)
+  } else {
+    if (currentTurn!==TURNS.choiceLaw && !hasUnobeyedLaws) {
+      if (currentTurn===TURNS.death) {
+        buttons.push(<button key={buttons.length} onClick={actions.onEndDeath}>End Death</button>)
+      } else {
+        buttons.push(<button key={buttons.length} onClick={actions.onRollClick}>Roll Dice</button>)
+      }
     }
     if (!asleep && !nopowers && ep[combinable(selParts)]) {
       buttons.push(
@@ -80,9 +82,9 @@ const Buttons = ({
 
   return (
     <div className="section actions">
-      <div class="turn-message">{message}</div>
       <Dice roll={roll} />
       {buttons}
+      <div className="turn-message">{message}</div>
     </div>
   )
 }

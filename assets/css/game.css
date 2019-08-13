@@ -9,8 +9,8 @@
 }
 
 .dice {
-  display: inline;
   font-size: 3.4em;
+  line-height: 1em;
   vertical-align: middle;
   margin-right: 10px;
 }
