@@ -125,7 +125,7 @@ const presentEvent = (event) => {
       store.dispatch({type: 'SHOCKS_AIR'})
       break
     case 'C-12':
-      alert('Carbon 12')
+      alert('"Higher 12" - draw a card')
       store.dispatch({type: 'DRAW_CARD'})
       break
     case 'LA-24':

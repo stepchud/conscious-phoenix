@@ -1,35 +1,344 @@
-<section class="phx-hero">
-  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
-  <p>A productive web framework that<br/>does not compromise speed or maintainability.</p>
+<section class="hero">
+  <h1>The Conscious Boardgame</h1>
+  <div class="intro">
+<blockquote>Life is like a game of cards.
+The hand that is dealt you is determinism;
+the way you play it is free will.
+-Jawaharlal Nehru</blockquote>
+    <h3><a href="/game">Play Now</a></h3>
+  </div>
+</section>
+<hr>
+
+<section class="row">
+  <article class="column">
+    <h2>Game Overview</h2>
+    <p>
+      Inspired by the writings of G.I. Gurdjieff and Russell Smith&#8217;s study of octaves.
+      Although knowledge of these teachings is not required to play the game, much of the meaning
+      and significance will be lost without understanding the concepts behind it.
+    </p>
+    <p>
+      This overview is intended to &#8216;close the gap&#8217; on some of
+      this understanding, and hopefully provide enough background for the game to make sense to a beginner.
+      It is supplemented by the <a href="/docs/OfficialGameRules.pdf">official
+      game rules</a> which explain game play in greater detail.
+    </p>
+  </article>
+</section>
+<section class="row">
+  <article class="column">
+    <h2>Introduction</h2>
+    <p>
+      We begin the game much like we all begin in life, with no skills and little control
+      over what happens. You are at the mercy of chance as a roll of the dice and of fate
+      as the laws your game is governed by. As you progress and develop over the course
+      of the game, you will be given new abilities and more control over what happens to you.
+    </p>
+    <p>
+      <em>The object of the game is to &#8220;<a href="#startover">complete yourself</a>&#8221; in as few turns as possible.</em>
+    </p>
+    <p>At times you will have several options available and it is
+      not always clear which one is the right choice. For this reason, it is
+      not possible to play the game <em>perfectly</em>. However, with experience and
+      consideration, some of the choices become clearer and the game becomes
+      easier to play. This is a fairly complex game with many rules which does take
+      some effort to master. It&#8217;s called The Conscious Boardgame because keeping
+      conscious of the various goals and developments as the game progresses can
+      be quite challenging &mdash; that&#8217;s the point!
+    </p>
+  </article>
+</section>
+<section class="row">
+  <article class="column">
+    <h2>The Parts</h2>
+
+    <a name="spaces"><h3>The Board</h3></a>
+    <p>
+      The rows of colored dots are board spaces. There are 245 total spaces.
+      There are the three types of being food and landing on them creates a piece of
+      stuff on the corresponding part of the player&#8217;s <a href="#fd">Food Diagram</a>.
+      <div class="board">
+<blockquote><span class="wild player"></span> - black border around the player position
+<span class="food"></span> - food space
+<span class="air"></span> - air space
+<span class="impression"></span> - impression space
+<span class="card"></span> - card space, draw a card into your <a href="#cards">card hand</a>
+<span class="law"></span> - law spaces, draw a law card into your <a href="#lawcards">law hand</a></blockquote>
+
+      Landing on a law space causes a &#8220;magnetic center moment&#8221;, one additional game card may be played from the card hand.
+      See the <a href="#lawcards">Law Cards</a> section for details about what happens when law spaces are passed over.
+    </p>
+    <p>
+      Rolling the dice and moving your player is the end of the current turn and begins a new turn.
+      Stewards can roll again once to improve their roll. Masters can take the opposite side of the dice in addition to that.
+    </p>
+  </article>
 </section>
 
 <section class="row">
   <article class="column">
-    <h2>Resources</h2>
-    <ul>
-      <li>
-        <a href="https://hexdocs.pm/phoenix/overview.html">Guides &amp; Docs</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix">Source</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix/blob/v1.4/CHANGELOG.md">v1.4 Changelog</a>
-      </li>
-    </ul>
+    <a name="fd"><h3>Food Diagram</h3></a>
+    <p>
+      The matrix of colored dots with yellow, blue
+      and red spots represent three octaves of being food &mdash; the Food Diagram.
+      The yellow octave is Food and Drink, i.e. what we normally call food, ingested through the mouth and digested in the digestive system.
+      The blue octave is Air, another type of being-food, eaten with every breath and digested in the lungs and
+      blood vessels where it mixes with food. The red octave is Impressions.
+      This type of food is absorbed by through the sensing organs: eyes, ears, nose,
+      mouth and nerve endings. Impressions are digested in the brain, where it mixes with
+      the other foods after they have already been transformed into the food for the brain.
+    </p>
+    <p>
+      Pieces enter at the lowest note. They move up by harnel-miatznel and by shocks at certain points.
+      Black dots on the note means food exists at that note. Please refer to
+      the <a href="/game/OfficialGameRules.pdf">game rules</a> for more details about this
+      important process and the shocks involved. It is critical for <a href="#death">surviving death</a>.
+    </p>
+  </article>
+</section>
+
+<section class="row">
+  <article class="column">
+    <a name="partsofbeing"><h3>Knowledge and Being</h3></a>
+    <p>
+      The three rows of face cards, aces, and jokers are the Knowledge and Being parts of the player.
+      They represent the six centers of a man.
+    </p>
+  </article>
+</section>
+
+<section class="row pb-md">
+  <article class="column">
+      Instinctive Center<br>
+      <img class="card-img" src="/images/jd.gif"></img>
+      <img class="card-img" src="/images/qd.gif"></img>
+      <img class="card-img" src="/images/kd.gif"></img>
   </article>
   <article class="column">
-    <h2>Help</h2>
-    <ul>
-      <li>
-        <a href="https://elixirforum.com/c/phoenix-forum">Forum</a>
-      </li>
-      <li>
-        <a href="https://webchat.freenode.net/?channels=elixir-lang">#elixir-lang on Freenode IRC</a>
-      </li>
-      <li>
-        <a href="https://twitter.com/elixirphoenix">Twitter @elixirphoenix</a>
-      </li>
-    </ul>
+    Moving Center<br>
+      <img class="card-img" src="/images/jc.gif"></img>
+      <img class="card-img" src="/images/qc.gif"></img>
+      <img class="card-img" src="/images/kc.gif"></img>
   </article>
+</section>
+<section class="row pb-md">
+  <article class="column">
+      Emotional Center<br>
+      <img class="card-img" src="/images/jh.gif"></img>
+      <img class="card-img" src="/images/qh.gif"></img>
+      <img class="card-img" src="/images/kh.gif"></img>
+  </article>
+  <article class="column">
+    Intellectual Center<br>
+      <img class="card-img" src="/images/js.gif"></img>
+      <img class="card-img" src="/images/qs.gif"></img>
+      <img class="card-img" src="/images/ks.gif"></img>
+  </article>
+</section>
+<section class="row pb-md">
+  <article class="column">
+      Higher Emotional Center<br>
+      <img class="card-img" src="/images/ad.gif"></img>
+      <img class="card-img" src="/images/ac.gif"></img>
+      <img class="card-img" src="/images/ah.gif"></img>
+  </article>
+  <article class="column">
+    Higher Mental Center<br>
+      <img class="card-img" src="/images/as.gif"></img>
+      <img class="card-img" src="/images/xj.png"></img>
+      <img class="card-img" src="/images/jo.png"></img>
+  </article>
+</section>
+<section class="row">
+  <article class="column">
+    <p>
+      Dividing the diagram down the center vertically, the left side is Being, while the right side is Knowledge.
+      Each face card within a suit represents a subdivision of that center. Jacks are the unconscious,
+      or automatically functioning, part. Queens are the part that functions when
+      attention is drawn by a subject. Kings are the part that functions by conscious
+      will from within. Take the moving center (Clubs) as an example.
+      Jacks would be automatic reflex in the muscles.
+      Queens would be movements that draw the attention without special effort &ndash;
+      playing catch with a ball or swimming in a pool.
+      Kings would be movements which demand absolute, precise control &ndash; a professional ballet dancer, or painter with perfect brush
+      control.
+    </p>
+
+    <a name="bumping"></a>
+    <p>
+      When a third piece is added to a card on the Parts of Being diagram, this
+      causes a <em>bumping</em> to occur. One piece is discarded, and one piece moves one place to the right,
+      e.g. the Extra Joker bumps to the Joker; the King of Diamonds bumps into the
+      Jack of Clubs. Parts on the right edge of the diagram are bumped up a row and over to the left,
+      e.g. the King of Spades bumps into the Ace of Diamonds
+      and the King of Clubs bumps to the Jack of Hearts. The exception is the Joker
+      which does not bump. Extra pieces accumulate there.
+    </p>
+    <p>
+      See <a href="#thepath">The Path</a> for more information on how this diagram
+      affects game play.
+    </p>
+
+    <a name="powers"><h3>Power Buttons</h3></a>
+    <p>
+      The buttons near the top are the players' powers. As you progress along <a href="#thepath">The Path</a>, new buttons
+      appear enabling new abilities. In the beginning the only options available are a roll of the dice and playing cards.
+    </p>
+
+    <a name="cards"><h3>Card Hand</h3></a>
+    <p>
+      Cards in your hand can be played in combination to create pieces on the <a href="#partsofbeing">Parts
+      of Being</a> diagram. This is how you progress along <a href="#thepath">The
+      Path</a> &ndash; collecting and playing cards is important to player development
+      in the game. Two cards from the same &#8220;number grouping&#8221; can be played
+      to make the corresponding face card on the <a href="#partsofbeing">Parts
+      of Being</a> diagram. Number groupings: 2, 3, 4 create Jacks; 5,
+      6, 7 create Queens; 8, 9, 10 create Kings. Selected cards must be the
+      same suit, number grouping and different ranks. Playing all three ranks &#8220;trips&#8221; from a grouping at once creates
+      two pieces on that face card, thus it is a more efficient use of your cards.
+    </p>
+    <p>
+      Playing cards also causes the self-remembering shock to the <a href="#fd">Food Diagram</a>
+      for each distinct face card that is created. The card deck contains the following cards:
+      <blockquote><u>Number cards:</u>
+Ranks 2-4:  4 of each number in every suit e.g. 4 two of clubs, 4 three of spades, etc.
+Ranks 5-7:  3 of each number in every suit
+Ranks 8-10: 2 of each number in every suit
+
+<u>Face Cards:</u>
+4 Jacks of Spades
+3 Jacks of Diamonds
+2 Jacks of Clubs
+1 Jack of Hearts
+
+2 Queens of Diamonds
+1 Queen of Clubs</blockquote>
+    </p>
+
+    <a name="lawcards"><h3>Law Cards</h3></a>
+    <p>
+      Passing a law space causes a single law to be picked from your law hand by random draw.
+      Passing two laws in the same roll results in a law card drawn by random and one by the
+      player's choice. The picked laws are In Play. Laws in play are <em>obeyed</em>
+      by selecting a law card and clicking the obey law button before the turn can be completed.
+      Law cards can also be <em>played</em> as cards by themselves or in combination with cards in the
+      player's hand to create new Parts of Being pieces. On a turn involving laws, they may
+      be <em>played</em> and <em>obeyed</em> in any order the player determines to be
+      advantageous. NOTE: take care, laws usually have a large affect on the outcome of the game.
+      Choose the laws and order of play wisely.
+    </p>
+    <p>
+      All law cards must be <em>obeyed</em> before you can roll the dice to end the current
+      turn. There is no requirement to <em>play</em> law cards as a card play.
+      Playing law cards does not count as one of the card plays for that turn.
+    </p>
+    <p>
+      Reference: <a href="/docs/lawcardtext.txt">Law Card Text</a> - full text of all law cards
+    </p>
+  </article>
+</section>
+<section class="row">
+  <article class="column">
+    <a name="thepath"><h2>The Path</h2></a>
+    <p>
+      Players progress in the game by following a path of development.
+      The player begins as a multiplicity of disorganized, often conflicting and contradictory, &#8216;i&#8217;s.
+      The first goal is to find a school. There are four &#8220;ways&#8221;, or types of schools. The first type of school
+      teaches perfection and control over the physical body and is called the way
+      of the Fakir. The second school teaches perfection and control of the emotions
+      and is called the way of the Monk. The third school teaches perfection of
+      thought or intellect and is called the way of the Yogi. These first three
+      schools demand rigorous training and retirement from &#8220;normal life&#8221;
+      to a monastery or similarly withdrawn existence. In the game, these schools
+      are found by obtaining all three face cards of a single suit, e.g. a Yogi
+      would have a piece on the Jack, Queen, and King of Spades, a Monk has all
+      three Hearts, and a Fakir has all three Diamonds <em>or</em> Clubs.
+    </p>
+    <p>
+      Students in the fourth way schools seek balanced development in the three
+      lines of the other schools. Allegedly this school can produce faster results
+      than the assymetric development of the first three ways.
+      For this reason it is sometimes called the way of the <em>sly man</em>.
+      In the game, this school is found by having a Queen or
+      King piece in three different suits. Once the player finds a school, they
+      can &#8220;transform emotions&#8221; once per turn by combining two different
+      face cards of the same suit, creating an ace of that suit. This also causes
+      the transform shock in the <a href="#fd">Food Diagram.</a>
+    </p>
+    <p>
+      When all four aces have at least one piece, the student reaches the next
+      level of being, called Steward. A Steward is one who is working to
+      put the &#8216;house&#8217; in order. Stewards have inner awareness of their faults,
+      and work to fix them. In the game, Stewards can create
+      an Extra Joker by combining two different aces, from Diamonds, Hearts, or Clubs (not Spades).
+      This combination causes a &#8220;wild shock&#8221; &ndash; the player chooses.
+    </p>
+    <p>
+      The final step of development in the game is to get a piece on the Joker, thereby becoming a Master.
+      This is accomplishing by <a href="#bumping">bumping</a> through the Extra
+      Joker, or playing a Joker card. Remember a bump occurs when three pieces have been placed on the card.
+      Creating a Joker causes &#8220;all shocks&#8221; simultaneously in the <a href="#fd">Food Diagram</a>.
+      Once a Joker has been created, more Jokers can be made by combining one Extra
+      Joker with one Ace of Spades.
+    </p>
+  </article>
+</section>
+<section class="row">
+  <article class="column">
+    <a name="death"><h2>Surviving Death</h2></a>
+    <p>
+      When the player reaches the end of the board, 245 total spaces, they die.
+      There are also four laws which can cause death to occur earlier. The only
+      chance to avoid <em>perishing like a dog without a soul</em> is to crystallize
+      the astral body before the end of the turn when death occurs. This is done by
+      putting extra pieces off the end of the food diagram &#8211; 3 food, 3 air,
+      and 1 impression piece. When a piece of food, air, or impressions passes the
+      highest note, a green chip appears at the end to show how many have been
+      accumulated so far. The astral body will allow the player to survive for a
+      full roundtrip across the board &mdash; forward and then backwards.
+    </p>
+    <p>
+      After making it back around to the beginning of the board, the astral body decays.
+      At that point, in order to continue, the player will need to have crystallized
+      the mental body which is <em>immortal within the limits of the sun.</em>
+      Mental body is created by filling all notes of the astral body and then putting the same
+      3, 3, 1 arrangement of mental chips off the ends of the octaves. Once the player has
+      crystallized the mental body they can continue playing as long as it takes to
+      <a href="#startover">Start Over</a>.
+    </p>
+    <p>
+      After death, the game changes. The player keeps 7 cards from their card hand
+      at death. If they have more than 7, they will have to choose which 7
+      cards to keep. If they have less than 7, they draw until there are seven cards in
+      their hand. All laws are removed from play and discarded. On the board, card spaces
+      become decay spaces and law spaces become wild spaces. Landing on a decay space
+      causes a piece of the food, air, or impression octave to be removed by random
+      roll of the dice. They should be avoided when possible by using the roll
+      options. Landing on a wild space gives the player a choice of food, air,
+      impression or card space.
+    </p>
+    <p>
+      The <a href="#fd">Food Diagram</a> also changes after death. The physical
+      body (chips) is discarded for the astral which turns into chips. As soon as
+      the mental body is chrystallized, the astral body is discarded for the mental.
+      After that it is simply a matter of filling all notes with at least one chip to
+      complete the mental body.
+    </p>
+  </article>
+</section>
+<section class="row">
+  <article class="column">
+    <h1 class="jokers">&#x1f0cf; &#x1f0cf; &#x1f0cf;</h1>
+    <a name="startover"><h2>I Start Over</h2></a>
+    <p>
+      The game is won when there are three pieces on the Joker, and the
+      mental body of the <a href="#fd">Food Diagram</a> is complete.
+      Declare &#8220;I Start Over!&#8221; and bask in the glow of a well played game.
+      Can you complete yourself in fewer turns next time?
+    </p>
+  </article>
+</section>
+<section class="row">
+  Copyright &copy; 1983, 1990, 1997, 2000 by THE DOG &mdash; the fifth way.
 </section>

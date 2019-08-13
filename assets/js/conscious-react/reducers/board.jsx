@@ -128,6 +128,11 @@ const board = (
         ...state,
         current_turn: TURNS.normal,
       }
+    case 'LAW_BY_CHOICE':
+      return {
+        ...state,
+        current_turn: TURNS.choiceLaw,
+      }
     case 'DEATH':
       return {
         ...state,

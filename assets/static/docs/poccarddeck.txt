@@ -1,0 +1,17 @@
+Number cards:
+=============
+
+Ranks 2-4:  4 of each number in every suit e.g. 4 two of clubs, 4 three of spades, etc.
+Ranks 5-7:  3 of each number in every suit
+Ranks 8-10: 2 of each number in every suit
+
+Face Cards:
+===========
+
+4 Jacks of Spades
+3 Jacks of Diamonds
+2 Jacks of Clubs
+1 Jack of Hearts
+
+2 Queens of Diamonds
+1 Queen of Clubs

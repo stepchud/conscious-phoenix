@@ -101,3 +101,11 @@ header nav a {
     margin: 2rem 1rem;
   }
 }
+
+blockquote {
+  white-space: pre;
+}
+
+.pb-md {
+  padding-bottom: 16px;
+}

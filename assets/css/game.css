@@ -2,17 +2,17 @@
   margin-bottom: 15px;
 }
 
-.dice {
-  display: inline-block;
-  height: 35px;
-  width: 35px;
+.turn-message {
+  height: 1.6em;
+  font-style: italic;
   font-weight: bold;
-  text-align: center;
+}
+
+.dice {
+  display: inline;
+  font-size: 3.4em;
+  vertical-align: middle;
   margin-right: 10px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  background-color: #F0EAD6;
-  color: #223A5E;
 }
 
 .board {

@@ -99,7 +99,13 @@ const drawLawCard = (state) => {
 }
 
 const generateLawDeck = () => {
-  const newDeck = shuffle(LAW_DECK.slice(0))
+  const tmpLaw = LAW_DECK[49]
+  const laws = LAW_DECK.slice(0)
+  laws[49] = laws[0]
+  laws[0] = tmpLaw
+  return laws
+
+  const newDeck = shuffle()
   return newDeck
 }
 

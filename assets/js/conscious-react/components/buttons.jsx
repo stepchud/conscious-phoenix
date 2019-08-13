@@ -12,6 +12,14 @@ import {
 import { selectedParts } from '../reducers/being'
 import { TURNS } from '../constants'
 
+const DiceEntities = [ '⚀', '⚁', '⚂', '⚃', '⚄', '⚅' ]
+const Dice = ({
+  roll
+}) => {
+  const entity = DiceEntities[roll-1] || DiceEntities[0]
+  return <span className="dice">{entity}</span>
+}
+
 const Buttons = ({
   actions,
   roll,
@@ -25,22 +33,25 @@ const Buttons = ({
   const selLaws = selectedLaws(laws.in_play)
   const selLawCards = map(selLaws, 'c.card')
   const selParts = selectedParts(ep.parts)
+  const hasUnobeyedLaws = unobeyedLaws(laws.in_play).length
   const cardsPlay =
     selCards.length <= ep.card_plays &&
     playable(selCards.concat(selLawCards)) &&
     !selectedPlayedLaws(laws.in_play).length
+  const message = currentTurn===TURNS.choiceLaw
+    ? '* Choose a law card from your hand'
+    : hasUnobeyedLaws
+      ? '* You simply must obey all of the laws in play'
+      : currentTurn===TURNS.death
+        ? '* Select up to 7 cards your hand to keep'
+        : ''
 
   const buttons = []
   if (currentTurn===TURNS.randomLaw) {
     buttons.push(<button key={buttons.length} onClick={() => { actions.onRandomLaw() }}>One by random...</button>)
-  } else if (currentTurn===TURNS.choiceLaw) {
-    buttons.push(<span key={buttons.length}>Pick a law card:</span>)
-  } else {
-    if (unobeyedLaws(laws.in_play).length) {
-      buttons.push(<span key={buttons.length}>* You simply must obey all of the laws in play</span>)
-    } else if (currentTurn===TURNS.death) {
+  } else if (currentTurn!==TURNS.choiceLaw) {
+    if (currentTurn===TURNS.death) {
       buttons.push(<button key={buttons.length} onClick={actions.onEndDeath}>End Death</button>)
-      buttons.push(<span key={buttons.length}>** Select up to 7 cards from your hand to keep first</span>)
     } else {
       buttons.push(<button key={buttons.length} onClick={actions.onRollClick}>Roll Dice</button>)
     }
@@ -69,7 +80,8 @@ const Buttons = ({
 
   return (
     <div className="section actions">
-      <div className="dice">{roll}</div>
+      <div class="turn-message">{message}</div>
+      <Dice roll={roll} />
       {buttons}
     </div>
   )
