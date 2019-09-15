@@ -24,7 +24,7 @@ const FoodDiagram = ({
 }) => {
   let bodyType
   const foodChips = current.food[8]
-  const airChips = current.food[6]
+  const airChips = current.air[6]
   const impChips = current.impressions[4]
   if (current.mental) {
     bodyType = <h3>MENTAL</h3>
@@ -58,6 +58,12 @@ const FoodDiagram = ({
             astral={current.astral && (airChips > i)}
             mental={current.mental && (airChips > 6 + i)} />
       ) }
+      { !current.astral && (airChips > 0) && times(airChips, (i) =>
+        <Note key={i} type="spacer" astral={true} />
+      ) }
+      { !current.mental && (airChips > 6) && times((airChips - 6), (i) =>
+        <Note key={i} type="spacer" mental={true} />
+      ) }
       <br />
       { times(4, (i) => <Note key={i} type="spacer" />) }
       { current.impressions.slice(0,-1).map((note, i) =>
@@ -66,6 +72,12 @@ const FoodDiagram = ({
             chips={note}
             astral={current.astral && (impChips > i)}
             mental={current.mental && (impChips > 4 + i)} />
+      ) }
+      { !current.astral && (impChips > 0) && times(impChips, (i) =>
+        <Note key={i} type="spacer" astral={true} />
+      ) }
+      { !current.mental && (impChips > 4) && times((impChips - 4), (i) =>
+        <Note key={i} type="spacer" mental={true} />
       ) }
     </div>
   )

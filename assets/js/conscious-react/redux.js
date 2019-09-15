@@ -532,7 +532,7 @@ const handleEndGame = () => {
   }
 }
 
-export const actions = {
+const actions = {
   onRollClick: handleRollClick,
   onEndDeath: endDeath,
   onDrawCard: () => store.dispatch({ type: 'DRAW_CARD' }),
@@ -563,4 +563,8 @@ export const actions = {
 
 const reducers = combineReducers({ board, cards, laws, fd, ep })
 const store = createStore(reducers)
-export default store
+
+export default {
+  store,
+  actions
+}
