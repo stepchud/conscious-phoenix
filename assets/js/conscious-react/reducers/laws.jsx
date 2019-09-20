@@ -317,15 +317,15 @@ const laws = (
       }
       return nextState
     }
-    case 'ROLL_DICE': {
+    case 'END_TURN': {
       // don't discard active laws (they could be re-drawn)
       const actives = map(active, 'index')
-      const inPlay = map(in_play, 'c').filter(
+      const to_discard = map(in_play, 'c').filter(
         (l) => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == l.card))
       )
       return {
         ...state,
-        discards: discards.concat(inPlay),
+        discards: discards.concat(to_discard),
         in_play: [],
       }
     }

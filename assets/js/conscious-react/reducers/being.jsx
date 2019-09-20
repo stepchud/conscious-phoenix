@@ -103,14 +103,6 @@ const beginTurnState = (lob) => {
 
 export const selectedParts = (parts) => map(filter(parts.slice(0,17), 'selected'), 'c')
 
-export const rollOptions = (lob) => {
-  switch(lob) {
-    case 'STEWARD': return ['ROLL_AGAIN']
-    case  'MASTER': return ['ROLL_AGAIN', 'OPPOSITE']
-    default: return []
-  }
-}
-
 const ep = (
   state = InitialState,
   action
