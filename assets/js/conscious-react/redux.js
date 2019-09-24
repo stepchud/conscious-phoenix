@@ -1,4 +1,5 @@
 import { bindActionCreators, combineReducers, createStore} from 'redux'
+import { toast } from 'react-toastify'
 
 import { sixSides } from './constants'
 // reducers
@@ -16,10 +17,9 @@ import laws, {
 import fd, { entering, deathEvent, allNotes } from './reducers/food_diagram'
 import ep from './reducers/being'
 import modal from './reducers/modal'
-import log from './reducers/event_log'
 import actions from './actions'
 
-const reducers = combineReducers({ board, cards, laws, fd, ep, modal, log })
+const reducers = combineReducers({ board, cards, laws, fd, ep, modal })
 export const store = createStore(reducers)
 const boundActions = bindActionCreators(actions, store.dispatch)
 
@@ -146,9 +146,9 @@ const presentEvent = (event) => {
         title: 'Wild Shock',
         body: 'A wild shock appears! Which will it be?',
         options: [
-          { text: 'Transform Emotions', onClick: () => store.dispatch({type: 'TRANSFORM_EMOTIONS'}) },
-          { text: 'Self Remember',      onClick: () => store.dispatch({type: 'SELF_REMEMBER'}) },
-          { text: 'Shock Food',         onClick: () => store.dispatch({type: 'SHOCKS_FOOD'}) },
+          { text: 'Transform Emotions', onClick: () => dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}) },
+          { text: 'Self Remember',      onClick: () => dispatchWithExtras({type: 'SELF_REMEMBER'}) },
+          { text: 'Shock Food',         onClick: () => dispatchWithExtras({type: 'SHOCKS_FOOD'}) },
         ]
       })
       break
@@ -157,9 +157,9 @@ const presentEvent = (event) => {
         title: 'All Shocks',
         body: 'All shocks are felt in your being.',
         onClose: () => {
-          store.dispatch({type: 'TRANSFORM_EMOTIONS'})
-          store.dispatch({type: 'SELF_REMEMBER'})
-          store.dispatch({type: 'SHOCKS_FOOD'})
+          dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'})
+          dispatchWithExtras({type: 'SELF_REMEMBER'})
+          dispatchWithExtras({type: 'SHOCKS_FOOD'})
         }
       })
       break
@@ -177,19 +177,19 @@ const presentEvent = (event) => {
       })
       break
     case 'LA-24':
-      showModal({ title: 'No 6' })
+      toast.warn('No 6')
       break
     case 'RE-24':
-      showModal({ title: 'No 6' })
+      toast.warn('No 6')
       break
     case 'SO-48':
-      showModal({ title: 'No 12' })
+      toast.warn('No 12')
       break
     case 'MI-48':
       if (!asleep && !noskills && store.getState().ep.ewb) {
         showModal({
           title: 'Eat when you breathe?',
-          body: 'Use your skill to shock Mi-48 to Fa-24?',
+          body: 'Use your skills to shock Mi-48 to Fa-24?',
           options: [
             { text: 'Yes', onClick: () => dispatchWithExtras({type: 'EAT_WHEN_YOU_BREATHE'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_MI_48'}) }
@@ -203,9 +203,9 @@ const presentEvent = (event) => {
       if (!asleep && !noskills && store.getState().ep.c12) {
         showModal({
           title: 'Carbon-12?',
-          body: 'Use your skill to shock Do-48 to Re-24?',
+          body: 'Use your skills to shock Do-48 to Re-24?',
           options: [
-            { text: 'Yes', onCLick: () => store.dispatch({type: 'CARBON_12'}) },
+            { text: 'Yes', onCLick: () => dispatchWithExtras({type: 'CARBON_12'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_DO_48'}) }
           ]
         })
@@ -214,16 +214,16 @@ const presentEvent = (event) => {
       }
       break
     case 'RE-96':
-      showModal({ title: 'No 24' })
+      toast.warn('No 24')
       break
     case 'FA-96':
-      showModal({ title: 'No 24' })
+      toast.warn('No 24')
       break
     case 'MI-192':
       if (!asleep && !noskills && store.getState().ep.bwe) {
         showModal({
           title: 'Breathe when you eat?',
-          body: 'Use your skill to shock Mi-192 to Fa-96?',
+          body: 'Use your skills to shock Mi-192 to Fa-96?',
           options: [
             { text: 'Yes', onClick: () => dispatchWithExtras({type: 'BREATHE_WHEN_YOU_EAT'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_MI_192'}) }
@@ -234,25 +234,16 @@ const presentEvent = (event) => {
       }
       break
     case 'DO-192':
-      showModal({ title: 'No 48' })
+      toast.warn('No 48')
       break
     case 'RE-384':
-      showModal({ title: 'No 96' })
+      toast.warn('No 96')
       break
     case 'DO-768':
-      showModal({ title: 'No 192' })
-      break
-    case 'BURP':
-      showModal({ title: 'Brrrp', body: 'Too much Mi-192 causes indigestion.' })
-      break
-    case 'HYPERVENTILATE':
-      showModal({ title: 'Hyperventilate!', body: 'Too much Mi-48 causes dizziness.' })
-      break
-    case 'VOID':
-      showModal({ title: 'Overstimulation!', body: 'Too much Do-48 is like pouring from the empty into the void.' })
+      toast.warn('No 192')
       break
     case 'NOTHING-TO-REMEMBER':
-      boundActions.appendLog('Nothing to Remember at Do-48.')
+      toast.warn('Nothing to remember at Do-48.')
       break
     case 'CANT-CHOOSE-DEATH':
       showModal({
@@ -360,6 +351,7 @@ const handleRollOptions = () => {
   }
 
   if (!!options.length) {
+    options.push({ text: 'Take the roll', onClick: () => { } })
     showModal({
       title,
       options
@@ -398,7 +390,7 @@ const rollOptionLaws = (roll, active) => {
   }
   options.push({
     text: 'Not this time',
-    onClick: boundActions.hideModal
+    onClick: () => { }
   })
 
   showModal({
@@ -443,7 +435,7 @@ const handleDecay = () => {
     'impression'
   switch(decay) {
     case 'nothing':
-      showModal({ title: "Decayed nothing!" })
+      toast.success("Decayed nothing!")
       return
     case 'food':
       decayFood(current.food)
@@ -473,7 +465,7 @@ const handleWildSpace = () => {
 
 const decayFood = (notes) => {
   if (notes[0] + notes[1] + notes[2] + notes[3] + notes[4] + notes[5] + notes[6] + notes[7] === 0) {
-    showModal({ title: 'No food to decay' })
+    toast('No food to decay')
     return
   }
   const title = 'Decay food'
@@ -508,7 +500,7 @@ const decayFood = (notes) => {
 
 const decayAir = (notes) => {
   if (notes[0] + notes[1] + notes[2] + notes[3] + notes[4] + notes[5] === 0) {
-    showModal({ title: 'No air to decay' })
+    toast('No air to decay')
     return
   }
   const title = 'Decay air'
@@ -537,7 +529,7 @@ const decayAir = (notes) => {
 
 const decayImpression = (notes) => {
   if (notes[0] + notes[1] + notes[2] + notes[3] === 0) {
-    showModal({ title: 'No impressions to decay' })
+    toast('No impressions to decay')
     return
   }
   const title = 'Decay impression'
@@ -682,6 +674,7 @@ const gameActions = {
     title: 'basic',
     body: "has\nmany\n\nlines"
   }),
+  onToast: () => toast("wow it worked 🤔"),
   onRandomLaw: () => store.dispatch({
     type: "ONE_BY_RANDOM",
     roll: store.getState().board.dice.roll()

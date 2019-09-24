@@ -1,4 +1,5 @@
 import { identity, findIndex, findLastIndex } from 'lodash'
+import { toast } from 'react-toastify'
 
 const InitialState = () => ({
   current: {
@@ -392,21 +393,21 @@ const foodDiagram = (
       return { current, enter, extras }
     case "LEAVE_MI_48":
       if (current.air[2]==3) {
-        extras.push("HYPERVENTILATE")
+        toast('Hyperventilate! Too much Mi-48 causes dizziness.')
       } else {
         current.air[2]+=1
       }
       return { current, enter, extras }
     case "LEAVE_DO_48":
       if (current.impressions[0]==3) {
-        extras.push("VOID")
+        toast('Overstimulated! Too much Do-48 is just pouring from the empty into the void.')
       } else {
         current.impressions[0]+=1
       }
       return { current, enter, extras }
     case "LEAVE_MI_192":
       if (current.food[2]==3) {
-        extras.push("BURP")
+        toast('Brrrp! Too much Mi-192 causes indigestion.')
       } else {
         current.food[2]+=1
       }

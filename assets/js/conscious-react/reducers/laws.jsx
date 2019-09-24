@@ -11,6 +11,8 @@ import {
   partition,
 } from 'lodash'
 
+import { toast } from 'react-toastify'
+
 import {
   selectedCards,
   sameSuit,
@@ -102,9 +104,10 @@ const testLawCard = (deck, law_text) => {
   const textTest = new RegExp(`^${law_text}`)
   const lawIndex = deck.findIndex((el) => el.text.match(textTest))
   if (lawIndex >= 0) {
-    const tmpLaw = deck[lawIndex]
-    deck[lawIndex] = deck[0]
-    deck[0] = tmpLaw
+    const testLaw = deck.splice(lawIndex, 1)
+    deck = testLaw.concat(deck)
+  } else {
+    console.log("law card not found")
   }
   return deck
 }
@@ -112,7 +115,13 @@ const testLawCard = (deck, law_text) => {
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
   return newDeck
-  //return testLawCard(newDeck, 'MAKE ONE THING')
+  //return testLawCard(
+  //  testLawCard(
+  //    newDeck,
+  //    'REMEMBER TO PICK'
+  //  ),
+  //  'CREATE MOON IN YOURSELF:\\nKEEP THIS CARD, WHICH\\nFREES YOU FROM ALL\\nLAWS OF FATE'
+  //)
 }
 
 const laws = (
@@ -213,12 +222,12 @@ const laws = (
     case 'OBEY_LAW': {
       const selectedLaws = filter(in_play, 'selected')
       if (selectedLaws.length !== 1) {
-        console.log("only 1 law play at a time")
+        toast("Only 1 law play at a time")
         return state
       }
       const lawCard = selectedLaws[0]
       if (lawCard.obeyed) {
-        console.log("already obeyed ", lawCard)
+        toast(`You already obeyed ${lawCard.c.card}`)
         return state
       }
 
@@ -228,7 +237,7 @@ const laws = (
 
       const actions = lawCard.c.actions
       if (lawCard.no_escape) {
-        console.log("no escape!")
+        toast("No escape from the law!")
         each(actions, (action) => {
           if ('ACTIVE_LAW' == action.type) {
             action.protected = lawCard.no_escape
@@ -237,7 +246,7 @@ const laws = (
           }
         })
       } else if (some(activeKings(active), (k) => sameSuit(k.card, lawCard.c.card))) {
-        console.log("Moon escapes! ", lawCard)
+        toast(`Moon escapes ${lawCard.c.card}!`)
         return nextState
       }
 

@@ -118,11 +118,17 @@ const board = (
         ...state,
         [card]: position + action.for,
       }
-    case 'ONE_BY_RANDOM':
-      return {
+    case 'ONE_BY_RANDOM': {
+      const nextState = {
         ...state,
         current_turn: laws_passed==2 ? TURNS.choiceLaw : TURNS.normal,
       }
+      if (nextState.next_turn) {
+        nextState.current_turn = nextState.next_turn
+        delete nextState.next_turn
+      }
+      return nextState
+    }
     case 'ONE_BY_CHOICE':
       return {
         ...state,
@@ -132,6 +138,12 @@ const board = (
       return {
         ...state,
         current_turn: TURNS.choiceLaw,
+      }
+    case 'LAW_BY_RANDOM':
+      return {
+        ...state,
+        current_turn: TURNS.randomLaw,
+        next_turn: TURNS.normal,
       }
     case 'DEATH':
       return {
