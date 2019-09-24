@@ -34,7 +34,7 @@ const startCausalDeath = () => {
       showModal({
         title: 'Eternal retribution!',
         body: "There is no escape from this loathesome place. You're out of the game backwards.",
-        onClose: { location.reload() }
+        onClose: () => { location.reload() }
       })
       return
     }

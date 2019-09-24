@@ -5,12 +5,17 @@ import { combinable, playable, selectedCards } from '../reducers/cards'
 import { selectedLaws } from '../reducers/laws'
 import { selectedParts } from '../reducers/being'
 
+const testParam = () =>
+  !!window.location.search.match('test')
+
 const TestButtons = ({
   actions,
   parts,
   cards,
   laws
 }) => {
+  if (!testParam()) { return null; }
+
   const selCards = selectedCards(cards)
   const selLaws = selectedLaws(laws.in_play)
   const selParts = selectedParts(parts)
