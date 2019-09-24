@@ -34,7 +34,7 @@ const startCausalDeath = () => {
       showModal({
         title: 'Eternal retribution!',
         body: "There is no escape from this loathesome place. You're out of the game backwards.",
-        onClose: location.reload
+        onClose: { location.reload() }
       })
       return
     }
@@ -191,7 +191,7 @@ const presentEvent = (event) => {
           title: 'Eat when you breathe?',
           body: 'Use your skill to shock Mi-48 to Fa-24?',
           options: [
-            { text: 'Yes', onClick: () => store.dispatch({type: 'EAT_WHEN_YOU_BREATHE'}) },
+            { text: 'Yes', onClick: () => dispatchWithExtras({type: 'EAT_WHEN_YOU_BREATHE'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_MI_48'}) }
           ]
         })
@@ -225,7 +225,7 @@ const presentEvent = (event) => {
           title: 'Breathe when you eat?',
           body: 'Use your skill to shock Mi-192 to Fa-96?',
           options: [
-            { text: 'Yes', onClick: () => store.dispatch({type: 'BREATHE_WHEN_YOU_EAT'}) },
+            { text: 'Yes', onClick: () => dispatchWithExtras({type: 'BREATHE_WHEN_YOU_EAT'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_MI_192'}) }
           ]
         })
@@ -270,7 +270,7 @@ const presentEvent = (event) => {
       showModal({
         title: 'Game over :(',
         body: 'Nothing else to do but try again.',
-        onClose: () => location.reload
+        onClose: () => { location.reload() }
       })
       break
     case 'ASTRAL-DEATH':
@@ -315,7 +315,7 @@ const presentEvent = (event) => {
       showModal({
         title: 'You are a winner!',
         body: 'Proudly proclaim "I start over!"',
-        onClose: () => location.reload
+        onClose: () => { location.reload() }
       })
       break
     default:
@@ -370,11 +370,14 @@ const handleRollOptions = () => {
 }
 
 const rollOptionLaws = (roll, active) => {
+  if (!queenHearts(active) && !tenSpades(active)) { return }
+
   const title = `You rolled ${roll}.`
   let body = []
   let options = []
+
   if (queenHearts(active)) {
-    body.push('Use Queen-Hearts to take the opposite?')
+    body.push('Use your Queen of Hearts law to take the opposite?')
     options.push({
       text: 'Take opposite',
       onClick: () => {
@@ -384,7 +387,7 @@ const rollOptionLaws = (roll, active) => {
     })
   }
   if (tenSpades(active)) {
-    body.push('Use 10-Spades to roll again?')
+    body.push('Use your 10 of Spades law to roll again?')
     options.push({
       text: 'Roll again',
       onClick: () => {
@@ -393,14 +396,16 @@ const rollOptionLaws = (roll, active) => {
       }
     })
   }
+  options.push({
+    text: 'Not this time',
+    onClick: boundActions.hideModal
+  })
 
-  if (!!options.length) {
-    showModal({
-      title,
-      body: body.join(' '),
-      options
-    })
-  }
+  showModal({
+    title,
+    body: body.join("\n"),
+    options
+  })
 }
 
 const handlePieces = (action) => {
@@ -665,6 +670,18 @@ const gameActions = {
   onCombineSelectedParts: (selected) => handlePieces({ type: 'COMBINE_PARTS', selected }),
   onAdvanceFoodDiagram: () => dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
   onDying: () => store.dispatch({ type: 'DEATH' }),
+  onOptions: () => showModal({
+    title: "Title Ho!",
+    body: "this a good body",
+    options: [
+      { text: 'Hi There', onClick: () => { console.log("Chose Hi") } },
+      { text: 'Ho Derr', onClick: () => { console.log("Chose Ho") } }
+    ]
+  }),
+  onModal: () => showModal({
+    title: 'basic',
+    body: "has\nmany\n\nlines"
+  }),
   onRandomLaw: () => store.dispatch({
     type: "ONE_BY_RANDOM",
     roll: store.getState().board.dice.roll()

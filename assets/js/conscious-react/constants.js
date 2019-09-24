@@ -184,8 +184,8 @@ export const LAW_DECK = [
     "card": "KD",
     "text": "CREATE MOON IN YOURSELF:\nKEEP THIS CARD, WHICH\nFREES YOU FROM ALL\nLAWS OF ACCIDENT.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 20},
       {type: 'REMOVE_ACTIVE', suit: 'D'},
+      {type: 'ACTIVE_LAW', card: 20},
     ]
   },
   {
@@ -341,8 +341,8 @@ export const LAW_DECK = [
     "card": "KC",
     "text": "CREATE MOON IN YOURSELF:\nKEEP THIS CARD, WHICH\nFREES YOU FROM ALL LAWS\nOF CAUSE AND EFFECT.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 42},
       {type: 'REMOVE_ACTIVE', suit: 'C'},
+      {type: 'ACTIVE_LAW', card: 42},
     ]
   },
   {
@@ -476,8 +476,8 @@ export const LAW_DECK = [
     "card": "KH",
     "text": "CREATE MOON IN YOURSELF:\nKEEP THIS CARD, WHICH\nFREES YOU FROM ALL\nLAWS OF FATE.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 60},
       {type: 'REMOVE_ACTIVE', suit: 'H'},
+      {type: 'ACTIVE_LAW', card: 60},
     ]
   },
   {
@@ -628,8 +628,8 @@ export const LAW_DECK = [
     "card": "KS",
     "text": "CREATE MOON IN YOURSELF:\nKEEP THIS CARD, WHICH FREES\nYOU FROM ALL LAWS OF WILL.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 81},
       {type: 'REMOVE_ACTIVE', suit: 'S'},
+      {type: 'ACTIVE_LAW', card: 81},
     ]
   },
   {

@@ -160,3 +160,48 @@ span.laws {
   margin: 2px 2px;
   vertical-align: top;
 }
+
+/* Modal Overrides */
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 500ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open{
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close{
+  opacity: 0;
+}
+
+/* Modal Overrides */
+.ReactModal__Content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  width: 65%;
+  top: 40px;
+  bottom: 40px;
+  left: 40px;
+  right: 40px;
+  border: 1px solid rgb(204, 204, 204);
+  background: rgb(255, 255, 255);
+  overflow: auto;
+  border-radius: 4px;
+  outline: none;
+  padding: 20px;
+}
+
+.modal-body {
+  white-space: pre-line;
+}
+
+.modal-buttons {
+  width: 100%;
+  text-align: center;
+}
+
+.modal-buttons button {
+  margin-right: 16px;
+}

@@ -14,7 +14,10 @@ const modal = (
         modalProps: action.modalProps
       }
     case 'HIDE_MODAL':
-      return InitialState
+      return {
+        ...state,
+        showModal: false
+      }
     default:
       return state
   }
