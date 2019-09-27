@@ -331,14 +331,23 @@ const handleRollOptions = () => {
   const active = store.getState().laws.active
   const asleep = jackDiamonds(active)
   // HASNAMUSS: no roll-options
-  if (asleep || hasnamuss(active)) { return }
+  if (asleep || hasnamuss(active)) {
+    moveAfterRoll()
+    return
+  }
   let roll = store.getState().board.roll
   let lob = store.getState().ep.level_of_being
   const title = `You rolled ${roll}`
   let options = []
   switch(lob) {
     case  'MASTER':
-      options.push({ text: 'Take opposite', onClick: () => store.dispatch({ type: 'TAKE_OPPOSITE' }) })
+      options.push({
+        text: 'Take opposite',
+        onClick: () => {
+          store.dispatch({ type: 'TAKE_OPPOSITE' })
+          moveAfterRoll()
+        }
+      })
       // fall through
     case 'STEWARD':
       options.push({ text: 'Roll again',
@@ -351,7 +360,7 @@ const handleRollOptions = () => {
   }
 
   if (!!options.length) {
-    options.push({ text: 'Take the roll', onClick: () => { } })
+    options.push({ text: 'Take the roll', onClick: () => moveAfterRoll() })
     showModal({
       title,
       options
@@ -362,7 +371,10 @@ const handleRollOptions = () => {
 }
 
 const rollOptionLaws = (roll, active) => {
-  if (!queenHearts(active) && !tenSpades(active)) { return }
+  if (!queenHearts(active) && !tenSpades(active)) {
+    moveAfterRoll()
+    return
+  }
 
   const title = `You rolled ${roll}.`
   let body = []
@@ -375,6 +387,7 @@ const rollOptionLaws = (roll, active) => {
       onClick: () => {
         store.dispatch({ type: 'TAKE_OPPOSITE' })
         store.dispatch({ type: 'REMOVE_ACTIVE', card: 'QH' })
+        moveAfterRoll()
       }
     })
   }
@@ -385,13 +398,11 @@ const rollOptionLaws = (roll, active) => {
       onClick: () => {
         store.dispatch({ type: 'ROLL_DICE' })
         store.dispatch({ type: 'REMOVE_ACTIVE', card: '10S' })
+        moveAfterRoll()
       }
     })
   }
-  options.push({
-    text: 'Not this time',
-    onClick: () => { }
-  })
+  options.push({ text: 'Not this time', onClick: () => moveAfterRoll() })
 
   showModal({
     title,
@@ -570,13 +581,15 @@ const handleLawEvents = () => {
 }
 
 const handleRollClick = () => {
+  store.dispatch({ type: 'END_TURN' })
+  store.dispatch({ type: 'ROLL_DICE' })
+  handleRollOptions()
+}
+const moveAfterRoll = () => {
   const { position: position_before } = store.getState().board
   const roll_multiplier = 4 - store.getState().ep.num_brains
   const { active } = store.getState().laws
   const asleep = jackDiamonds(active)
-  store.dispatch({ type: 'END_TURN' })
-  store.dispatch({ type: 'ROLL_DICE' })
-  handleRollOptions()
   store.dispatch({ type: 'MOVE_ROLL', roll_multiplier })
   const { position, spaces, laws_cancel } = store.getState().board
   for (let s of spaces.substring(position_before+1, position)) {
