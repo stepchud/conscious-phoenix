@@ -81,10 +81,10 @@ const Buttons = ({
   }
 
   return (
-    <div className="section actions">
+    <div className="section actions fixed-nav">
       <Dice roll={roll} />
       {buttons}
-      <div className="turn-message">{message}</div>
+      <span className="turn-message">{message}</span>
     </div>
   )
 }

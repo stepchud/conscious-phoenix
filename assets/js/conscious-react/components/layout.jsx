@@ -1,4 +1,6 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
+import ReactModal from 'react-modal'
 import { ToastContainer, toast } from 'react-toastify'
 
 import Buttons from './buttons'
@@ -20,7 +22,6 @@ export const ConsciousBoardgame = () => {
 
   return (
     <div>
-      <PlayerStats {...ep} />
       <Buttons
         actions={gameActions}
         roll={board.roll}
@@ -35,7 +36,8 @@ export const ConsciousBoardgame = () => {
         laws={laws}
         parts={ep.parts}
       />
-      <FoodDiagram {...fd} store={store} />
+      <PlayerStats {...ep} />
+      <FoodDiagram {...fd} />
       <Board {...board} />
       <CardHand cards={cards.hand} onSelect={gameActions.onSelectCard} />
       { fd.current.alive && <LawHand
@@ -49,4 +51,17 @@ export const ConsciousBoardgame = () => {
       <ToastContainer position={toast.POSITION.BOTTOM_CENTER} autoClose={4000} />
     </div>
   )
+}
+
+export const renderRoot = () => {
+  const domElement = document.getElementById('Conscious-Boardgame')
+  ReactModal.setAppElement(domElement)
+  const renderGame = () => {
+    ReactDOM.render(
+      <ConsciousBoardgame />,
+      domElement
+    )
+  }
+  document.addEventListener('DOMContentLoaded', () => { renderGame() })
+  return renderGame
 }

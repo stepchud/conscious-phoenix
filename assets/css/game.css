@@ -1,5 +1,14 @@
 .section {
+  width: 100%;
   margin-bottom: 15px;
+}
+
+.section.actions {
+  background-color: white;
+}
+
+.section.actions + .section {
+  padding-top: 56px;
 }
 
 .turn-message {

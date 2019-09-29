@@ -22,7 +22,7 @@ const PlayerStats = ({
   wild_shock,
   all_shocks,
 }) =>
-  <div className="lob">
+  <div className="section lob">
     Level: {level_of_being},
     Card plays: {card_plays},
     Transform: {transforms},
