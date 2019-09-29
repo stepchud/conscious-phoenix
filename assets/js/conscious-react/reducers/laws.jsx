@@ -101,7 +101,7 @@ const drawLawCard = (state) => {
 }
 
 const testLawCard = (deck, law_text) => {
-  const textTest = new RegExp(`^${law_text}`)
+  const textTest = new RegExp(law_text)
   const lawIndex = deck.findIndex((el) => el.text.match(textTest))
   if (lawIndex >= 0) {
     const testLaw = deck.splice(lawIndex, 1)
@@ -118,9 +118,9 @@ const generateLawDeck = () => {
   //return testLawCard(
   //  testLawCard(
   //    newDeck,
-  //    'REMEMBER TO PICK'
+  //    "ALL LAWS OF WILL"
   //  ),
-  //  'CREATE MOON IN YOURSELF:\\nKEEP THIS CARD, WHICH\\nFREES YOU FROM ALL\\nLAWS OF FATE'
+  //  'LAWS OF FATE'
   //)
 }
 
@@ -255,11 +255,13 @@ const laws = (
         actions,
       }
     }
-    case 'ACTIVE_LAW':
+    case 'ACTIVE_LAW': {
+      const nextActive = [...active, { index: action.card, protected: (action.protected||[]) }]
       return {
         ...state,
-        active: active.concat({ index: action.card, protected: action.protected||[] }),
+        active: nextActive
       }
+    }
     case 'REMOVE_ACTIVE': {
       let nextActive
       if (action.suit) {
@@ -271,10 +273,10 @@ const laws = (
                   (action.suit == 'S' && law.protected[0] == '2S')) {
                 law.protected.shift()
               }
-              return law
             } else if (isLawSuit(action.suit, law)) {
               return undefined
             }
+            return law
           })
         )
       } else if (action.card) {
