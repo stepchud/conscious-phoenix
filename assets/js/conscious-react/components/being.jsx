@@ -16,6 +16,7 @@ const mapPiece = (n, i) =>
   </div>
 
 const PlayerStats = ({
+  player_name,
   level_of_being,
   card_plays,
   transforms,
@@ -23,6 +24,7 @@ const PlayerStats = ({
   all_shocks,
 }) =>
   <div className="section lob">
+    {player_name},
     Level: {level_of_being},
     Card plays: {card_plays},
     Transform: {transforms},

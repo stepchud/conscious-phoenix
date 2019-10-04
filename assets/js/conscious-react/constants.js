@@ -10,6 +10,7 @@ export const INITIAL_SPACES =
 export const LAST_SPACE = INITIAL_SPACES.length - 1
 
 export const TURNS = {
+  initial: 'initial',
   normal: 'normal',
   randomLaw: 'random',
   choiceLaw: 'choice',
@@ -21,7 +22,7 @@ export const Dice = (sides=10, zero=true) => {
   const roll = () => Math.floor(Math.random() * sides) + basis
   const opposite = (value) => sides + basis - value
 
-  return { roll, opposite }
+  return { sides, roll, opposite }
 }
 
 export const tenSides = Dice(10, true)

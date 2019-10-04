@@ -4,6 +4,7 @@
 }
 
 .section.actions {
+  padding-top: 8px;
   background-color: white;
 }
 
@@ -11,17 +12,27 @@
   padding-top: 56px;
 }
 
+.section.actions button {
+  margin-left: 0.8rem;
+}
+
 .turn-message {
   height: 1.6em;
   font-style: italic;
   font-weight: bold;
+  padding: 1.6rem;
 }
 
 .dice {
-  font-size: 3.4em;
-  line-height: 1em;
+  display: inline-block;
+  font-size: 1.6rem;
   vertical-align: middle;
-  margin-right: 10px;
+  margin-right: 0.8rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.4rem;
+  background-color: red;
+  color: white;
+  font-weight: bold;
 }
 
 .board {
@@ -178,6 +189,7 @@ span.laws {
 
 .ReactModal__Overlay--after-open{
   opacity: 1;
+  z-index: 10;
 }
 
 .ReactModal__Overlay--before-close{

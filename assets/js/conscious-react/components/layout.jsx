@@ -9,16 +9,15 @@ import Board   from './board'
 import { CardHand, LawHand } from './cards'
 import FoodDiagram from './food'
 import { PlayerStats, ThreeBrains } from './being'
-import GameModal from './modal'
+import GameModal, { IntroModal } from './modal'
 import { TURNS } from '../constants'
 import redux from '../redux'
 
 import "react-toastify/dist/ReactToastify.css";
 
-const { store, gameActions } = redux
-
 export const ConsciousBoardgame = () => {
-  const { board, cards, laws, fd, ep, modal: { showModal, modalProps } } = store.getState()
+  const { board, cards, laws, fd, ep, modal: { showModal, modalProps } } = redux.store.getState()
+  const { gameActions } = redux
 
   return (
     <div>
@@ -47,7 +46,10 @@ export const ConsciousBoardgame = () => {
           onChoice={gameActions.onChooseLaw} />
       }
       <ThreeBrains {...ep} onSelect={gameActions.onSelectPart} />
-      <GameModal showModal={showModal} modalProps={modalProps} />
+      { board.current_turn===TURNS.initial ?
+        <IntroModal player_name={ep.player_name} sides={board.dice.sides} /> :
+        <GameModal showModal={showModal} modalProps={modalProps} />
+      }
       <ToastContainer position={toast.POSITION.BOTTOM_CENTER} autoClose={4000} />
     </div>
   )

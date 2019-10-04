@@ -12,12 +12,10 @@ import {
 import { selectedParts } from '../reducers/being'
 import { TURNS } from '../constants'
 
-const DiceEntities = [ '⚀', '⚁', '⚂', '⚃', '⚄', '⚅' ]
 const Dice = ({
   roll
 }) => {
-  const entity = DiceEntities[roll-1] || DiceEntities[0]
-  return <span className="dice">{entity}</span>
+  return <span className="dice">{roll}</span>
 }
 
 const Buttons = ({

@@ -3,6 +3,7 @@ import { sameSuit, makeNewPart, combinable } from './cards'
 import { LOB, PARTS, sixSides } from '../constants'
 
 const InitialState = {
+  player_name: 'Player 1',
   num_brains: 3,
   being_type: sixSides.roll(),
   parts: PARTS.map((c) => ({ c, selected: false })),
@@ -119,6 +120,11 @@ const ep = (
       return {
         ...state,
         ...beginTurnState(level_of_being)
+      }
+    case 'UPDATE_NAME':
+      return {
+        ...state,
+        player_name: action.name,
       }
     case 'PLAY_SELECTED':
       if (!action.pieces) { return state }

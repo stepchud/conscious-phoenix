@@ -21,13 +21,7 @@ import actions from './actions'
 
 const reducers = combineReducers({ board, cards, laws, fd, ep, modal })
 const store = createStore(reducers)
-const initGame = (renderGame) => {
-  store.dispatch({ type: 'START_GAME' })
-  store.subscribe(renderGame)
-}
-const boundActions = bindActionCreators(actions, store.dispatch)
-
-const showModal = (props) => boundActions.showModal(props, boundActions.hideModal)
+const showModal = (props) => store.dispatch(actions.showModal(props))
 
 const startCausalDeath = () => {
   const roll1 = sixSides.roll()
@@ -701,6 +695,5 @@ const gameActions = {
 
 export default {
   store,
-  initGame,
-  gameActions
+  gameActions,
 }
