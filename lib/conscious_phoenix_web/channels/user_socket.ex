@@ -2,7 +2,7 @@ defmodule ConsciousPhoenixWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", ConsciousPhoenixWeb.RoomChannel
+  channel "game:*", ConsciousPhoenixWeb.GameChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After

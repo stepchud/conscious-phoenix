@@ -9,6 +9,8 @@ export const INITIAL_SPACES =
 
 export const LAST_SPACE = INITIAL_SPACES.length - 1
 
+export const GAME_ID = 'game_id'
+
 export const TURNS = {
   initial: 'initial',
   normal: 'normal',

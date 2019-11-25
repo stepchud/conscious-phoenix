@@ -11,17 +11,23 @@ const clickAndHide = (click, hide) => () => { click(); hide() }
 const onNameChange = (event) => redux.store.dispatch(actions.updateName(event.target.value))
 const onDiceChange = (event) => redux.store.dispatch(actions.updateDice(event.target.value))
 const hideModal = () => redux.store.dispatch(actions.hideModal())
-const startGame = () => redux.store.dispatch(actions.startGame())
+const onContinueGame = () => redux.store.dispatch(actions.continueGame())
 
 export const IntroModal = ({
-  player_name='',
+  playerName='',
   sides=6,
+  continueGame=false,
+  onStart,
 }) => {
-  const body = (
+  const body = continueGame ? (
+    <div>
+      Continue the game in progress?
+    </div>
+  ) : (
     <div>
       <label name="name">
         Hi, what's your name?
-        <input type="text" name="player_name" value={player_name} onChange={onNameChange} />
+        <input type="text" name="player_name" value={playerName} onChange={onNameChange} />
       </label>
       <div name="dice">
         Dice sides:<br />
@@ -31,9 +37,9 @@ export const IntroModal = ({
     </div>
   )
   const modalProps = {
-    title: 'Welcome to the Conscious Boardgame!',
+    title: `Welcome ${continueGame ? 'back ': ''}to the Conscious Boardgame!`,
     escapable: false,
-    onClose: startGame,
+    onClose: continueGame ? onContinueGame : onStart,
     body
   }
   return <ModalComponent showModal={true} modalProps={modalProps} />

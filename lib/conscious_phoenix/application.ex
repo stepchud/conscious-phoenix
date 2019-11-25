@@ -6,14 +6,16 @@ defmodule ConsciousPhoenix.Application do
   use Application
 
   def start(_type, _args) do
+    import Supervisor.Spec
     # List all child processes to be supervised
     children = [
       # Start the Ecto repository
       ConsciousPhoenix.Repo,
       # Start the endpoint when the application starts
-      ConsciousPhoenixWeb.Endpoint
+      ConsciousPhoenixWeb.Endpoint,
       # Starts a worker by calling: ConsciousPhoenix.Worker.start_link(arg)
       # {ConsciousPhoenix.Worker, arg},
+      worker(ConsciousPhoenix.GameServer, [[], ConsciousPhoenix.GameServer])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

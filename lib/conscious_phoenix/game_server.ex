@@ -1,29 +1,33 @@
 defmodule ConsciousPhoenix.GameServer do
   use GenServer
-  alias ConsciousPhoenix.Endpoint
+  alias ConsciousPhoenixWeb.Endpoint
 
   defmodule State do
     defstruct(
-      game: %{ },
+      games: %{ }
     )
   end
 
 
   #API
-  def start_link(args, name) do
+  def start_link(_args, name) do
     GenServer.start_link(__MODULE__, :ok, name: name)
   end
 
-  def turn(game) do
-    GenServer.cast(__MODULE__, %{action: :turn, game: game})
+  def turn(gid, game) do
+    GenServer.cast(__MODULE__, %{action: :turn, gid: gid, game: game})
   end
 
   def reset() do
     GenServer.cast(__MODULE__, %{action: :reset})
   end
 
-  def getGameState() do
-    GenServer.call(__MODULE__, %{action: :get_game_state})
+  def start(name, sides) do
+    GenServer.call(__MODULE__, %{action: :new_game, name: name, sides: sides})
+  end
+
+  def getGameState(gid) do
+    GenServer.call(__MODULE__, %{action: :get_state, gid: gid})
   end
 
   #Callbacks
@@ -31,19 +35,28 @@ defmodule ConsciousPhoenix.GameServer do
     {:ok, %State{}}
   end
 
-  def handle_call(%{action: :get_game_state}, _, state) do
-    {:reply, %{game: state.game}, state}
+  def handle_call(%{action: :get_state, gid: gid}, _, state) do
+    {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
-  def handle_cast(%{:action => :reset}, _state) do
-    state = %State{}
-    Endpoint.broadcast("game", "game_update", %{game: state.game})
+  def handle_call(%{action: :new_game, name: name, sides: sides}, _, state) do
+    uuid = UUID.uuid4()
+    initial_state = %{name: name, sides: sides}
+    put_in(state.games[uuid], initial_state)
+    IO.puts "new game on! #{uuid}"
+    Endpoint.broadcast("game:_", "update:gid", %{gid: uuid})
     {:noreply, state}
   end
 
-  def handle_cast(%{:action => :turn, :game => game}, state) do
+  def handle_cast(%{:action => :reset, :gid => gid}, state) do
+    game = put_in(state.games[gid], %{})
+    Endpoint.broadcast("game", "game_update", %{game: game})
+    {:noreply, state}
+  end
+
+  def handle_cast(%{:action => :turn, :gid => gid, :game => game}, state) do
     # Save the game state...
-    state = %State{game: game}
+    game = put_in(state.games[gid], game)
     Endpoint.broadcast("game", "game_update", %{game: game})
 
     # case can_move(state, x, y) do
