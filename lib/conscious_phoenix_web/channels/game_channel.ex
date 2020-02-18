@@ -1,21 +1,13 @@
 defmodule ConsciousPhoenixWeb.GameChannel do
   use Phoenix.Channel
 
-  def join("game:_", _message, socket) do
-    {:ok, "__START__", socket}
-  end
-
   def join("game:" <> gid, _message, socket) do
-    state = ConsciousPhoenix.GameServer.getGameState(gid)
+    state = ConsciousPhoenix.GameServer.getGame(gid)
     {:ok, state, socket}
   end
 
-  def handle_in("game:reset", _, socket) do
-    {:ok, "__START__", socket}
-  end
-
-  def handle_in("game:start", %{"name" => name, "sides" => sides}, socket) do
-    ConsciousPhoenix.GameServer.start(name, sides)
+  def handle_in("game:start", %{"gid" => gid, "name" => name, "sides" => sides}, socket) do
+    ConsciousPhoenix.GameServer.start(gid, name, sides)
     {:noreply, socket}
   end
 

@@ -2,7 +2,7 @@ defmodule ConsciousPhoenix.GameServer do
   use GenServer
   alias ConsciousPhoenixWeb.Endpoint
 
-  defmodule State do
+  defmodule GameState do
     defstruct(
       games: %{ }
     )
@@ -22,42 +22,48 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :reset})
   end
 
-  def start(name, sides) do
-    GenServer.call(__MODULE__, %{action: :new_game, name: name, sides: sides})
+  def start(gid, name, sides) do
+    GenServer.call(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
   end
 
-  def getGameState(gid) do
-    GenServer.call(__MODULE__, %{action: :get_state, gid: gid})
+  def getGame(gid) do
+    GenServer.call(__MODULE__, %{action: :get_game, gid: gid})
   end
 
   #Callbacks
   def init(:ok) do
-    {:ok, %State{}}
+    {:ok, %GameState{}}
   end
 
-  def handle_call(%{action: :get_state, gid: gid}, _, state) do
+  def handle_call(%{action: :get_game, gid: gid}, _, state) do
+    IO.puts "get_game #{gid}"
+    IO.puts Map.keys(state.games)
+    unless Map.has_key?(state.games, gid) do
+      state = put_in(state.games[gid], %{name: 'Player One', sides: 6 })
+    end
     {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
-  def handle_call(%{action: :new_game, name: name, sides: sides}, _, state) do
-    uuid = UUID.uuid4()
-    initial_state = %{name: name, sides: sides}
-    put_in(state.games[uuid], initial_state)
-    IO.puts "new game on! #{uuid}"
-    Endpoint.broadcast("game:_", "update:gid", %{gid: uuid})
-    {:noreply, state}
+  def handle_call(%{action: :start_game, gid: gid, name: name, sides: sides}, _, state) do
+    # uuid = UUID.uuid4()
+    # state = put_in(state.games[uuid], %{name: name, sides: sides})
+    %{ state.games[gid] | name: name, sides: sides }
+    Endpoint.broadcast("game:#{gid}", "update:game", %{game: state.games[gid]})
+    {:reply, state}
   end
 
   def handle_cast(%{:action => :reset, :gid => gid}, state) do
-    game = put_in(state.games[gid], %{})
-    Endpoint.broadcast("game", "game_update", %{game: game})
+    state = put_in(state.games[gid], %{})
+    game = state.games[gid]
+    Endpoint.broadcast("game:#{gid}", "update:game", %{game: game})
     {:noreply, state}
   end
 
   def handle_cast(%{:action => :turn, :gid => gid, :game => game}, state) do
     # Save the game state...
-    game = put_in(state.games[gid], game)
-    Endpoint.broadcast("game", "game_update", %{game: game})
+    state = put_in(state.games[gid], game)
+    game = state.games[gid]
+    Endpoint.broadcast("game:#{gid}", "update:game", %{game: game})
 
     # case can_move(state, x, y) do
     #   :true ->
@@ -66,7 +72,7 @@ defmodule ConsciousPhoenix.GameServer do
     #     |> check_finished
     #     |> make_random_move
     #     |> check_finished
-    #     Endpoint.broadcast("game", "game_update", %{board: to_list(state.board), phase: state.phase})
+    #     Endpoint.broadcast("game", "update:game", %{board: to_list(state.board), phase: state.phase})
     #     state
     #   :false -> state
     # end

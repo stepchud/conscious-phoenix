@@ -17,7 +17,7 @@ const InitialState = () => ({
   laws_cancel: [],
   spaces: INITIAL_SPACES,
   death_space: LAST_SPACE,
-  current_turn: TURNS.initial,
+  current_turn: TURNS.setup1,
   completed_trip: false,
 })
 
@@ -59,7 +59,11 @@ const board = (
         ...state,
         dice: action.sides==='6' ? sixSides : tenSides,
       }
-
+    case 'NEW_GAME':
+      return {
+        ...state,
+        current_turn: TURNS.setup2,
+      }
     case 'START_GAME':
       return {
         ...state,

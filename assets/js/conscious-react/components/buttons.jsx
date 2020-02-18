@@ -25,6 +25,9 @@ const Buttons = ({
   cards,
   laws,
   currentTurn }) => {
+  if (currentTurn===TURNS.setup1 || currentTurn===TURNS.setup2) {
+    return
+  }
   const asleep = jackDiamonds(laws.active)
   const nopowers = jackHearts(laws.active)
   const selCards = selectedCards(cards)

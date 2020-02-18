@@ -12,6 +12,8 @@ export const LAST_SPACE = INITIAL_SPACES.length - 1
 export const GAME_ID = 'game_id'
 
 export const TURNS = {
+  setup1: 'setup1',
+  setup2: 'setup2',
   initial: 'initial',
   normal: 'normal',
   randomLaw: 'random',

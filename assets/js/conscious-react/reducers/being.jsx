@@ -9,7 +9,7 @@ const InitialState = {
   parts: PARTS.map((c) => ({ c, selected: false })),
   pieces: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   shocks: [],
-  card_plays: 1,
+  card_plays: 2,
   transforms: 0,
   wild_shock: 0,
   all_shocks: 0,
@@ -261,11 +261,6 @@ const ep = (
       return {
         ...state,
         pieces,
-      }
-    case 'START_GAME':
-      return {
-        ...state,
-        card_plays: card_plays + 1,
       }
     case 'GAME_OVER':
       return {

@@ -1,12 +1,17 @@
 import { Socket } from 'phoenix'
 
-export const connectSocket = () => {
+export const connect = () => {
   let socket = new Socket(`ws://${location.hostname}:4000/socket`, {})
   socket.connect()
   return socket
 }
 
-export const joinChannel = (socket, gid) => {
+export const disconnect = (socket) => {
+  if (!socket) { return }
+  socket.disconnect(() => console.log('Bye Socket!'))
+}
+
+export const join = (socket, gid) => {
   const channel = socket.channel(`game:${gid}`, {})
   channel
     .join()
@@ -16,5 +21,6 @@ export const joinChannel = (socket, gid) => {
 }
 
 export const leave = (channel) => {
+  if (!channel) { return }
   channel.leave().receive('ok', () => console.log("left channel"))
 }
