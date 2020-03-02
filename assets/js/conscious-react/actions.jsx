@@ -8,17 +8,16 @@ const showModal = (modalProps) => ({
   }
 })
 
-const updateName = (name) => ({ type: 'UPDATE_NAME', name })
-const updateDice = (sides) => ({ type: 'SET_DICE', sides })
+const updateModal = ({ field, value }) => ({ type: 'UPDATE_MODAL', field, value })
+
 const newGame = () => ({ type: 'NEW_GAME' })
-const startGame = () => ({ type: 'START_GAME' })
+const startGame = (name, sides) => ({ type: 'START_GAME', name, sides })
 const continueGame = () => ({ type: 'CONTINUE_GAME' })
 
 export default {
   hideModal,
   showModal,
-  updateName,
-  updateDice,
+  updateModal,
   newGame,
   startGame,
   continueGame,

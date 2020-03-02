@@ -9,25 +9,28 @@ const TitleTag = (title) => title && <h1 className='modal-title'>{title}</h1>
 const BodyTag = (body) => body && <div className='modal-body'>{body}</div>
 const clickAndHide = (onClick, hide) => () => { onClick(); hide() }
 
-const onNameChange = (event) => redux.store.dispatch(actions.updateName(event.target.value))
-const onDiceChange = (event) => redux.store.dispatch(actions.updateDice(event.target.value))
 const hideModal = () => redux.store.dispatch(actions.hideModal())
+const updateModal = (field, value) => redux.store.dispatch(actions.updateModal({ field, value }))
+const onNameChange = (event) => updateModal('name', event.target.value)
+const onDiceChange = (event) => updateModal('sides', event.target.value)
+const onGameChange = (event) => updateModal('game', event.target.value)
 
 const PickGameModal = ({
+  gameId,
   onNewGame,
-  onContinueGame,
   onJoinGame,
 }) => {
+  const body =
+    <div>
+      <label name="game">
+        Join Game?
+        <input type="text" name="game_id" placeholder={'Game ID'} value={gameId} onChange={onGameChange} />
+      </label>
+    </div>
   const options =  [{
     text: 'New Game',
     onClick: onNewGame,
   }]
-  if (onContinueGame) {
-    options.push({
-      text: 'Continue',
-      onClick: onContinueGame,
-    })
-  }
   if (onJoinGame) {
     options.push({
       text: 'Join Game',
@@ -37,21 +40,22 @@ const PickGameModal = ({
   const modalProps = {
     title: `Welcome to the Conscious Boardgame!`,
     escapable: false,
-    options
+    options,
+    body
   }
   return <ModalComponent showModal={true} modalProps={modalProps} />
 }
 
 const PickNameModal = ({
-  playerName='',
-  sides=6,
+  name,
+  sides,
   onStart,
 }) => {
   const body =
     <div>
       <label name="name">
         Hi, what's your name?
-        <input type="text" name="player_name" value={playerName} onChange={onNameChange} />
+        <input type="text" name="player_name" value={name} onChange={onNameChange} />
       </label>
       <label name="dice">
         Dice sides:<br />
@@ -70,16 +74,16 @@ const PickNameModal = ({
 
 export const SetupModal = ({
   step,
-  playerName='',
+  name='',
   sides=6,
   onStart,
   onNewGame,
-  onContinueGame,
+  gameId,
   onJoinGame,
 }) => {
   return step===TURNS.setup1
-    ? <PickGameModal onNewGame={onNewGame} onContinueGame={onContinueGame} onJoinGame={onJoinGame} />
-    : <PickNameModal playerName={playerName} sides={sides} onStart={onStart} />
+    ? <PickGameModal onNewGame={onNewGame} gameId={gameId} onJoinGame={onJoinGame} />
+    : <PickNameModal name={name} sides={sides} onStart={onStart} />
 }
 
 const ModalComponent = ({

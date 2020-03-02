@@ -21,6 +21,7 @@ const Dice = ({
 const Buttons = ({
   actions,
   roll,
+  onRoll,
   ep,
   cards,
   laws,
@@ -55,7 +56,7 @@ const Buttons = ({
       if (currentTurn===TURNS.death) {
         buttons.push(<button key={buttons.length} onClick={actions.onEndDeath}>End Death</button>)
       } else {
-        buttons.push(<button key={buttons.length} onClick={actions.onRollClick}>Roll Dice</button>)
+        buttons.push(<button key={buttons.length} onClick={onRoll}>Roll Dice</button>)
       }
     }
     if (!asleep && !nopowers && ep[combinable(selParts)]) {

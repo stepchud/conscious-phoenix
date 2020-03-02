@@ -18,6 +18,12 @@ const modal = (
         ...state,
         showModal: false
       }
+    case 'UPDATE_MODAL':
+      console.log("UPDATE_MODAL ", action)
+      return {
+        ...state,
+        [action.field]: action.value
+      }
     default:
       return state
   }

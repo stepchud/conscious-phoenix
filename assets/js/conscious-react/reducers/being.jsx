@@ -121,7 +121,7 @@ const ep = (
         ...state,
         ...beginTurnState(level_of_being)
       }
-    case 'UPDATE_NAME':
+    case 'START_GAME':
       return {
         ...state,
         player_name: action.name,

@@ -54,20 +54,17 @@ const board = (
     laws_passed
   } = state
   switch(action.type) {
-    case 'SET_DICE':
-      return {
-        ...state,
-        dice: action.sides==='6' ? sixSides : tenSides,
-      }
     case 'NEW_GAME':
       return {
         ...state,
         current_turn: TURNS.setup2,
       }
     case 'START_GAME':
+      debugger
       return {
         ...state,
         current_turn: TURNS.randomLaw,
+        dice: action.sides == 6 ? sixSides : tenSides,
       }
     case 'ROLL_DICE':
       return {
@@ -137,7 +134,7 @@ const board = (
     case 'ONE_BY_RANDOM': {
       const nextState = {
         ...state,
-        current_turn: laws_passed==2 ? TURNS.choiceLaw : TURNS.normal,
+        current_turn: laws_passed == 2 ? TURNS.choiceLaw : TURNS.normal,
       }
       if (nextState.next_turn) {
         nextState.current_turn = nextState.next_turn
