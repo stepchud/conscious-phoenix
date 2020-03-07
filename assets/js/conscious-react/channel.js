@@ -1,7 +1,7 @@
 import { Socket } from 'phoenix'
 
 export const connect = () => {
-  let socket = new Socket(`ws://${location.hostname}:4000/socket`, {})
+  let socket = new Socket(`wss://${location.hostname}:4000/socket`, {})
   socket.connect()
   return socket
 }
