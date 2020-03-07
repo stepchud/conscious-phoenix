@@ -21,16 +21,13 @@ export const TURNS = {
   death: 'death',
 }
 
-export const Dice = (sides=10, zero=true) => {
-  const basis = zero ? 0 : 1
+export const Dice = (sides=6) => {
+  const basis = sides == 10 ? 0 : 1
   const roll = () => Math.floor(Math.random() * sides) + basis
   const opposite = (value) => sides + basis - value
 
   return { sides, roll, opposite }
 }
-
-export const tenSides = Dice(10, true)
-export const sixSides = Dice(6, false)
 
 export const PARTS = [
   "JD","QD","KD","JC","QC","KC",

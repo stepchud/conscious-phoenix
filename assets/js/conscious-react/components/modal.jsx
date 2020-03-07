@@ -19,6 +19,7 @@ const PickGameModal = ({
   gameId,
   onNewGame,
   onJoinGame,
+  errorMessage,
 }) => {
   const body =
     <div>
@@ -40,6 +41,7 @@ const PickGameModal = ({
   const modalProps = {
     title: `Welcome to the Conscious Boardgame!`,
     escapable: false,
+    errorMessage,
     options,
     body
   }
@@ -80,9 +82,10 @@ export const SetupModal = ({
   onNewGame,
   gameId,
   onJoinGame,
+  errorMessage,
 }) => {
   return step===TURNS.setup1
-    ? <PickGameModal onNewGame={onNewGame} gameId={gameId} onJoinGame={onJoinGame} />
+    ? <PickGameModal onNewGame={onNewGame} gameId={gameId} onJoinGame={onJoinGame} errorMessage={errorMessage} />
     : <PickNameModal name={name} sides={sides} onStart={onStart} />
 }
 
@@ -90,7 +93,7 @@ const ModalComponent = ({
   showModal,
   modalProps
 }) => {
-  const { title, body, options, onClose } = modalProps
+  const { title, body, options, onClose, errorMessage } = modalProps
   let { escapable } = modalProps
   let buttons
   if (options && options.length) {
@@ -123,6 +126,9 @@ const ModalComponent = ({
         { BodyTag(body) }
         <div className='modal-buttons'>
           { buttons }
+        </div>
+        <div className='modal-error'>
+          { errorMessage }
         </div>
       </div>
     </Modal>

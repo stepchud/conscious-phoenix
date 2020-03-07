@@ -28,11 +28,21 @@ export class ConsciousBoardgame extends React.Component {
     leave(this.channel)
     const channel = join(this.socket, gid)
     localStorage.setItem(GAME_ID, gid)
-    channel.on("game:update", payload => console.log('game:update', payload))
+    channel.on("game:started", payload => {
+      const { name, sides } = payload
+      redux.store.dispatch(actions.startGame(name, sides))
+    })
+    channel.on("game:update", payload => {
+      console.log('game:update', payload)
+      redux.store.dispatch(actions.updateGame(payload))
+    })
     channel.on("game:joined", payload => {
-      payload.error
-        ? this.displayError(payload.error)
-        : this.gameIdChanged(payload.gid)
+      if (payload.error) {
+        redux.store.dispatch(actions.updateModal({ field: "error_message", value: payload.error.message }))
+      } else {
+        this.gameIdChanged(payload.gid)
+        redux.store.dispatch(actions.updateGame(payload))
+      }
     })
     this.channel = channel
   }
@@ -42,25 +52,23 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   onJoinGame = () => {
-    const { game } = redux.store.getState().modal
+    const game = redux.store.getState().modal.game || this.gameId()
     this.channel.push('game:join', { game })
   }
 
   onStartGame = () => {
     const { name = 'anon', sides = 6 } = redux.store.getState().modal
-    this.channel.push('game:start', { gid: this.gameId(), name, sides })
-    redux.store.dispatch(actions.startGame(name, sides))
+    this.channel.push('game:start', { name, sides })
   }
 
   onRoll = () => {
     redux.gameActions.onRollClick()
-    this.channel.push('game:roll', { gid: this.gameId(), roll: redux.store.getState().board.roll })
+    this.channel.push('game:update', { game: redux.store.getState() })
   }
 
   componentDidMount () {
     this.socket = connect()
     const gid = this.gameId() || uuid()
-    console.log(`gid=${gid}`)
     this.gameIdChanged(gid)
   }
 
@@ -86,6 +94,7 @@ export class ConsciousBoardgame extends React.Component {
             onStart={this.onStartGame}
             onNewGame={this.onNewGame}
             onJoinGame={!!(gameId) && this.onJoinGame}
+            errorMessage={modal.error_message}
           />
         )
       default: {

@@ -1,16 +1,10 @@
 import { map, filter, isEmpty, every, some, isNaN } from 'lodash'
-import {
-  INITIAL_SPACES,
-  LAST_SPACE,
-  TURNS,
-  sixSides,
-  tenSides,
-} from '../constants'
+import { INITIAL_SPACES, LAST_SPACE, TURNS, Dice } from '../constants'
 
 const convertToDeath = (spaces) => spaces.replace(/L/g, '*').replace(/C/g, 'D')
 
 const InitialState = () => ({
-  dice: sixSides,
+  sides: 6,
   roll: 0,
   position: 0,
   laws_passed: 2,
@@ -48,8 +42,8 @@ const board = (
 ) => {
   const {
     roll,
+    sides,
     position,
-    dice,
     death_space,
     laws_passed
   } = state
@@ -60,27 +54,35 @@ const board = (
         current_turn: TURNS.setup2,
       }
     case 'START_GAME':
-      debugger
       return {
         ...state,
         current_turn: TURNS.randomLaw,
-        dice: action.sides == 6 ? sixSides : tenSides,
+        sides: action.sides,
       }
-    case 'ROLL_DICE':
+    case 'UPDATE_GAME':
+      return {
+        ...action.game.board
+      }
+    case 'ROLL_DICE': {
+      const roll = Dice(sides).roll()
       return {
         ...state,
-        roll: dice.roll(),
+        roll: roll,
       }
+    }
     case 'END_TURN':
       return {
         ...state,
         laws_passed: 0,
       }
-    case 'TAKE_OPPOSITE':
+    case 'TAKE_OPPOSITE': {
+      const dice = Dice(sides)
+      const roll = dice.roll()
       return {
         ...state,
         roll: dice.opposite(roll)
       }
+    }
     case 'DEATH_SPACE':
       return {
         ...state,

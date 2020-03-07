@@ -3,19 +3,15 @@ defmodule ConsciousPhoenix.GameServer do
   alias ConsciousPhoenixWeb.Endpoint
 
   defmodule Game do
-    @derive {Jason.Encoder, only: [:name, :sides, :roll]}
+    @derive {Jason.Encoder, only: [:board, :cards, :laws, :fd, :ep, :modal]}
 
     defstruct(
-      name: "",
-      sides: -1,
-      roll: -1
-      # gid:   %{ },
-      # board: %{ },
-      # cards: %{ },
-      # ep:    %{ },
-      # fd:    %{ },
-      # laws:  %{ },
-      # modal: %{ }
+      board: %{ },
+      cards: %{ },
+      laws:  %{ },
+      fd:    %{ },
+      ep:    %{ },
+      modal: %{ }
     )
   end
 
@@ -31,8 +27,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.start_link(__MODULE__, :ok, name: name)
   end
 
-  def roll(gid, roll) do
-    GenServer.cast(__MODULE__, %{action: :roll, gid: gid, roll: roll})
+  def join(assigns_gid, gid) do
+    GenServer.cast(__MODULE__, %{action: :join, assigns_gid: assigns_gid, gid: gid})
   end
 
   def turn(gid, game) do
@@ -64,18 +60,21 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{action: :start_game, gid: gid, name: name, sides: sides}, state) do
     IO.puts "start_game<#{gid}> (#{name}, #{sides})"
-    new_game = %Game{ name: name, sides: sides, roll: -1 }
+    new_game = %Game{ ep: %{ player_name: name }, board: %{ sides: sides, roll: 0 } }
     state = put_in(state.games[gid], new_game)
-    Endpoint.broadcast!("game:#{gid}", "game:update", %{game: new_game})
+    Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, sides: sides})
     {:noreply, state}
   end
 
-  def handle_cast(%{:action => :roll, :gid => gid, :roll => roll}, state) do
+  def handle_cast(%{:action => :join, :assigns_gid => assigns_gid, :gid => gid}, state) do
     game = state.games[gid]
-    IO.puts "roll before: #{game.roll}"
-    state = put_in(state.games[gid].roll, roll)
-    IO.puts "roll after: #{state.games[gid].roll}"
-    Endpoint.broadcast!("game:#{gid}", "game:update", %{game: state.games[gid]})
+    if is_nil(game) do
+      Endpoint.broadcast!("game:#{assigns_gid}", "game:joined",
+        %{ error: %{ message: "Game not found" } })
+    else
+      Endpoint.broadcast!("game:#{assigns_gid}", "game:joined",
+        %{ gid: gid, game: game })
+    end
     {:noreply, state}
   end
 

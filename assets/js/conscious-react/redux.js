@@ -1,7 +1,7 @@
 import { bindActionCreators, combineReducers, createStore} from 'redux'
 import { toast } from 'react-toastify'
 
-import { sixSides } from './constants'
+import { Dice } from './constants'
 // reducers
 import board from './reducers/board'
 import cards, { sameSuit, makeFaceCard } from './reducers/cards'
@@ -24,8 +24,9 @@ const store = createStore(reducers)
 const showModal = (props) => store.dispatch(actions.showModal(props))
 
 const startCausalDeath = () => {
-  const roll1 = sixSides.roll()
-  const roll2 = sixSides.roll()
+  const six = Dice()
+  const roll1 = six.roll()
+  const roll2 = six.roll()
   let planet = 'ETERNAL-RETRIBUTION'
   if (roll1 == 6) {
     if (roll1 == roll2) {
@@ -434,8 +435,8 @@ const handlePieces = (action) => {
 }
 
 const handleDecay = () => {
-  const { fd: { current }, board: { dice } } = store.getState()
-  const roll = dice.roll()
+  const { fd: { current }, board: { sides } } = store.getState()
+  const roll = Dice(sides).roll()
 
   const rollDiv3 = roll % 3
   const decay = roll === 0 ? 'nothing' :
@@ -686,10 +687,10 @@ const gameActions = {
     body: "has\nmany\n\nlines"
   }),
   onToast: () => toast("wow it worked 🤔"),
-  onRandomLaw: () => store.dispatch({
-    type: "ONE_BY_RANDOM",
-    roll: store.getState().board.dice.roll()
-  }),
+  onRandomLaw: () => {
+    const roll = Dice(store.getState().board.sides).roll()
+    store.dispatch({ type: "ONE_BY_RANDOM", roll })
+  },
   onChooseLaw: (card) => handleChooseLaw(card),
 }
 

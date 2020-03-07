@@ -15,13 +15,12 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_in("game:roll", %{"roll" => roll}, socket) do
-    IO.puts "topic = #{socket.topic}"
-    GameServer.roll(socket.assigns.gid, roll)
+  def handle_in("game:join", %{"game" => gid}, socket) do
+    GameServer.join(socket.assigns.gid, gid)
     {:noreply, socket}
   end
 
-  def handle_in("game:turn", %{"game" => game}, socket) do
+  def handle_in("game:update", %{"game" => game}, socket) do
     GameServer.turn(socket.assigns.gid, game)
     {:noreply, socket}
   end

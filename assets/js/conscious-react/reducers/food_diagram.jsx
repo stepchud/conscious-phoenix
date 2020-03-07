@@ -316,6 +316,10 @@ const foodDiagram = (
   } = state
   let nextState = state
   switch(action.type) {
+    case 'UPDATE_GAME':
+      return {
+        ...action.game.fd
+      }
     case "ADVANCE_FOOD_DIAGRAM":
       return enterNotes({ current, enter, extras })
     case "EAT_FOOD":
