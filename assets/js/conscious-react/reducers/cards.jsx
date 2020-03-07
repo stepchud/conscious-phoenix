@@ -192,6 +192,10 @@ const cards = (
           ])
         )
       }
+    case 'UPDATE_GAME':
+      return {
+        ...action.game.cards
+      }
     case 'SELECT_CARD': {
       const card = hand[action.card]
       const nextHand = [

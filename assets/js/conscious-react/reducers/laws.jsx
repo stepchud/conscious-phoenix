@@ -157,6 +157,10 @@ const laws = (
           { c: newDeck[2], selected: false }
         ])
       }
+    case 'UPDATE_GAME':
+      return {
+        ...action.game.laws
+      }
     case 'SELECT_LAW_CARD':
       const card = in_play[action.card]
       return {

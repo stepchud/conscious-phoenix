@@ -18,6 +18,15 @@ const modal = (
         ...state,
         showModal: false
       }
+    case 'UPDATE_MODAL':
+      return {
+        ...state,
+        [action.field]: action.value
+      }
+    case 'UPDATE_GAME':
+      return {
+        ...action.game.modal
+      }
     default:
       return state
   }

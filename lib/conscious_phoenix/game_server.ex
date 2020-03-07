@@ -2,7 +2,20 @@ defmodule ConsciousPhoenix.GameServer do
   use GenServer
   alias ConsciousPhoenixWeb.Endpoint
 
-  defmodule GameState do
+  defmodule Game do
+    @derive {Jason.Encoder, only: [:board, :cards, :laws, :fd, :ep, :modal]}
+
+    defstruct(
+      board: %{ },
+      cards: %{ },
+      laws:  %{ },
+      fd:    %{ },
+      ep:    %{ },
+      modal: %{ }
+    )
+  end
+
+  defmodule WorldState do
     defstruct(
       games: %{ }
     )
@@ -14,6 +27,10 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.start_link(__MODULE__, :ok, name: name)
   end
 
+  def join(assigns_gid, gid) do
+    GenServer.cast(__MODULE__, %{action: :join, assigns_gid: assigns_gid, gid: gid})
+  end
+
   def turn(gid, game) do
     GenServer.cast(__MODULE__, %{action: :turn, gid: gid, game: game})
   end
@@ -23,7 +40,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def start(gid, name, sides) do
-    GenServer.call(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
+    GenServer.cast(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
   end
 
   def getGame(gid) do
@@ -32,30 +49,32 @@ defmodule ConsciousPhoenix.GameServer do
 
   #Callbacks
   def init(:ok) do
-    {:ok, %GameState{}}
+    {:ok, %WorldState{}}
   end
 
   def handle_call(%{action: :get_game, gid: gid}, _, state) do
-    IO.puts "get_game #{gid}"
-    IO.puts Map.keys(state.games)
-    unless Map.has_key?(state.games, gid) do
-      state = put_in(state.games[gid], %{name: 'Player One', sides: 6 })
-    end
+    IO.puts "Games (#{map_size(state.games)}):"
+    Enum.each(state.games, fn {gid, _} -> IO.puts "gid=#{gid}" end)
     {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
-  def handle_call(%{action: :start_game, gid: gid, name: name, sides: sides}, _, state) do
-    # uuid = UUID.uuid4()
-    # state = put_in(state.games[uuid], %{name: name, sides: sides})
-    %{ state.games[gid] | name: name, sides: sides }
-    Endpoint.broadcast("game:#{gid}", "update:game", %{game: state.games[gid]})
-    {:reply, state}
+  def handle_cast(%{action: :start_game, gid: gid, name: name, sides: sides}, state) do
+    IO.puts "start_game<#{gid}> (#{name}, #{sides})"
+    new_game = %Game{ ep: %{ player_name: name }, board: %{ sides: sides, roll: 0 } }
+    state = put_in(state.games[gid], new_game)
+    Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, sides: sides})
+    {:noreply, state}
   end
 
-  def handle_cast(%{:action => :reset, :gid => gid}, state) do
-    state = put_in(state.games[gid], %{})
+  def handle_cast(%{:action => :join, :assigns_gid => assigns_gid, :gid => gid}, state) do
     game = state.games[gid]
-    Endpoint.broadcast("game:#{gid}", "update:game", %{game: game})
+    if is_nil(game) do
+      Endpoint.broadcast!("game:#{assigns_gid}", "game:joined",
+        %{ error: %{ message: "Game not found" } })
+    else
+      Endpoint.broadcast!("game:#{assigns_gid}", "game:joined",
+        %{ gid: gid, game: game })
+    end
     {:noreply, state}
   end
 
@@ -63,7 +82,7 @@ defmodule ConsciousPhoenix.GameServer do
     # Save the game state...
     state = put_in(state.games[gid], game)
     game = state.games[gid]
-    Endpoint.broadcast("game:#{gid}", "update:game", %{game: game})
+    Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
 
     # case can_move(state, x, y) do
     #   :true ->
@@ -72,10 +91,17 @@ defmodule ConsciousPhoenix.GameServer do
     #     |> check_finished
     #     |> make_random_move
     #     |> check_finished
-    #     Endpoint.broadcast("game", "update:game", %{board: to_list(state.board), phase: state.phase})
+    #     Endpoint.broadcast("game", "game:update", %{board: to_list(state.board), phase: state.phase})
     #     state
     #   :false -> state
     # end
+    {:noreply, state}
+  end
+
+  def handle_cast(%{:action => :reset, :gid => gid}, state) do
+    state = put_in(state.games[gid], %{})
+    game = state.games[gid]
+    Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
     {:noreply, state}
   end
 

@@ -22,6 +22,7 @@ const PlayerStats = ({
   transforms,
   wild_shock,
   all_shocks,
+  gid,
 }) =>
   <div className="section lob">
     {player_name},
@@ -30,6 +31,11 @@ const PlayerStats = ({
     Transform: {transforms},
     Wild: {wild_shock},
     All: {all_shocks}
+  </div>
+
+const GameId = ({ gid }) =>
+  <div className="section gid">
+    Game: {gid}
   </div>
 
 const ThreeBrains = ({
@@ -64,5 +70,6 @@ const ThreeBrains = ({
 }
 export {
   PlayerStats,
+  GameId,
   ThreeBrains
 }

@@ -226,3 +226,7 @@ span.laws {
 .modal-buttons button {
   margin-right: 16px;
 }
+
+.modal-error {
+  color: red;
+}

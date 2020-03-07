@@ -1,11 +1,11 @@
 import { map, filter } from 'lodash'
 import { sameSuit, makeNewPart, combinable } from './cards'
-import { LOB, PARTS, sixSides } from '../constants'
+import { LOB, PARTS, Dice } from '../constants'
 
 const InitialState = {
   player_name: 'Player 1',
   num_brains: 3,
-  being_type: sixSides.roll(),
+  being_type: Dice().roll(),
   parts: PARTS.map((c) => ({ c, selected: false })),
   pieces: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   shocks: [],
@@ -121,10 +121,14 @@ const ep = (
         ...state,
         ...beginTurnState(level_of_being)
       }
-    case 'UPDATE_NAME':
+    case 'START_GAME':
       return {
         ...state,
         player_name: action.name,
+      }
+    case 'UPDATE_GAME':
+      return {
+        ...action.game.ep
       }
     case 'PLAY_SELECTED':
       if (!action.pieces) { return state }
@@ -228,7 +232,7 @@ const ep = (
         new_levels: []
       }
     case 'REINCARNATE': {
-      const roll = sixSides.roll()
+      const roll = Dice().roll()
       const pieces = state.pieces.slice()
       pieces.fill(0, 0, pieces.length-1)
       return {
