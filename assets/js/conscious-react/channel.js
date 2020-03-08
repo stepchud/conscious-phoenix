@@ -1,7 +1,9 @@
 import { Socket } from 'phoenix'
 
 export const connect = () => {
-  let socket = new Socket(`wss://${location.hostname}:4000/socket`, {})
+  const scheme = location.protocol.startsWith('https') ? 'wss' : 'ws'
+  const url = location.port === "" ? location.hostname : `${location.hostname}:${location.port}`
+  let socket = new Socket(`${scheme}://${url}/socket`, {})
   socket.connect()
   return socket
 }
