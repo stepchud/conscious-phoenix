@@ -1,6 +1,5 @@
 const InitialState = {
-  showModal: false,
-  modalProps: {}
+  show: false,
 }
 
 const modal = (
@@ -10,13 +9,12 @@ const modal = (
   switch (action.type) {
     case 'SHOW_MODAL':
       return {
-        showModal: true,
-        modalProps: action.modalProps
+        show: true,
+        ...action
       }
     case 'HIDE_MODAL':
       return {
-        ...state,
-        showModal: false
+        show: false
       }
     case 'UPDATE_MODAL':
       return {

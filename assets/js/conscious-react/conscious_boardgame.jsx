@@ -1,8 +1,17 @@
+import uuid from 'uuid/v4'
 import React from 'react'
-import redux from './redux'
-import { renderRoot, ConsciousBoardgame } from './components/root'
 
-// initialize a new game, re-render each redux store change
-redux.store.subscribe(renderRoot())
+import Channel from './channel'
+import { reduxStore } from './events'
+import { renderRoot, ConsciousBoardgame } from './components/root'
+import { GAME_ID } from './constants'
+
+const gid = localStorage.getItem(GAME_ID) || uuid()
+const channel = new Channel()
+channel.join(gid)
+const render = renderRoot(channel)
+
+// re-render each redux store change
+reduxStore.subscribe(render)
 
 export default ConsciousBoardgame

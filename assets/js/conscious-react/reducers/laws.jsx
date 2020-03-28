@@ -10,14 +10,9 @@ import {
   indexOf,
   partition,
 } from 'lodash'
-
 import { toast } from 'react-toastify'
 
-import {
-  selectedCards,
-  sameSuit,
-} from './cards'
-
+import { sameSuit } from './cards'
 import {
   LAW_DECK,
   KD,

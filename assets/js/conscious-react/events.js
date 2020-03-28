@@ -10,7 +10,6 @@ import laws, {
   hasnamuss,
   jackDiamonds,
   jackClubs,
-  jackHearts,
   queenHearts,
   tenSpades,
   cantChooseLaw,
@@ -18,68 +17,17 @@ import laws, {
 import fd, { entering, deathEvent, allNotes } from './reducers/food_diagram'
 import ep from './reducers/being'
 import modal from './reducers/modal'
-import actions from './actions'
+import { startGame, updateGame, dispatchShowModal, updateModal, hideModal } from './actions'
 
 const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal })
 const store = createStore(reducers)
-const showModal = (props) => store.dispatch(actions.showModal(props))
+const showModal = dispatchShowModal(store)
 
-const startCausalDeath = () => {
-  const six = Dice()
-  const roll1 = six.roll()
-  const roll2 = six.roll()
-  let planet = 'ETERNAL-RETRIBUTION'
-  if (roll1 == 6) {
-    if (roll1 == roll2) {
-      showModal({
-        title: 'Eternal retribution!',
-        body: "There is no escape from this loathesome place. You're out of the game backwards.",
-        onClose: () => { location.reload() }
-      })
-      return
-    }
-    planet = 'SELF-REPROACH'
-  } else if (roll1 < 4) {
-    if (roll1 == roll2) {
-      store.dispatch({ type: 'CLEANSE_JOKER' })
-      if (hasnamuss(store.getState().laws.active)) {
-        startCausalDeath()
-        return
-      }
-      showModal({
-        title: 'Lucky Dog',
-        body: `You're automatically cleansed by rolling double ${roll1}! `+
-          `You can continue playing until you complete yourself.`,
-        onClose: () => {
-          store.dispatch({ type: 'END_TURN' })
-          store.dispatch({ type: 'END_DEATH' })
-        }
-      })
-      return
-    } else {
-      planet = 'REMORSE-OF-CONSCIENCE'
-    }
-  } else {
-    if (roll1 == roll2) {
-      planet = 'REMORSE-OF-CONSCIENCE'
-    } else {
-      planet = 'REPENTANCE'
-    }
-  }
-  showModal({
-    title: 'Hasnamuss planet',
-    body: `The planet of your Hasnamuss is called ${planet}.`,
-    onClose: () => {
-      store.dispatch({ type: 'CAUSAL_DEATH', planet })
-      store.dispatch({ type: 'END_TURN' })
-      store.dispatch({ type: 'END_DEATH' })
-    }
-  })
-}
 const presentEvent = (event) => {
   const active = store.getState().laws.active
   const asleep = jackDiamonds(active)
   const noskills = jackClubs(active)
+
   switch(event) {
     case 'DEPUTY-STEWARD':
       showModal({
@@ -310,8 +258,61 @@ const presentEvent = (event) => {
       })
       break
     default:
-      console.warn(`presentEvent unknown event: ${event}`)
+      console.warn(`present unknown event: ${event}`)
   }
+}
+
+const startCausalDeath = () => {
+  const six = Dice()
+  const roll1 = six.roll()
+  const roll2 = six.roll()
+  let planet = 'ETERNAL-RETRIBUTION'
+  if (roll1 == 6) {
+    if (roll1 == roll2) {
+      showModal({
+        title: 'Eternal retribution!',
+        body: "There is no escape from this loathesome place. You're out of the game backwards.",
+        onClose: () => { location.reload() }
+      })
+      return
+    }
+    planet = 'SELF-REPROACH'
+  } else if (roll1 < 4) {
+    if (roll1 == roll2) {
+      store.dispatch({ type: 'CLEANSE_JOKER' })
+      if (hasnamuss(store.getState().laws.active)) {
+        startCausalDeath()
+        return
+      }
+      showModal({
+        title: 'Lucky Dog',
+        body: `You're automatically cleansed by rolling double ${roll1}! `+
+          `You can continue playing until you complete yourself.`,
+        onClose: () => {
+          store.dispatch({ type: 'END_TURN' })
+          store.dispatch({ type: 'END_DEATH' })
+        }
+      })
+      return
+    } else {
+      planet = 'REMORSE-OF-CONSCIENCE'
+    }
+  } else {
+    if (roll1 == roll2) {
+      planet = 'REMORSE-OF-CONSCIENCE'
+    } else {
+      planet = 'REPENTANCE'
+    }
+  }
+  showModal({
+    title: 'Hasnamuss planet',
+    body: `The planet of your Hasnamuss is called ${planet}.`,
+    onClose: () => {
+      store.dispatch({ type: 'CAUSAL_DEATH', planet })
+      store.dispatch({ type: 'END_TURN' })
+      store.dispatch({ type: 'END_DEATH' })
+    }
+  })
 }
 
 const handleExtras = () => {
@@ -586,13 +587,14 @@ const handleRollClick = () => {
   handleRollOptions()
 }
 const moveAfterRoll = () => {
-  const { position: position_before } = store.getState().board
+  const { roll, position: position_before } = store.getState().board
   const roll_multiplier = 4 - store.getState().ep.num_brains
   const { active } = store.getState().laws
   const asleep = jackDiamonds(active)
   store.dispatch({ type: 'MOVE_ROLL', roll_multiplier })
   const { position, spaces, laws_cancel } = store.getState().board
-  for (let s of spaces.substring(position_before+1, position)) {
+  const spaces_passed = roll < 2 ? '' : spaces.substring(position_before+1, position)
+  for (let s of spaces_passed) {
     if (s==='L' && !asleep) {
       store.dispatch({ type: 'DRAW_LAW_CARD' })
       store.dispatch({ type: 'PASS_LAW' })
@@ -653,10 +655,14 @@ const handleEndGame = () => {
   }
 }
 
-const gameActions = {
+export const gameActions = (channel) => ({
+  onNewGame: () => store.dispatch({ type: 'NEW_GAME' }),
+  onStartGame: (name, sides, hand) => store.dispatch(startGame(name, sides, hand)),
+  onUpdateGame: (payload) => store.dispatch(updateGame(payload)),
+  onUpdateModal: (props) => store.dispatch(updateModal(props)),
+  onHideModal: () => store.dispatch(hideModal()),
   onRollClick: handleRollClick,
   onEndDeath: endDeath,
-  onDrawCard: () => store.dispatch({ type: 'DRAW_CARD' }),
   onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
   onSelectCard: (card) => store.dispatch({ type: 'SELECT_CARD', card }),
   onSelectLawCard: (card) => store.dispatch({ type: 'SELECT_LAW_CARD', card }),
@@ -693,9 +699,10 @@ const gameActions = {
     store.dispatch({ type: "ONE_BY_RANDOM", roll })
   },
   onChooseLaw: (card) => handleChooseLaw(card),
-}
+  startGame: (name, sides) => { channel.push('game:start', { name, sides }) },
+  joinGame: (gameId) => { channel.push('game:join', { gameId }) },
+  updateGame: (state) => { channel.push('game:update', { game: state }) },
+  drawCards: (count) => { channel.push('deck:draw', { count }) },
+})
 
-export default {
-  store,
-  gameActions,
-}
+export const reduxStore = store

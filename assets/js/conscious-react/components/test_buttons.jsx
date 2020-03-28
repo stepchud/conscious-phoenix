@@ -12,7 +12,7 @@ const TestButtons = ({
   actions,
   parts,
   cards,
-  laws
+  laws,
 }) => {
   if (!testParam()) { return null; }
 
@@ -32,7 +32,6 @@ const TestButtons = ({
       <button onClick={actions.onTransformEmotions}>Transform Emotion</button>
       <button onClick={actions.onDying}>Die!</button>
       <button onClick={actions.onOptions}>Option Modal</button>
-      <button onClick={actions.onModal}>Basic Modal</button>
       <button onClick={actions.onToast}>Toast!</button>
       { combinable(selParts) &&
         <button onClick={() => { actions.onCombineSelectedParts(selParts)} }>Combine Parts</button> }

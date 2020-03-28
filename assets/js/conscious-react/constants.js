@@ -372,8 +372,8 @@ export const LAW_DECK = [
   {
     "card": "4H",
     "text": "PICK A CENTER:\nDRAW ONE CARD.",
-    "actions": [
-      {type: 'DRAW_CARD'}
+    "chactions": [
+      {type: 'DRAW_CARD', count: 1}
     ]
   },
   {
@@ -423,12 +423,8 @@ export const LAW_DECK = [
   {
     "card": "8H",
     "text": "LEARN THIRD RESPONSE:\nDRAW FIVE CARDS.",
-    "actions": [
-      {type: 'DRAW_CARD'},
-      {type: 'DRAW_CARD'},
-      {type: 'DRAW_CARD'},
-      {type: 'DRAW_CARD'},
-      {type: 'DRAW_CARD'},
+    "chactions": [
+      {type: 'DRAW_CARD', count: 5},
     ]
   },
   {

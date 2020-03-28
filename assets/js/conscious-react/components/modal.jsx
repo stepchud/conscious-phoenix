@@ -1,7 +1,6 @@
 import React from 'react'
 import Modal from 'react-modal'
-import redux from '../redux'
-import actions from '../actions'
+import { gameActions } from '../events'
 import { TURNS } from '../constants'
 
 const ButtonTag = (text, onClick, key=1) => <button key={key} onClick={onClick}>{text}</button>
@@ -9,11 +8,12 @@ const TitleTag = (title) => title && <h1 className='modal-title'>{title}</h1>
 const BodyTag = (body) => body && <div className='modal-body'>{body}</div>
 const clickAndHide = (onClick, hide) => () => { onClick(); hide() }
 
-const hideModal = () => redux.store.dispatch(actions.hideModal())
-const updateModal = (field, value) => redux.store.dispatch(actions.updateModal({ field, value }))
-const onNameChange = (event) => updateModal('name', event.target.value)
-const onDiceChange = (event) => updateModal('sides', event.target.value)
-const onGameChange = (event) => updateModal('game', event.target.value)
+const actions = gameActions()
+const onHideModal = () => actions.onHideModal()
+const onUpdateModal = (field, value) => actions.onUpdateModal({ field, value })
+const onNameChange = (event) => onUpdateModal('name', event.target.value)
+const onDiceChange = (event) => onUpdateModal('sides', event.target.value)
+const onGameChange = (event) => onUpdateModal('gameId', event.target.value)
 
 const PickGameModal = ({
   gameId,
@@ -38,14 +38,15 @@ const PickGameModal = ({
       onClick: onJoinGame,
     })
   }
-  const modalProps = {
+  const props = {
+    show: true,
     title: `Welcome to the Conscious Boardgame!`,
     escapable: false,
     errorMessage,
     options,
     body
   }
-  return <ModalComponent showModal={true} modalProps={modalProps} />
+  return <ModalComponent {...props} />
 }
 
 const PickNameModal = ({
@@ -65,13 +66,14 @@ const PickNameModal = ({
         <input type="radio" group="dice" value="10" checked={sides==10} onChange={onDiceChange} /><span>10</span>
       </label>
     </div>
-  const modalProps = {
+  const props = {
+    show: true,
     title: `Get Started`,
     escapable: false,
     onClose: onStart,
     body
   }
-  return <ModalComponent showModal={true} modalProps={modalProps} />
+  return <ModalComponent {...props} />
 }
 
 export const SetupModal = ({
@@ -90,34 +92,36 @@ export const SetupModal = ({
 }
 
 const ModalComponent = ({
-  showModal,
-  modalProps
+  show,
+  title,
+  body,
+  options,
+  onClose,
+  errorMessage,
+  escapable
 }) => {
-  const { title, body, options, onClose, errorMessage } = modalProps
-  let { escapable } = modalProps
+  let canEscape = escapable
   let buttons
   if (options && options.length) {
-    escapable = false
+    canEscape = false
     buttons = options.map(
-      (option, i) => ButtonTag(option.text, clickAndHide(option.onClick, hideModal), i)
+      (option, i) => ButtonTag(option.text, clickAndHide(option.onClick, onHideModal), i)
     )
   } else {
     buttons = [
       ButtonTag('OK', () => {
-        if (typeof(onClose)==='function') {
-          onClose()
-        }
-        hideModal()
+        if (typeof(onClose)==='function') { onClose() }
+        onHideModal()
       })
     ]
   }
   return (
     <Modal
-      isOpen={showModal}
+      isOpen={show}
       contentLabel={title}
-      onRequestClose={hideModal}
-      shouldCloseOnOverlayClick={escapable}
-      shouldCloseOnEscape={escapable}
+      onRequestClose={onHideModal}
+      shouldCloseOnOverlayClick={canEscape}
+      shouldCloseOnEscape={canEscape}
       closeTimeoutMS={500}
       className={'ModalContent'}
     >

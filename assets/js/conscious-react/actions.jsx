@@ -1,25 +1,12 @@
 // Modal Actions
-const showModal = (modalProps) => ({
+const showModal = (props) => ({
   type: 'SHOW_MODAL',
-  modalProps: {
-    ...modalProps
-  }
+  ...props
 })
-const updateModal = ({ field, value }) => ({ type: 'UPDATE_MODAL', field, value })
-const hideModal = () => ({ type: 'HIDE_MODAL' })
+export const updateModal = ({ field, value }) => ({ type: 'UPDATE_MODAL', field, value })
+export const hideModal = () => ({ type: 'HIDE_MODAL' })
+export const dispatchShowModal = (store) => (props) => store.dispatch(showModal(props))
 
 // Game Actions
-const newGame = () => ({ type: 'NEW_GAME' })
-const startGame = (name, sides) => ({ type: 'START_GAME', name, sides })
-const updateGame = (updates) => ({ type: 'UPDATE_GAME', ...updates })
-const continueGame = () => ({ type: 'CONTINUE_GAME' })
-
-export default {
-  showModal,
-  updateModal,
-  hideModal,
-  newGame,
-  startGame,
-  updateGame,
-  continueGame,
-}
+export const startGame = (name, sides) => ({ type: 'START_GAME', name, sides })
+export const updateGame = (updates) => ({ type: 'UPDATE_GAME', ...updates })

@@ -25,7 +25,8 @@ const Buttons = ({
   ep,
   cards,
   laws,
-  currentTurn }) => {
+  currentTurn
+}) => {
   if (currentTurn===TURNS.setup1 || currentTurn===TURNS.setup2) {
     return
   }
