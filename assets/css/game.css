@@ -16,6 +16,17 @@
   margin-left: 0.8rem;
 }
 
+.section.being {
+  width: 60%;
+  display: inline-block;
+}
+
+.section.fd {
+  vertical-align: top;
+  width: 40%;
+  display: inline-block;
+}
+
 .turn-message {
   height: 1.6em;
   font-style: italic;

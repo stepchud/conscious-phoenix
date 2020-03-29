@@ -64,10 +64,9 @@ const board = (
         ...action.game.board
       }
     case 'ROLL_DICE': {
-      const roll = Dice(sides).roll()
       return {
         ...state,
-        roll: roll,
+        roll: Dice(sides).roll(),
       }
     }
     case 'END_TURN':
@@ -76,11 +75,9 @@ const board = (
         laws_passed: 0,
       }
     case 'TAKE_OPPOSITE': {
-      const dice = Dice(sides)
-      const roll = dice.roll()
       return {
         ...state,
-        roll: dice.opposite(roll)
+        roll: Dice(sides).opposite(roll)
       }
     }
     case 'DEATH_SPACE':

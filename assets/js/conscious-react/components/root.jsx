@@ -38,8 +38,8 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   onRoll = () => {
-    this.actions().onRollClick()
     this.actions().updateGame(reduxStore.getState())
+    this.actions().onRollClick()
   }
 
   componentWillUnmount () {
@@ -85,9 +85,7 @@ export class ConsciousBoardgame extends React.Component {
               laws={laws}
               parts={ep.parts}
             />
-            <GameId gid={gameId} />
             <PlayerStats name={player.name} {...ep} />
-            <FoodDiagram {...fd} />
             <Board {...board} />
             <CardHand cards={cards.hand} onSelect={actions.onSelectCard} />
             { fd.current.alive && <LawHand
@@ -97,6 +95,8 @@ export class ConsciousBoardgame extends React.Component {
                 onChoice={actions.onChooseLaw} />
             }
             <ThreeBrains {...ep} onSelect={actions.onSelectPart} />
+            <FoodDiagram {...fd} />
+            <GameId gid={gameId} />
             <GameModal {...modal} />
             <ToastContainer position={toast.POSITION.BOTTOM_CENTER} autoClose={4000} />
           </div>

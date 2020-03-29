@@ -133,8 +133,7 @@ defmodule ConsciousPhoenix.GameServer do
   def handle_cast(%{:action => :turn, :gid => gid, :game => game}, state) do
     # Save the game state...
     state = put_in(state.games[gid], game)
-    game = state.games[gid]
-    Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
+    IO.puts "Game saved!"
 
     # case can_move(state, x, y) do
     #   :true ->

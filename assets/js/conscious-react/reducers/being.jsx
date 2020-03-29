@@ -154,8 +154,9 @@ const ep = (
         parts
       }
     case 'MAKE_PIECES':
-      let i = PARTS.indexOf(action.pieces[0])
-      pieces[i] += action.pieces[1]
+      const [ newPiece, count ] = action.pieces
+      let i = PARTS.indexOf(newPiece)
+      pieces[i] += count
       shocks.push(shock(i))
       while (pieces[i]>2 && i<PARTS.indexOf('JO')) {
         pieces[i] -= 2 // one goes up, one comes off
