@@ -26,3 +26,12 @@ export const leave = (channel) => {
   if (!channel) { return }
   channel.leave().receive('ok', () => console.log("left channel"))
 }
+
+export const channelActions = (channel) => {
+  return {
+    startGame: (name, sides) => channel.push('game:start', { name, sides }),
+    joinGame: (game) => channel.push('game:join', { game }),
+    updateGame: (state) => channel.push('game:update', { game: state }),
+    drawCards: (count) => channel.push('deck:draw', { count }),
+  }
+}

@@ -159,7 +159,7 @@ export const makeNewPart = (parts) => {
 
 const cards = (
   state = {
-    deck: generateDeck(),
+    deck: [],
     discards: [],
     hand: [],
     pieces: [],
@@ -177,18 +177,19 @@ const cards = (
     case 'DRAW_CARD':
       return drawCard(state)
     case 'START_GAME':
+      const newDeck = generateDeck()
       return {
         ...state,
-        deck: deck.slice(7),
+        deck: newDeck.slice(7),
         hand: sortedHand(
           hand.concat([
-            { c: deck[0], selected: false },
-            { c: deck[1], selected: false },
-            { c: deck[2], selected: false },
-            { c: deck[3], selected: false },
-            { c: deck[4], selected: false },
-            { c: deck[5], selected: false },
-            { c: deck[6], selected: false },
+            { c: newDeck[0], selected: false },
+            { c: newDeck[1], selected: false },
+            { c: newDeck[2], selected: false },
+            { c: newDeck[3], selected: false },
+            { c: newDeck[4], selected: false },
+            { c: newDeck[5], selected: false },
+            { c: newDeck[6], selected: false },
           ])
         )
       }

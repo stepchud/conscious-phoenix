@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom'
 import ReactModal from 'react-modal'
 import { ToastContainer, toast } from 'react-toastify'
 
-import { connect, disconnect, join, leave } from '../channel'
+import { connect, disconnect, join, leave, channelActions } from '../channel'
 import { TURNS, GAME_ID } from '../constants'
 import redux from '../redux'
 import actions from '../actions'
@@ -44,6 +44,7 @@ export class ConsciousBoardgame extends React.Component {
         redux.store.dispatch(actions.updateGame(payload))
       }
     })
+    this.channelActions = channelActions(channel)
     this.channel = channel
   }
 
@@ -53,17 +54,17 @@ export class ConsciousBoardgame extends React.Component {
 
   onJoinGame = () => {
     const game = redux.store.getState().modal.game || this.gameId()
-    this.channel.push('game:join', { game })
+    this.channelActions.joinGame(game)
   }
 
   onStartGame = () => {
     const { name = 'anon', sides = 6 } = redux.store.getState().modal
-    this.channel.push('game:start', { name, sides })
+    this.channelActions.startGame(name, sides)
   }
 
   onRoll = () => {
     redux.gameActions.onRollClick()
-    this.channel.push('game:update', { game: redux.store.getState() })
+    this.channelActions.gameUpdate(redux.store.getState())
   }
 
   componentDidMount () {
@@ -78,7 +79,7 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   render () {
-    const { board, cards, laws, fd, ep, modal } = redux.store.getState()
+    const { player, board, cards, laws, fd, ep, modal } = redux.store.getState()
     const { gameActions } = redux
     const gameId = modal.game || this.gameId() || ''
 
@@ -116,7 +117,7 @@ export class ConsciousBoardgame extends React.Component {
               parts={ep.parts}
             />
             <GameId gid={this.gameId()} />
-            <PlayerStats {...ep} />
+            <PlayerStats name={player.name} {...ep} />
             <FoodDiagram {...fd} />
             <Board {...board} />
             <CardHand cards={cards.hand} onSelect={gameActions.onSelectCard} />

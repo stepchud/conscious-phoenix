@@ -3,7 +3,6 @@ import { sameSuit, makeNewPart, combinable } from './cards'
 import { LOB, PARTS, Dice } from '../constants'
 
 const InitialState = {
-  player_name: 'Player 1',
   num_brains: 3,
   being_type: Dice().roll(),
   parts: PARTS.map((c) => ({ c, selected: false })),
@@ -120,11 +119,6 @@ const ep = (
       return {
         ...state,
         ...beginTurnState(level_of_being)
-      }
-    case 'START_GAME':
-      return {
-        ...state,
-        player_name: action.name,
       }
     case 'UPDATE_GAME':
       return {

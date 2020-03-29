@@ -57,7 +57,7 @@ const PickNameModal = ({
     <div>
       <label name="name">
         Hi, what's your name?
-        <input type="text" name="player_name" value={name} onChange={onNameChange} />
+        <input type="text" name="name" value={name} onChange={onNameChange} />
       </label>
       <label name="dice">
         Dice sides:<br />

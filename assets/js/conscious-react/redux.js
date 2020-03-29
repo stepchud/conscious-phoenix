@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 
 import { Dice } from './constants'
 // reducers
+import player from './reducers/player'
 import board from './reducers/board'
 import cards, { sameSuit, makeFaceCard } from './reducers/cards'
 import laws, {
@@ -19,7 +20,7 @@ import ep from './reducers/being'
 import modal from './reducers/modal'
 import actions from './actions'
 
-const reducers = combineReducers({ board, cards, laws, fd, ep, modal })
+const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal })
 const store = createStore(reducers)
 const showModal = (props) => store.dispatch(actions.showModal(props))
 
