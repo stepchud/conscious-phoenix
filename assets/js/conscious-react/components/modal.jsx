@@ -6,7 +6,11 @@ import { TURNS } from '../constants'
 const ButtonTag = (text, onClick, key=1) => <button key={key} onClick={onClick}>{text}</button>
 const TitleTag = (title) => title && <h1 className='modal-title'>{title}</h1>
 const BodyTag = (body) => body && <div className='modal-body'>{body}</div>
-const clickAndHide = (onClick, hide) => () => { hide(); onClick(); }
+const clickAndResolve = (onClick, onResolve) => async () => {
+  onHideModal();
+  await onClick();
+  if (typeof(onResolve)==='function') { onResolve() }
+}
 
 const actions = gameActions()
 const onHideModal = () => actions.onHideModal()
@@ -70,7 +74,7 @@ const PickNameModal = ({
     show: true,
     title: `Get Started`,
     escapable: false,
-    onClose: onStart,
+    onClick: onStart,
     body
   }
   return <ModalComponent {...props} />
@@ -96,7 +100,8 @@ const ModalComponent = ({
   title,
   body,
   options,
-  onClose,
+  onClick,
+  onResolve,
   errorMessage,
   escapable
 }) => {
@@ -105,14 +110,11 @@ const ModalComponent = ({
   if (options && options.length) {
     canEscape = false
     buttons = options.map(
-      (option, i) => ButtonTag(option.text, clickAndHide(option.onClick, onHideModal), i)
+      (option, i) => ButtonTag(option.text, clickAndResolve(option.onClick, onResolve), i)
     )
   } else {
     buttons = [
-      ButtonTag('OK', () => {
-        if (typeof(onClose)==='function') { onClose() }
-        onHideModal()
-      })
+      ButtonTag('OK', clickAndResolve(onClick, onResolve))
     ]
   }
   return (

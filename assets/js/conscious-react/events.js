@@ -17,57 +17,37 @@ import laws, {
 import fd, { entering, deathEvent, allNotes } from './reducers/food_diagram'
 import ep from './reducers/being'
 import modal from './reducers/modal'
-import { startGame, updateGame, dispatchShowModal, updateModal, hideModal } from './actions'
+import { startGame, updateGame, showModal, updateModal, hideModal } from './actions'
 
 const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal })
 const store = createStore(reducers)
-const showModal = dispatchShowModal(store)
+const dispatchShowModal = (props) => store.dispatch(showModal(props))
+const promiseShowModal = (props) => {
+  return new Promise((resolve, reject) => {
+    const modalProps = Object.assign({}, props, { onResolve: resolve })
+    const show = showModal(modalProps)
+    dispatchShowModal(modalProps)
+  })
+}
 
-const presentEvent = (event) => {
+const presentExtra = async (extra) => {
   const active = store.getState().laws.active
   const asleep = jackDiamonds(active)
   const noskills = jackClubs(active)
 
-  switch(event) {
-    case 'DEPUTY-STEWARD':
-      showModal({
-        title: 'Found School',
-        body: 'After some time, with the help of magnetic center, a man may find a school.',
-        onClose: () => store.dispatch({ type: 'FOUND_SCHOOL' })
-      })
-      break
-    case 'STEWARD':
-      showModal({
-        title: 'April Fools!',
-        body: 'You have attained Steward.',
-        onClose: () => store.dispatch({ type: 'ATTAIN_STEWARD' })
-      })
-      break
-    case 'MASTER':
-      showModal({
-        title: 'Impartiality!',
-        body: 'You have attained Master',
-        onClose: () => store.dispatch({ type: 'ATTAIN_MASTER' })
-      })
-      break
-    case 'MENTAL-BODY':
-      showModal({ title: 'Mental Body', body: 'I am Immortal within the limits of the Sun' })
-      break
-    case 'ASTRAL-BODY':
-      showModal({ title: "Astral Body", body: 'I have crystallized the body Kesdjan' })
-      break
+  switch(extra) {
     case 'EXTRA-IMPRESSION':
-      showModal({
+      await promiseShowModal({
         title: 'Extra Impression',
         body: 'Draw a card or take it back in as Air.',
         options: [
           { text: 'Draw Card', onClick: () => store.dispatch({type: 'DRAW_CARD'}) },
-          { text: 'Breathe Air', onClose: () => store.dispatch({type: 'BREATHE_AIR'}) }
+          { text: 'Breathe Air', onClick: () => store.dispatch({type: 'BREATHE_AIR'}) }
         ]
       })
       break
     case 'EXTRA-AIR':
-      showModal({
+      await promiseShowModal({
         title: 'Extra Air',
         body: 'Draw a card or take it back in as Food.',
         options: [
@@ -77,38 +57,10 @@ const presentEvent = (event) => {
       })
       break
     case 'EXTRA-FOOD':
-      showModal({
+      await promiseShowModal({
         title: 'Extra Food',
         body: 'Extra food chip, draw a card.',
-        onClose: () => store.dispatch({type: 'DRAW_CARD'})
-      })
-      break
-    case 'SELF-REMEMBER':
-      store.dispatch({type: 'SELF_REMEMBER'})
-      break
-    case 'TRANSFORM-EMOTIONS':
-      store.dispatch({type: 'TRANSFORM_EMOTIONS'})
-      break
-    case 'WILD-SHOCK':
-      showModal({
-        title: 'Wild Shock',
-        body: 'A wild shock appears! Which will it be?',
-        options: [
-          { text: 'Transform Emotions', onClick: () => dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}) },
-          { text: 'Self Remember',      onClick: () => dispatchWithExtras({type: 'SELF_REMEMBER'}) },
-          { text: 'Shock Food',         onClick: () => dispatchWithExtras({type: 'SHOCKS_FOOD'}) },
-        ]
-      })
-      break
-    case 'ALL-SHOCKS':
-      showModal({
-        title: 'All Shocks',
-        body: 'All shocks are felt in your being.',
-        onClose: () => {
-          dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'})
-          dispatchWithExtras({type: 'SELF_REMEMBER'})
-          dispatchWithExtras({type: 'SHOCKS_FOOD'})
-        }
+        onClick: () => store.dispatch({type: 'DRAW_CARD'})
       })
       break
     case 'SHOCKS-FOOD':
@@ -118,15 +70,13 @@ const presentEvent = (event) => {
       store.dispatch({type: 'SHOCKS_AIR'})
       break
     case 'C-12':
-      showModal({
+      await promiseShowModal({
         title: 'Higher 12',
         body: 'Draw a card by "Higher-12"',
-        onClose: () => store.dispatch({type: 'DRAW_CARD'})
+        onClick: () => store.dispatch({type: 'DRAW_CARD'})
       })
       break
     case 'LA-24':
-      toast.warn('No 6')
-      break
     case 'RE-24':
       toast.warn('No 6')
       break
@@ -135,11 +85,11 @@ const presentEvent = (event) => {
       break
     case 'MI-48':
       if (!asleep && !noskills && store.getState().ep.ewb) {
-        showModal({
+        await promiseShowModal({
           title: 'Eat when you breathe?',
           body: 'Use your skills to shock Mi-48 to Fa-24?',
           options: [
-            { text: 'Yes', onClick: () => dispatchWithExtras({type: 'EAT_WHEN_YOU_BREATHE'}) },
+            { text: 'Yes', onClick: dispatchWithExtras({type: 'EAT_WHEN_YOU_BREATHE'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_MI_48'}) }
           ]
         })
@@ -149,11 +99,11 @@ const presentEvent = (event) => {
       break
     case 'DO-48':
       if (!asleep && !noskills && store.getState().ep.c12) {
-        showModal({
+        await promiseShowModal({
           title: 'Carbon-12?',
           body: 'Use your skills to shock Do-48 to Re-24?',
           options: [
-            { text: 'Yes', onCLick: () => dispatchWithExtras({type: 'CARBON_12'}) },
+            { text: 'Yes', onClick: dispatchWithExtras({type: 'CARBON_12'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_DO_48'}) }
           ]
         })
@@ -169,11 +119,11 @@ const presentEvent = (event) => {
       break
     case 'MI-192':
       if (!asleep && !noskills && store.getState().ep.bwe) {
-        showModal({
+        await promiseShowModal({
           title: 'Breathe when you eat?',
           body: 'Use your skills to shock Mi-192 to Fa-96?',
           options: [
-            { text: 'Yes', onClick: () => dispatchWithExtras({type: 'BREATHE_WHEN_YOU_EAT'}) },
+            { text: 'Yes', onClick: dispatchWithExtras({type: 'BREATHE_WHEN_YOU_EAT'}) },
             { text: 'No', onClick: () => store.dispatch({type: 'LEAVE_MI_192'}) }
           ]
         })
@@ -193,40 +143,93 @@ const presentEvent = (event) => {
     case 'NOTHING-TO-REMEMBER':
       toast.warn('Nothing to remember at Do-48.')
       break
+    case 'ASTRAL-BODY':
+      store.dispatch({ type: 'ASTRAL_BODY' })
+      break
+    case 'MENTAL-BODY':
+      store.dispatch({ type: 'MENTAL_BODY' })
+      break
+    default:
+      console.warn(`present unknown extra: ${extra}`)
+  }
+  console.log("presentExtra out "+extra)
+}
+
+const presentEvent = (event) => {
+  switch(event) {
+    case 'DEPUTY-STEWARD':
+			store.dispatch({ type: 'FOUND_SCHOOL' })
+      break
+    case 'STEWARD':
+      store.dispatch({ type: 'ATTAIN_STEWARD' })
+      break
+    case 'MASTER':
+      store.dispatch({ type: 'ATTAIN_MASTER' })
+      break
+    case 'SELF-REMEMBER':
+      store.dispatch({type: 'SELF_REMEMBER'})
+      break
+    case 'TRANSFORM-EMOTIONS':
+      store.dispatch({type: 'TRANSFORM_EMOTIONS'})
+      break
+    case 'WILD-SHOCK':
+      dispatchShowModal({
+        title: 'Wild Shock',
+        body: 'A wild shock appears! Which will it be?',
+        options: [
+          { text: 'Transform Emotions', onClick: dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}) },
+          { text: 'Self Remember',      onClick: dispatchWithExtras({type: 'SELF_REMEMBER'}) },
+          { text: 'Shock Food',         onClick: dispatchWithExtras({type: 'SHOCKS_FOOD'}) },
+        ]
+      })
+      break
+    case 'ALL-SHOCKS':
+      dispatchShowModal({
+        title: 'All Shocks',
+        body: 'All shocks are felt in your being.',
+        onClick: () => {
+          Promise.all(
+            dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}),
+            dispatchWithExtras({type: 'SELF_REMEMBER'}),
+            dispatchWithExtras({type: 'SHOCKS_FOOD'})
+          )
+        }
+      })
+      break
     case 'CANT-CHOOSE-DEATH':
-      showModal({
+      dispatchShowModal({
         title: "Can't choose death",
         body: "You can't choose death when there are other options available."
       })
       break
     case 'CANT-CHOOSE-HASNAMUSS':
-      showModal({
+      dispatchShowModal({
         title: "Can't choose hasnamuss",
         body: "You can't choose hasnamuss when there are other non-death options available."
       })
       break
     case 'GAME-OVER':
-      showModal({
+      dispatchShowModal({
         title: 'Game over :(',
         body: 'Nothing else to do but try again.',
-        onClose: () => { location.reload() }
+        onClick: () => { }
       })
       break
     case 'ASTRAL-DEATH':
-      showModal({
+      dispatchShowModal({
         title: 'You are dead',
         body: 'With Kesdjan-body you can complete one roundtrip of the board before you perish for good.',
-        onClose: () => {
+        onClick: () => {
           store.dispatch({ type: 'END_TURN' })
           store.dispatch({ type: 'END_DEATH' })
         }
       })
       break
     case 'MENTAL-DEATH':
-      showModal({
+      dispatchShowModal({
         title: 'You are dead',
         body: 'With Mental body you are beyond the reach of death. Play on until you complete yourself.',
-        onClose: () => {
+        onClick: () => {
           store.dispatch({ type: 'END_TURN' })
           store.dispatch({ type: 'END_DEATH' })
         }
@@ -235,7 +238,7 @@ const presentEvent = (event) => {
     case 'REINCARNATE':
       store.dispatch({ type: 'REINCARNATE' })
       const { num_brains } = store.getState().ep
-      showModal({
+      dispatchShowModal({
         title: 'Reincarnated',
         body: `You reincarnated as a ${num_brains}-brained being. Each roll multiplies by ${4-num_brains}.`
       })
@@ -244,17 +247,10 @@ const presentEvent = (event) => {
       startCausalDeath()
       break
     case 'CLEANSE-HASNAMUSS':
-      showModal({
+      dispatchShowModal({
         title: 'Hasnamuss Cleansed!',
         body: 'Congratulations, you cleansed yourself from being a Hasnamuss!',
-        onClose: () => store.dispatch({ type: 'CLEANSE_JOKER', take_piece: true })
-      })
-      break
-    case 'I-START-OVER':
-      showModal({
-        title: 'You are a winner!',
-        body: 'Proudly proclaim "I start over!"',
-        onClose: () => { location.reload() }
+        onClick: () => store.dispatch({ type: 'CLEANSE_JOKER', take_piece: true })
       })
       break
     default:
@@ -269,10 +265,10 @@ const startCausalDeath = () => {
   let planet = 'ETERNAL-RETRIBUTION'
   if (roll1 == 6) {
     if (roll1 == roll2) {
-      showModal({
+      dispatchShowModal({
         title: 'Eternal retribution!',
         body: "There is no escape from this loathesome place. You're out of the game backwards.",
-        onClose: () => { location.reload() }
+        onClick: () => store.dispatch({ type: 'GAME_OVER' })
       })
       return
     }
@@ -284,11 +280,11 @@ const startCausalDeath = () => {
         startCausalDeath()
         return
       }
-      showModal({
+      dispatchShowModal({
         title: 'Lucky Dog',
         body: `You're automatically cleansed by rolling double ${roll1}! `+
           `You can continue playing until you complete yourself.`,
-        onClose: () => {
+        onClick: () => {
           store.dispatch({ type: 'END_TURN' })
           store.dispatch({ type: 'END_DEATH' })
         }
@@ -304,10 +300,10 @@ const startCausalDeath = () => {
       planet = 'REPENTANCE'
     }
   }
-  showModal({
+  dispatchShowModal({
     title: 'Hasnamuss planet',
     body: `The planet of your Hasnamuss is called ${planet}.`,
-    onClose: () => {
+    onClick: () => {
       store.dispatch({ type: 'CAUSAL_DEATH', planet })
       store.dispatch({ type: 'END_TURN' })
       store.dispatch({ type: 'END_DEATH' })
@@ -315,65 +311,23 @@ const startCausalDeath = () => {
   })
 }
 
-const handleExtras = () => {
-  store.getState().fd.extras.forEach(extra => presentEvent(extra))
+const handleExtras = async () => {
+  await Promise.all(store.getState().fd.extras.map(presentExtra))
   store.dispatch({ type: 'CLEAR_EXTRAS' })
   if (entering(store.getState().fd.enter)) {
-    dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' })
+    await advanceFood()
   }
 }
 
-const dispatchWithExtras = (action) => {
+const dispatchWithExtras = (action) => async () => {
   store.dispatch(action)
-  handleExtras()
+  await handleExtras()
 }
 
-const handleRollOptions = () => {
-  const active = store.getState().laws.active
-  const asleep = jackDiamonds(active)
-  // HASNAMUSS: no roll-options
-  if (asleep || hasnamuss(active)) {
-    moveAfterRoll()
-    return
-  }
-  let roll = store.getState().board.roll
-  let lob = store.getState().ep.level_of_being
-  const title = `You rolled ${roll}`
-  let options = []
-  switch(lob) {
-    case  'MASTER':
-      options.push({
-        text: 'Take opposite',
-        onClick: () => {
-          store.dispatch({ type: 'TAKE_OPPOSITE' })
-          moveAfterRoll()
-        }
-      })
-      // fall through
-    case 'STEWARD':
-      options.push({ text: 'Roll again',
-        onClick: () => {
-          store.dispatch({ type: 'ROLL_DICE' })
-          rollOptionLaws(store.getState().board.roll, active)
-        }
-      })
-    break;
-  }
+const advanceFood = dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' })
 
-  if (!!options.length) {
-    options.push({ text: 'Take the roll', onClick: () => moveAfterRoll() })
-    showModal({
-      title,
-      options
-    })
-  } else {
-    rollOptionLaws(roll, active)
-  }
-}
-
-const rollOptionLaws = (roll, active) => {
+const rollOptionLaws = async (roll, active) => {
   if (!queenHearts(active) && !tenSpades(active)) {
-    moveAfterRoll()
     return
   }
 
@@ -388,7 +342,6 @@ const rollOptionLaws = (roll, active) => {
       onClick: () => {
         store.dispatch({ type: 'TAKE_OPPOSITE' })
         store.dispatch({ type: 'REMOVE_ACTIVE', card: 'QH' })
-        moveAfterRoll()
       }
     })
   }
@@ -399,20 +352,19 @@ const rollOptionLaws = (roll, active) => {
       onClick: () => {
         store.dispatch({ type: 'ROLL_DICE' })
         store.dispatch({ type: 'REMOVE_ACTIVE', card: '10S' })
-        moveAfterRoll()
       }
     })
   }
-  options.push({ text: 'Not this time', onClick: () => moveAfterRoll() })
+  options.push({ text: 'Not this time', onClick: () => {} })
 
-  showModal({
+  await promiseShowModal({
     title,
     body: body.join("\n"),
     options
   })
 }
 
-const handlePieces = (action) => {
+const handlePieces = async (action) => {
   store.dispatch(action)
   const {
     cards: { pieces },
@@ -425,7 +377,7 @@ const handlePieces = (action) => {
   store.getState().ep.shocks.forEach(shock => presentEvent(shock))
   store.dispatch({ type: 'CLEAR_SHOCKS' })
   // harnel-miaznel
-  dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' })
+  await advanceFood()
   // handle new levels of being
   store.getState().ep.new_levels.forEach(level => presentEvent(level))
   store.dispatch({ type: 'CLEAR_NEW_LEVELS' })
@@ -436,7 +388,7 @@ const handlePieces = (action) => {
   handleEndGame()
 }
 
-const handleDecay = () => {
+const handleDecay = async () => {
   const { fd: { current }, board: { sides } } = store.getState()
   const roll = Dice(sides).roll()
 
@@ -450,32 +402,18 @@ const handleDecay = () => {
       toast.success("Decayed nothing!")
       return
     case 'food':
-      decayFood(current.food)
+      await decayFood(current.food)
       return
     case 'air':
-      decayAir(current.air)
+      await decayAir(current.air)
       return
     case 'impression':
-      decayImpression(current.impressions)
+      await decayImpression(current.impressions)
       return
   }
 }
 
-const handleWildSpace = () => {
-  store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
-  showModal({
-    title: 'Wild space!',
-    body: 'Which would you choose:',
-    options: [
-      { text: 'Card', onClick: () => store.dispatch({ type: 'DRAW_CARD' }) },
-      { text: 'Food',  onClick: () => dispatchWithExtras({ type: 'EAT_FOOD' }) },
-      { text: 'Air', onClick: () => dispatchWithExtras({ type: 'BREATHE_AIR' }) },
-      { text: 'Impression', onClick: () => dispatchWithExtras({ type: 'TAKE_IMPRESSION' }) }
-    ]
-  })
-}
-
-const decayFood = (notes) => {
+const decayFood = async (notes) => {
   if (notes[0] + notes[1] + notes[2] + notes[3] + notes[4] + notes[5] + notes[6] + notes[7] === 0) {
     toast('No food to decay')
     return
@@ -499,7 +437,7 @@ const decayFood = (notes) => {
     options.push({ text: 'SO-48', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'SO-48' }) })
   }
   if (notes[5]) {
-    options.push({ text: 'LA-24', onCLick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'LA-24' }) })
+    options.push({ text: 'LA-24', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'LA-24' }) })
   }
   if (notes[6]) {
     options.push({ text: 'TI-12', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'TI-12' }) })
@@ -507,10 +445,10 @@ const decayFood = (notes) => {
   if (notes[7]) {
     options.push({ text: 'DO-6', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'DO-6' }) })
   }
-  showModal({ title, body, options })
+  await promiseShowModal({ title, body, options })
 }
 
-const decayAir = (notes) => {
+const decayAir = async (notes) => {
   if (notes[0] + notes[1] + notes[2] + notes[3] + notes[4] + notes[5] === 0) {
     toast('No air to decay')
     return
@@ -528,7 +466,7 @@ const decayAir = (notes) => {
     options.push({ text: 'MI-48', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'MI-48' }) })
   }
   if (notes[3]) {
-    options.push({ text: 'FA-24', onCLick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'FA-24' }) })
+    options.push({ text: 'FA-24', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'FA-24' }) })
   }
   if (notes[4]) {
     options.push({ text: 'SO-12', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'SO-12' }) })
@@ -536,10 +474,10 @@ const decayAir = (notes) => {
   if (notes[5]) {
     options.push({ text: 'LA-6', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'LA-6' }) })
   }
-  showModal({ title, body, options })
+  await promiseShowModal({ title, body, options })
 }
 
-const decayImpression = (notes) => {
+const decayImpression = async (notes) => {
   if (notes[0] + notes[1] + notes[2] + notes[3] === 0) {
     toast('No impressions to decay')
     return
@@ -559,7 +497,7 @@ const decayImpression = (notes) => {
   if (notes[3]) {
     options.push({ text: 'FA-6', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'FA-6' }) })
   }
-  showModal({ title, body, options })
+  await promiseShowModal({ title, body, options })
 }
 
 const handleChooseLaw = (card) => {
@@ -570,30 +508,67 @@ const handleChooseLaw = (card) => {
     store.dispatch({ type: "ONE_BY_CHOICE", card })
   }
 }
-const handleLawEvents = () => {
+const handleLawEvents = async () => {
   const { being_type } = store.getState().ep
   store.dispatch({ type: 'OBEY_LAW' })
   for (let lawAction of store.getState().laws.actions) {
     store.dispatch(Object.assign({ being_type }, lawAction))
   }
   store.dispatch({ type: 'CLEAR_ACTIONS' })
-  handleExtras()
-  handleEndGame()
+  await handleExtras()
+  await handleEndGame()
 }
 
-const handleRollClick = () => {
+const handleRollClick = async () => {
   store.dispatch({ type: 'END_TURN' })
   store.dispatch({ type: 'ROLL_DICE' })
-  handleRollOptions()
-}
-const moveAfterRoll = () => {
-  const { roll, position: position_before } = store.getState().board
-  const roll_multiplier = 4 - store.getState().ep.num_brains
-  const { active } = store.getState().laws
+
+  const {
+    board: { position: initial_position },
+    ep: { num_brains, level_of_being },
+    laws: { active },
+  } = store.getState()
+  let roll = store.getState().board.roll
+
   const asleep = jackDiamonds(active)
+  // HASNAMUSS: no roll-options
+  if (!asleep && !hasnamuss(active)) {
+    let lob = store.getState().ep.level_of_being
+    const title = `You rolled ${roll}`
+    let options = []
+    switch(lob) {
+      case  'MASTER':
+        options.push({
+          text: 'Take opposite',
+          onClick: () => {
+            store.dispatch({ type: 'TAKE_OPPOSITE' })
+          }
+        })
+        // fall through
+      case 'STEWARD':
+        options.push({ text: 'Roll again',
+          onClick: () => {
+            store.dispatch({ type: 'ROLL_DICE' })
+          }
+        })
+      break;
+    }
+
+    if (options.length) {
+      options.push({ text: 'Take the roll', onClick: () => {} })
+      await promiseShowModal({
+        title,
+        options
+      })
+    }
+    await rollOptionLaws(roll, active)
+  }
+
+  roll = store.getState().board.roll
+  const roll_multiplier = 4 - num_brains
   store.dispatch({ type: 'MOVE_ROLL', roll_multiplier })
   const { position, spaces, laws_cancel } = store.getState().board
-  const spaces_passed = roll < 2 ? '' : spaces.substring(position_before+1, position)
+  const spaces_passed = roll < 2 ? '' : spaces.substring(initial_position+1, position)
   for (let s of spaces_passed) {
     if (s==='L' && !asleep) {
       store.dispatch({ type: 'DRAW_LAW_CARD' })
@@ -604,18 +579,20 @@ const moveAfterRoll = () => {
     store.dispatch({ type: 'REMOVE_ACTIVE', card })
   }
 
+  const stillAsleep = jackDiamonds(store.getState().laws.active)
+
   // no stuff while asleep
-  if (asleep) { return }
+  if (stillAsleep) { return }
 
   switch(spaces[position]) {
     case 'F':
-      dispatchWithExtras({ type: 'EAT_FOOD' })
+      await dispatchWithExtras({ type: 'EAT_FOOD' })()
       break;
     case 'A':
-      dispatchWithExtras({ type: 'BREATHE_AIR' })
+      await dispatchWithExtras({ type: 'BREATHE_AIR' })()
       break;
     case 'I':
-      dispatchWithExtras({ type: 'TAKE_IMPRESSION' })
+      await dispatchWithExtras({ type: 'TAKE_IMPRESSION' })()
       break;
     case 'C':
       store.dispatch({ type: 'DRAW_CARD' })
@@ -625,14 +602,24 @@ const moveAfterRoll = () => {
       store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
       break;
     case 'D':
-      handleDecay()
+      await handleDecay()
       break;
     case '*':
-      handleWildSpace()
+      store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
+      await promiseShowModal({
+        title: 'Wild space!',
+        body: 'Which would you choose:',
+        options: [
+          { text: 'Card', onClick: () => store.dispatch({ type: 'DRAW_CARD' }) },
+          { text: 'Food',  onClick: dispatchWithExtras({ type: 'EAT_FOOD' }) },
+          { text: 'Air', onClick: dispatchWithExtras({ type: 'BREATHE_AIR' }) },
+          { text: 'Impression', onClick: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }) }
+        ],
+      })
       break;
     default:
   }
-  handleEndGame()
+  await handleEndGame()
 }
 
 const endDeath = () => {
@@ -644,14 +631,17 @@ const endDeath = () => {
   presentEvent(deathEvent(current, completed_trip, hasnamuss(active)))
 }
 
-const handleEndGame = () => {
+const handleEndGame = async () => {
   const {
     fd: { current },
     ep: { pieces },
     laws: { active },
   } = store.getState()
   if (pieces[17] > 2 && current.mental && allNotes(current) && !hasnamuss(active)) {
-    presentEvent('I-START-OVER')
+    await promiseShowModal({
+      title: 'You are a winner!',
+      body: 'Proudly proclaim "I start over!"',
+    })
   }
 }
 
@@ -661,8 +651,12 @@ export const gameActions = (channel) => ({
   onUpdateGame: (payload) => store.dispatch(updateGame(payload)),
   onUpdateModal: (props) => store.dispatch(updateModal(props)),
   onHideModal: () => store.dispatch(hideModal()),
-  onRollClick: handleRollClick,
+  onRollClick: async () => {
+    await handleRollClick()
+    channel.push('game:end_turn', { game: store.getState() })
+  },
   onEndDeath: endDeath,
+  onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),
   onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
   onSelectCard: (card) => store.dispatch({ type: 'SELECT_CARD', card }),
   onSelectLawCard: (card) => store.dispatch({ type: 'SELECT_LAW_CARD', card }),
@@ -673,15 +667,15 @@ export const gameActions = (channel) => ({
     pieces: makeFaceCard(cards.concat(lawCards))
   }),
   onObeyLaw: handleLawEvents,
-  onEatFood: () => dispatchWithExtras({ type: 'EAT_FOOD' }),
-  onBreatheAir: () => dispatchWithExtras({ type: 'BREATHE_AIR' }),
-  onTakeImpression: () => dispatchWithExtras({ type: 'TAKE_IMPRESSION' }),
-  onSelfRemember: () => dispatchWithExtras({ type: 'SELF_REMEMBER' }),
-  onTransformEmotions: () => dispatchWithExtras({ type: 'TRANSFORM_EMOTIONS' }),
+  onEatFood: dispatchWithExtras({ type: 'EAT_FOOD' }),
+  onBreatheAir: dispatchWithExtras({ type: 'BREATHE_AIR' }),
+  onTakeImpression: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }),
+  onSelfRemember: dispatchWithExtras({ type: 'SELF_REMEMBER' }),
+  onTransformEmotions: dispatchWithExtras({ type: 'TRANSFORM_EMOTIONS' }),
   onCombineSelectedParts: (selected) => handlePieces({ type: 'COMBINE_PARTS', selected }),
-  onAdvanceFoodDiagram: () => dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
+  onAdvanceFoodDiagram: dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
   onDying: () => store.dispatch({ type: 'DEATH' }),
-  onOptions: () => showModal({
+  onOptions: () => dispatchShowModal({
     title: "Title Ho!",
     body: "this a good body",
     options: [
@@ -689,7 +683,7 @@ export const gameActions = (channel) => ({
       { text: 'Ho Derr', onClick: () => { console.log("Chose Ho") } }
     ]
   }),
-  onModal: () => showModal({
+  onModal: () => dispatchShowModal({
     title: 'basic',
     body: "has\nmany\n\nlines"
   }),
@@ -701,7 +695,6 @@ export const gameActions = (channel) => ({
   onChooseLaw: (card) => handleChooseLaw(card),
   startGame: (name, sides) => { channel.push('game:start', { name, sides }) },
   joinGame: (gameId) => { channel.push('game:join', { gameId }) },
-  updateGame: (state) => { channel.push('game:update', { game: state }) },
   drawCards: (count) => { channel.push('deck:draw', { count }) },
 })
 

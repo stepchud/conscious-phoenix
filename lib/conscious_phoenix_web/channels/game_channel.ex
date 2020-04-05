@@ -20,8 +20,8 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_in("game:update", %{"game" => game}, socket) do
-    GameServer.turn(socket.assigns.gid, game)
+  def handle_in("game:end_turn", %{"game" => game}, socket) do
+    GameServer.endTurn(socket.assigns.gid, game)
     {:noreply, socket}
   end
 end

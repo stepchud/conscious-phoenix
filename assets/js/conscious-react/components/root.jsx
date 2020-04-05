@@ -38,7 +38,6 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   onRoll = () => {
-    this.actions().updateGame(reduxStore.getState())
     this.actions().onRollClick()
   }
 

@@ -107,6 +107,11 @@ export const allNotes = (notes) => {
     : _.every(notes.food.slice(0,-1).concat(notes.air.slice(0,-1)).concat(notes.impressions.slice(0,-1)))
 }
 
+const removeExtra = (extras, e) => {
+  const idx = extras.indexOf(e)
+  return extras.slice(0,idx).concat(extras.slice(idx + 1))
+}
+
 // entering notes move one step of harnel-miaznel
 const enterNotes = ({ current, enter, extras }) => {
   // place empty notes, order doesn't matter here
@@ -336,14 +341,18 @@ const foodDiagram = (
         enter.food[3]++
         current.food[2]--
       }
-      return { current, enter, extras }
+      return {
+        current,
+        enter,
+        extras: removeExtra(extras, 'SHOCKS-FOOD')
+      }
     case "SHOCKS_AIR":
       if (current.air[2]) {
         enter.air[3]++
         current.air[2]--
       }
-      return { current, enter, extras }
-    case "BREATHE_WHEN_YOU_EAT":
+      return { current, enter, extras: removeExtra(extras, 'SHOCKS-AIR') }
+    case "BREATHE_WHEN_YOU_EAT": {
       return {
         current,
         enter: {
@@ -354,9 +363,10 @@ const foodDiagram = (
             ...enter.food.slice(4)
           ],
         },
-        extras
+        extras: removeExtra(extras, 'MI-192')
       }
-    case "EAT_WHEN_YOU_BREATHE":
+    }
+    case "EAT_WHEN_YOU_BREATHE": {
       return {
         current,
         enter: {
@@ -367,15 +377,21 @@ const foodDiagram = (
             ...enter.air.slice(4)
           ],
         },
-        extras
+        extras: removeExtra(extras, 'MI-48')
       }
-    case "CARBON_12":
+    }
+    case "CARBON_12": {
       enter.impressions[1]++
       if (current.air[2]) {
         enter.air[3]++
         current.air[2]--
       }
-      return { current, enter, extras }
+        return {
+          current,
+          enter,
+          extras: removeExtra(extras, 'DO-48')
+        }
+    }
     case "SELF_REMEMBER":
       if (current.impressions[0]>0) {
         current.impressions[0]--

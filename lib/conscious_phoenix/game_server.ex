@@ -88,8 +88,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :join, assigns_gid: assigns_gid, gid: gid})
   end
 
-  def turn(gid, game) do
-    GenServer.cast(__MODULE__, %{action: :turn, gid: gid, game: game})
+  def endTurn(gid, game) do
+    GenServer.cast(__MODULE__, %{action: :end_turn, gid: gid, game: game})
   end
 
   def reset() do
@@ -130,10 +130,11 @@ defmodule ConsciousPhoenix.GameServer do
     {:noreply, state}
   end
 
-  def handle_cast(%{:action => :turn, :gid => gid, :game => game}, state) do
+  def handle_cast(%{:action => :end_turn, :gid => gid, :game => game}, state) do
     # Save the game state...
     state = put_in(state.games[gid], game)
     IO.puts "Game saved!"
+    # Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
 
     # case can_move(state, x, y) do
     #   :true ->

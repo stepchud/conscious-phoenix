@@ -279,7 +279,7 @@ const laws = (
           })
         )
       } else if (action.card) {
-        // roll option cards
+        // roll option cards, or passed the active space
         nextActive = reject(active, isLawCard(action.card))
       }
       return {

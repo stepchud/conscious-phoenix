@@ -21,7 +21,7 @@ const TestButtons = ({
   const selParts = selectedParts(parts)
   const selLawCards = map(selLaws, 'c.card')
   return (
-    <div className="actions">
+    <div className="section actions">
       <button onClick={actions.onDrawCard}>Draw Card</button>
       <button onClick={actions.onDrawLawCard}>Draw Law Card</button>
       <button onClick={actions.onEatFood}>Food</button>
