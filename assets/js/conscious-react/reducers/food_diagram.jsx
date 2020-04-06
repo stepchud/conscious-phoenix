@@ -490,7 +490,7 @@ const foodDiagram = (
       return { current, enter, extras: [] }
     case 'END_TURN': {
       if (!current.alive && current.mental && !current.astralDiscarded) {
-        // change body if needed
+        // exchange astral body for mental
         let foodChips = current.food[8]
         let airChips = current.air[6]
         let impChips = current.impressions[4]

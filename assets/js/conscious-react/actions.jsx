@@ -7,5 +7,5 @@ export const updateModal = ({ field, value }) => ({ type: 'UPDATE_MODAL', field,
 export const hideModal = () => ({ type: 'HIDE_MODAL' })
 
 // Game Actions
-export const startGame = (name, sides) => ({ type: 'START_GAME', name, sides })
+export const startGame = (name, uid, sides) => ({ type: 'START_GAME', name, uid, sides })
 export const updateGame = (updates) => ({ type: 'UPDATE_GAME', ...updates })

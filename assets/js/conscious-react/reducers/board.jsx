@@ -57,7 +57,7 @@ const board = (
       return {
         ...state,
         current_turn: TURNS.randomLaw,
-        sides: action.sides,
+        sides: parseInt(action.sides),
       }
     case 'UPDATE_GAME':
       return {

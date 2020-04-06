@@ -12,9 +12,8 @@ const clickAndResolve = (onClick, onResolve) => async () => {
   if (typeof(onResolve)==='function') { onResolve() }
 }
 
-const actions = gameActions()
-const onHideModal = () => actions.onHideModal()
-const onUpdateModal = (field, value) => actions.onUpdateModal({ field, value })
+const onHideModal = () => gameActions.onHideModal()
+const onUpdateModal = (field, value) => gameActions.onUpdateModal({ field, value })
 const onNameChange = (event) => onUpdateModal('name', event.target.value)
 const onDiceChange = (event) => onUpdateModal('sides', event.target.value)
 const onGameChange = (event) => onUpdateModal('gameId', event.target.value)
@@ -74,7 +73,7 @@ const PickNameModal = ({
     show: true,
     title: `Get Started`,
     escapable: false,
-    onClick: onStart,
+    onClick: () => onStart(name, sides),
     body
   }
   return <ModalComponent {...props} />

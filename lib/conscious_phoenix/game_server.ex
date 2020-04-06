@@ -1,68 +1,10 @@
 defmodule ConsciousPhoenix.GameServer do
   use GenServer
+
+  alias ConsciousPhoenix.Game
+  alias ConsciousPhoenix.Player
   alias ConsciousPhoenixWeb.Endpoint
 
-  defmodule Player do
-    @derive {Jason.Encoder,
-      only: [:name, :age, :hand, :laws, :fd, :ep]}
-
-    defstruct(
-      name: "anon",
-      age: 0,
-      hand: [ ],
-      laws: %{ },
-      fd: %{ },
-      ep: %{ }
-    )
-  end
-
-  defmodule Game do
-    @derive {Jason.Encoder,
-      only: [:board, :cards, :laws, :player, :fd, :ep, :modal]}
-
-    defstruct(
-      board: %{ },
-      cards: %{ },
-      laws:  %{ },
-      player: %Player{ },
-      fd:    %{ },
-      ep:    %{ },
-      modal: %{ }
-    )
-
-    # def generateDeck do
-    #   deck = [
-    #     "2D", "2D", "2D", "2D", "3D", "3D", "3D", "3D", "4D", "4D", "4D", "4D",
-    #     "2C", "2C", "2C", "2C", "3C", "3C", "3C", "3C", "4C", "4C", "4C", "4C",
-    #     "2H", "2H", "2H", "2H", "3H", "3H", "3H", "3H", "4H", "4H", "4H", "4H",
-    #     "2S", "2S", "2S", "2S", "3S", "3S", "3S", "3S", "4S", "4S", "4S", "4S",
-    #     "5D", "5D", "5D", "6D", "6D", "6D", "7D", "7D", "7D",
-    #     "5C", "5C", "5C", "6C", "6C", "6C", "7C", "7C", "7C",
-    #     "5H", "5H", "5H", "6H", "6H", "6H", "7H", "7H", "7H",
-    #     "5S", "5S", "5S", "6S", "6S", "6S", "7S", "7S", "7S",
-    #     "8D", "8D", "9D", "9D", "10D", "10D",
-    #     "8C", "8C", "9C", "9C", "10C", "10C",
-    #     "8H", "8H", "9H", "9H", "10H", "10H",
-    #     "8S", "8S", "9S", "9S", "10S", "10S",
-    #     "JD", "JD", "JD", "JC", "JC", "JH", "JS", "JS", "JS", "JS",
-    #     "QC", "QD", "QD"
-    #   ]
-    #   Enum.shuffle((deck))
-    # end
-
-    # def drawCards(state, count) do
-    #   cond do
-    #     Enum.count(state.deck) < count ->
-    #       deck = Enum.shuffle(state.deck ++ state.discards)
-    #       discards = []
-    #       { cards, deck } = Enum.split(deck, count)
-    #       { cards, deck, discards }
-    #     true ->
-    #       { cards, deck } = Enum.split(state.deck, count)
-    #       { cards, deck, state.discards }
-    #   end
-    # end
-  end
 
   defmodule WorldState do
     defstruct(
@@ -84,8 +26,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
   end
 
-  def join(assigns_gid, gid) do
-    GenServer.cast(__MODULE__, %{action: :join, assigns_gid: assigns_gid, gid: gid})
+  def join(assigns_gid, gid, name) do
+    GenServer.cast(__MODULE__, %{action: :join, assigns_gid: assigns_gid, gid: gid, name: name})
   end
 
   def endTurn(gid, game) do
@@ -109,32 +51,43 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{action: :start_game, gid: gid, name: name, sides: sides}, state) do
     IO.puts "start_game<#{gid}> (#{name}, #{sides})"
+    uid = String.slice(UUID.uuid4(), 0, 5)
     new_game = %Game{
-      player: %Player{ name: name },
+      players: [ %Player{ uid: uid, name: name } ],
       board: %{ sides: sides, roll: 0 },
     }
     state = put_in(state.games[gid], new_game)
-    Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, sides: sides})
+    Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, uid: uid, sides: sides})
+
     {:noreply, state}
   end
 
-  def handle_cast(%{:action => :join, :assigns_gid => assigns_gid, :gid => gid}, state) do
+  def handle_cast(%{:action => :join, :assigns_gid => assigns_gid, :gid => gid, :name => name}, state) do
     game = state.games[gid]
     if is_nil(game) do
       Endpoint.broadcast!("game:#{assigns_gid}", "game:joined",
         %{ error: %{ message: "Game not found" } })
+
+      {:noreply, state}
     else
+      uid = String.slice(UUID.uuid4(), 0, 5)
+      players = game.players ++ [%Player{ uid: uid, name: name }]
+      state = put_in(state.players, players)
+
       Endpoint.broadcast!("game:#{assigns_gid}", "game:joined",
-        %{ gid: gid, game: game })
+        %{ gid: gid, game: game, name: name, uid: uid })
+
+      {:noreply, state}
     end
-    {:noreply, state}
   end
 
   def handle_cast(%{:action => :end_turn, :gid => gid, :game => game}, state) do
     # Save the game state...
+    game = Game.save_turn(state.games[gid], game)
     state = put_in(state.games[gid], game)
     IO.puts "Game saved!"
-    # Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
+    {:noreply, state}
+  end
 
     # case can_move(state, x, y) do
     #   :true ->
@@ -147,8 +100,6 @@ defmodule ConsciousPhoenix.GameServer do
     #     state
     #   :false -> state
     # end
-    {:noreply, state}
-  end
 
   def handle_cast(%{:action => :reset, :gid => gid}, state) do
     state = put_in(state.games[gid], %{})

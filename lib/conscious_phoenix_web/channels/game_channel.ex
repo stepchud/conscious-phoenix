@@ -3,7 +3,7 @@ defmodule ConsciousPhoenixWeb.GameChannel do
   alias ConsciousPhoenix.GameServer
 
   def join("game:" <> gid, _message, socket) do
-    IO.puts "join #{gid}"
+    IO.puts "Join #{gid}"
     socket = socket
       |> assign(:gid, gid)
     state = GameServer.getGame(gid)
@@ -15,8 +15,8 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_in("game:join", %{"game" => gid}, socket) do
-    GameServer.join(socket.assigns.gid, gid)
+  def handle_in("game:join", %{"game" => gid, "name" => name}, socket) do
+    GameServer.join(socket.assigns.gid, gid, name)
     {:noreply, socket}
   end
 

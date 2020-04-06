@@ -18,27 +18,23 @@ import "react-toastify/dist/ReactToastify.css";
 
 export class ConsciousBoardgame extends React.Component {
 
-  actions = () => {
-    return gameActions(this.props.channel)
-  }
-
   onJoinGame = () => {
     const { channel } = this.props
     const gid = reduxStore.getState().modal.game || channel.gid
     channel.join(gid)
-    this.actions().joinGame(gid)
+    this.props.channel.push('game:join', { gameId: gid })
     localStorage.setItem(GAME_ID, gid)
   }
 
-  onStartGame = () => {
+  onStartGame = (name, sides) => {
     const { channel } = this.props
-    const { name = 'anon', sides = 6 } = reduxStore.getState().modal
-    this.actions().startGame(name, sides)
+    this.props.channel.push('game:start', { name, sides })
     localStorage.setItem(GAME_ID, channel.gid)
   }
 
-  onRoll = () => {
-    this.actions().onRollClick()
+  onRoll = async () => {
+    await gameActions.onRollClick()
+    this.props.channel.push('game:end_turn', { game: reduxStore.getState() })
   }
 
   componentWillUnmount () {
@@ -49,7 +45,6 @@ export class ConsciousBoardgame extends React.Component {
     const { channel } = this.props
     const { player, board, cards, laws, fd, ep, modal } = reduxStore.getState()
     const gameId = modal.gameId || channel.gid || ''
-    const actions = { ...this.actions() }
 
     switch(board.current_turn) {
       case TURNS.setup1:
@@ -61,7 +56,7 @@ export class ConsciousBoardgame extends React.Component {
             name={modal.name}
             sides={modal.sides}
             onStart={this.onStartGame}
-            onNewGame={actions.onNewGame}
+            onNewGame={gameActions.onNewGame}
             onJoinGame={!!gameId && this.onJoinGame}
             errorMessage={modal.error_message}
           />
@@ -70,7 +65,7 @@ export class ConsciousBoardgame extends React.Component {
         return (
           <div>
             <Buttons
-              actions={actions}
+              actions={gameActions}
               roll={board.roll}
               onRoll={this.onRoll}
               cards={cards.hand}
@@ -79,21 +74,21 @@ export class ConsciousBoardgame extends React.Component {
               currentTurn={board.current_turn}
             />
             <TestButtons
-              actions={actions}
+              actions={gameActions}
               cards={cards.hand}
               laws={laws}
               parts={ep.parts}
             />
             <PlayerStats name={player.name} {...ep} />
             <Board {...board} />
-            <CardHand cards={cards.hand} onSelect={actions.onSelectCard} />
+            <CardHand cards={cards.hand} onSelect={gameActions.onSelectCard} />
             { fd.current.alive && <LawHand
                 laws={laws}
                 byChoice={board.current_turn===TURNS.choiceLaw}
-                onSelect={actions.onSelectLawCard}
-                onChoice={actions.onChooseLaw} />
+                onSelect={gameActions.onSelectLawCard}
+                onChoice={gameActions.onChooseLaw} />
             }
-            <ThreeBrains {...ep} onSelect={actions.onSelectPart} />
+            <ThreeBrains {...ep} onSelect={gameActions.onSelectPart} />
             <FoodDiagram {...fd} />
             <GameId gid={gameId} />
             <GameModal {...modal} />

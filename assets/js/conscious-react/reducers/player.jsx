@@ -14,6 +14,7 @@ const player = (
       return {
         ...state,
         name: action.name,
+        uid: action.uid,
       }
     case 'END_TURN':
       return {

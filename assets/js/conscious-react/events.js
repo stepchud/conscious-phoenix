@@ -155,6 +155,7 @@ const presentExtra = async (extra) => {
   console.log("presentExtra out "+extra)
 }
 
+// NOTE: keep synchronous
 const presentEvent = (event) => {
   switch(event) {
     case 'DEPUTY-STEWARD':
@@ -368,7 +369,6 @@ const handlePieces = async (action) => {
   store.dispatch(action)
   const {
     cards: { pieces },
-    ep: { pieces: epPieces },
     laws: { active },
   } = store.getState()
   store.dispatch({ type: 'MAKE_PIECES', pieces })
@@ -382,7 +382,7 @@ const handlePieces = async (action) => {
   store.getState().ep.new_levels.forEach(level => presentEvent(level))
   store.dispatch({ type: 'CLEAR_NEW_LEVELS' })
   // check for cleansed hasnamuss
-  if (epPieces[17] > 3 && hasnamuss(active)) {
+  if (store.getState().ep.pieces[17] > 3 && hasnamuss(active)) {
     presentEvent('CLEANSE-HASNAMUSS')
   }
   handleEndGame()
@@ -645,16 +645,13 @@ const handleEndGame = async () => {
   }
 }
 
-export const gameActions = (channel) => ({
+export const gameActions = {
   onNewGame: () => store.dispatch({ type: 'NEW_GAME' }),
-  onStartGame: (name, sides, hand) => store.dispatch(startGame(name, sides, hand)),
+  onGameStarted: (name, uid, sides) => store.dispatch(startGame(name, uid, sides)),
   onUpdateGame: (payload) => store.dispatch(updateGame(payload)),
   onUpdateModal: (props) => store.dispatch(updateModal(props)),
   onHideModal: () => store.dispatch(hideModal()),
-  onRollClick: async () => {
-    await handleRollClick()
-    channel.push('game:end_turn', { game: store.getState() })
-  },
+  onRollClick: handleRollClick,
   onEndDeath: endDeath,
   onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),
   onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
@@ -693,9 +690,6 @@ export const gameActions = (channel) => ({
     store.dispatch({ type: "ONE_BY_RANDOM", roll })
   },
   onChooseLaw: (card) => handleChooseLaw(card),
-  startGame: (name, sides) => { channel.push('game:start', { name, sides }) },
-  joinGame: (gameId) => { channel.push('game:join', { gameId }) },
-  drawCards: (count) => { channel.push('deck:draw', { count }) },
-})
+}
 
 export const reduxStore = store
