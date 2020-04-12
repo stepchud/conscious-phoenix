@@ -18,43 +18,47 @@ const Dice = ({
   return <span className="dice">{roll}</span>
 }
 
+const Message = ({ turn, hasLaws }) => {
+  let message = ''
+  if (turn==TURNS.wait) {
+    message = "Waiting for your turn..."
+  } else if (turn===TURNS.choiceLaw) {
+    message = '* Choose a law card from your hand'
+  } else if (hasLaws) {
+    message = '* You simply must obey all of the laws in play'
+  } else if (turn===TURNS.death) {
+    message = '* Select up to 7 cards your hand to keep'
+  }
+
+  return <span className="turn-message">{message}</span>
+}
+
 const Buttons = ({
   actions,
-  roll,
-  onRoll,
-  ep,
-  cards,
+  turn,
   laws,
-  currentTurn
+  cards,
+  hasLaws,
+  ep,
+  onRoll,
 }) => {
-  if (currentTurn===TURNS.setup1 || currentTurn===TURNS.setup2) {
-    return
-  }
+  const buttons = []
   const asleep = jackDiamonds(laws.active)
   const nopowers = jackHearts(laws.active)
-  const selCards = selectedCards(cards)
   const selLaws = selectedLaws(laws.in_play)
+  const selCards = selectedCards(cards)
   const selLawCards = map(selLaws, 'c.card')
   const selParts = selectedParts(ep.parts)
-  const hasUnobeyedLaws = !!unobeyedLaws(laws.in_play).length
   const cardsPlay =
     selCards.length <= ep.card_plays &&
     playable(selCards.concat(selLawCards)) &&
     !selectedPlayedLaws(laws.in_play).length
-  const message = currentTurn===TURNS.choiceLaw
-    ? '* Choose a law card from your hand'
-    : hasUnobeyedLaws
-      ? '* You simply must obey all of the laws in play'
-      : currentTurn===TURNS.death
-        ? '* Select up to 7 cards your hand to keep'
-        : ''
 
-  const buttons = []
-  if (currentTurn===TURNS.randomLaw) {
+  if (turn===TURNS.randomLaw) {
     buttons.push(<button key={buttons.length} onClick={() => { actions.onRandomLaw() }}>One by random...</button>)
   } else {
-    if (currentTurn!==TURNS.choiceLaw && !hasUnobeyedLaws) {
-      if (currentTurn===TURNS.death) {
+    if (turn!==TURNS.choiceLaw && !hasLaws) {
+      if (turn===TURNS.death) {
         buttons.push(<button key={buttons.length} onClick={actions.onEndDeath}>End Death</button>)
       } else {
         buttons.push(<button key={buttons.length} onClick={onRoll}>Roll Dice</button>)
@@ -82,13 +86,26 @@ const Buttons = ({
       buttons.push(<button key={buttons.length} onClick={actions.onObeyLaw}>Obey Law</button>)
     }
   }
+  return buttons
+}
+
+const ButtonRow = ({
+  currentTurn: turn,
+  roll,
+  waiting,
+  ...props
+}) => {
+  if (turn===TURNS.setup) {
+    return
+  }
+  const hasLaws = !!unobeyedLaws(props.laws.in_play).length
 
   return (
     <div className="section actions fixed-nav">
       <Dice roll={roll} />
-      {buttons}
-      <span className="turn-message">{message}</span>
+      <Buttons hasLaws={hasLaws} turn={turn} {...props} />
+      <Message turn={turn} hasLaws={hasLaws} waiting={waiting} />
     </div>
   )
 }
-export default Buttons
+export default ButtonRow

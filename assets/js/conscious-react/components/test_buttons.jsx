@@ -32,7 +32,7 @@ const TestButtons = ({
       <button onClick={actions.onTransformEmotions}>Transform Emotion</button>
       <button onClick={actions.onDying}>Die!</button>
       <button onClick={actions.onOptions}>Option Modal</button>
-      <button onClick={actions.onToast}>Toast!</button>
+      <button onClick={() => actions.onToast("hey test-toast", "error")}>Toast!</button>
       { combinable(selParts) &&
         <button onClick={() => { actions.onCombineSelectedParts(selParts)} }>Combine Parts</button> }
       { playable(selCards.concat(selLawCards)) && !some(selLaws, 'played') &&

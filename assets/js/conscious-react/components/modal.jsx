@@ -18,41 +18,50 @@ const onNameChange = (event) => onUpdateModal('name', event.target.value)
 const onDiceChange = (event) => onUpdateModal('sides', event.target.value)
 const onGameChange = (event) => onUpdateModal('gameId', event.target.value)
 
-const PickGameModal = ({
+const PickGameModal = () => {
+  const options =  [
+    { text: 'New Game', onClick: () => onUpdateModal('setup_step', 'name') },
+    { text: 'Join Game', onClick: () => onUpdateModal('setup_step', 'join') }
+  ]
+  const props = {
+    show: true,
+    title: `Welcome to the Conscious Boardgame!`,
+    escapable: false,
+    options,
+  }
+  return <ModalComponent {...props} />
+}
+
+const JoinGameModal = ({
   gameId,
-  onNewGame,
+  name,
   onJoinGame,
   errorMessage,
 }) => {
   const body =
     <div>
+      <label name="name">
+        Your name:
+        <input type="text" name="name" value={name} onChange={onNameChange} />
+      </label>
       <label name="game">
-        Join Game?
+        Game ID:
         <input type="text" name="game_id" placeholder={'Game ID'} value={gameId} onChange={onGameChange} />
       </label>
     </div>
-  const options =  [{
-    text: 'New Game',
-    onClick: onNewGame,
-  }]
-  if (onJoinGame) {
-    options.push({
-      text: 'Join Game',
-      onClick: onJoinGame,
-    })
-  }
+  const options = [{ text: 'Join Game', onClick: onJoinGame }]
   const props = {
     show: true,
-    title: `Welcome to the Conscious Boardgame!`,
-    escapable: false,
-    errorMessage,
+    title: `Welcome back!`,
+    body,
     options,
-    body
+    errorMessage,
+    escapable: false,
   }
   return <ModalComponent {...props} />
 }
 
-const PickNameModal = ({
+const NewGameModal = ({
   name,
   sides,
   onStart,
@@ -60,38 +69,81 @@ const PickNameModal = ({
   const body =
     <div>
       <label name="name">
-        Hi, what's your name?
+        Your name:
         <input type="text" name="name" value={name} onChange={onNameChange} />
       </label>
       <label name="dice">
-        Dice sides:<br />
+        Sided-Dice:
         <input type="radio" group="dice" value="6" checked={sides==6} onChange={onDiceChange} /><span>6</span>
         <input type="radio" group="dice" value="10" checked={sides==10} onChange={onDiceChange} /><span>10</span>
       </label>
     </div>
+  const options =  [
+    { text: 'Start now', onClick: () => onStart(name, sides) },
+    { text: 'Wait for players', onClick: () => onUpdateModal('setup_step', 'wait') }
+  ]
   const props = {
     show: true,
-    title: `Get Started`,
+    title: `Let's get started`,
+    body,
+    options,
     escapable: false,
-    onClick: () => onStart(name, sides),
-    body
   }
   return <ModalComponent {...props} />
 }
+
+const WaitGameModal = ({
+  name,
+  sides,
+  joiners,
+  onStart,
+}) => {
+  let body
+  if (joiners.length) {
+    body =
+      <h3>Other players:</h3>
+      <ol>
+        {joiners.map(p => <li>{p}</li>)}
+      </ol>
+  } else {
+    body = <h3>Waiting for other players to join...</h3>
+  }
+  const options = [
+    { text: "Let's begin!", onClick: () => onStart(name, sides) },
+  ]
+  const props = {
+    show: true,
+    title: `The Waiting Room`,
+    body,
+    options,
+    escapable: false,
+  }
+  return <ModalComponent {...props} />
+}
+
 
 export const SetupModal = ({
   step,
   name='',
   sides=6,
+  joiners=[],
   onStart,
-  onNewGame,
   gameId,
   onJoinGame,
   errorMessage,
 }) => {
-  return step===TURNS.setup1
-    ? <PickGameModal onNewGame={onNewGame} gameId={gameId} onJoinGame={onJoinGame} errorMessage={errorMessage} />
-    : <PickNameModal name={name} sides={sides} onStart={onStart} />
+  switch(step) {
+  case 'new':
+    return <PickGameModal />
+  case 'join':
+    return <JoinGameModal name={name} gameId={gameId} onJoinGame={onJoinGame} errorMessage={errorMessage} />
+  case 'name':
+    return <NewGameModal name={name} sides={sides} onStart={onStart} />
+  case 'wait':
+    return <WaitGameModal name={name} sides={sides} joiners={joiners} onStart={onStart} />
+  default:
+    return null
+  }
 }
 
 const ModalComponent = ({

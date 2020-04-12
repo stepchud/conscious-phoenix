@@ -9,40 +9,55 @@ defmodule ConsciousPhoenix.Game do
     only: [:players, :board, :cards, :laws]}
 
   defstruct(
-    players: [ ],
+    players: %{ },
     board: %{ },
     cards: %{ },
     laws:  %{ }
   )
 
   def save_turn(game, updates) do
+    IO.puts "save_turn 1"
     game = save_game(game, updates)
+    IO.puts "save_turn 2"
     %Game{ game | players: save_player(game.players, updates) }
   end
 
+  # TODO: implement the real next player rules
+  def next_turn(game) do
+    { pid, _ } = Enum.random(game.players)
+    pid
+  end
+
   def save_player(players, updates) do
-    player_idx = Enum.find_index(players, fn p -> p.uid == updates.player.uid end)
-    player = Enum.at(players, player_idx)
+    playerUpdate = Map.fetch!(updates, "player")
+    boardUpdate = Map.fetch!(updates, "board")
+    lawUpdate = Map.fetch!(updates, "laws")
+    cardUpdate = Map.fetch!(updates, "cards")
+    pid = playerUpdate["pid"]
+    player = players[pid]
     player = %Player{
       player |
-      age: updates.player.age,
-      position: updates.board.position,
-      current_turn: updates.board.current_turn,
-      completed_trip: updates.board.completed_trip,
-      death_space: updates.board.death_space,
-      laws_passed: updates.board.laws_passed,
-      hand: updates.cards.hand,
-      laws: %{ active: updates.laws.active, hand: updates.laws.hand },
-      fd: updates.fd,
-      ep: updates.ep
+      age: playerUpdate["age"],
+      position: boardUpdate["position"],
+      current_turn: boardUpdate["current_turn"],
+      completed_trip: boardUpdate["completed_trip"],
+      death_space: boardUpdate["death_space"],
+      laws_passed: boardUpdate["laws_passed"],
+      hand: cardUpdate["hand"],
+      laws: %{ active: lawUpdate["active"], hand: lawUpdate["hand"] },
+      fd: updates["fd"],
+      ep: updates["ep"]
     }
-    List.replace_at(players, player_idx, player)
+    put_in(players[pid], player)
   end
 
   def save_game(game, updates) do
-    cards = %{ deck: updates.cards.deck, discards: updates.cards.discards }
-    laws = %{ deck: updates.laws.deck, discards: updates.laws.discards }
-    %Game{ game | cards: cards, laws: laws }
+    cardUpdate = Map.fetch!(updates, "cards")
+    lawUpdate = Map.fetch!(updates, "laws")
+    %Game{ game |
+      cards: %{ deck: cardUpdate["deck"], discards: cardUpdate["discards"] },
+      laws: %{ deck: lawUpdate["deck"], discards: lawUpdate["discards"] }
+    }
   end
 end
 

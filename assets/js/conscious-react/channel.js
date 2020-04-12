@@ -33,20 +33,32 @@ export default function Connect() {
 
   this.subscribe = () => {
     this.channel.on("game:started", payload => {
-      const { name, uid, sides } = payload
-      gameActions.onGameStarted(name, uid, sides)
+      const { name, pid, sides } = payload
+      this.pid = pid
+      gameActions.onGameStarted(name, pid, sides)
     })
     this.channel.on("game:update", payload => {
       console.log('game:update', payload)
       gameActions.onUpdateGame(payload)
     })
+    this.channel.on("game:next_turn", payload => {
+      const { pid } = payload
+      console.log("next player turn = "+pid)
+      gameActions.onTurnStarted({ pid })
+    })
     this.channel.on("game:joined", payload => {
-      if (payload.error) {
-        gameActions.onUpdateModal({ field: "error_message", value: payload.error.message })
-      } else {
-        this.join(payload.gid)
-        gameActions.onUpdateGame(payload)
-      }
+      const { gid, pid } = payload
+      this.join(gid)
+      this.pid = pid
+      gameActions.onGameJoined(payload)
+    })
+    this.channel.on("modal:error", error => {
+      gameActions.onUpdateModal({ field: "error_message", value: error.message })
+    })
+    this.channel.on("broadcast:message", payload => {
+      if (this.pid === payload.pid) { return }
+      const { message, type } = payload
+      gameActions.onToast(message, type || "info")
     })
   }
 

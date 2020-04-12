@@ -11,7 +11,7 @@ const InitialState = () => ({
   laws_cancel: [],
   spaces: INITIAL_SPACES,
   death_space: LAST_SPACE,
-  current_turn: TURNS.setup1,
+  current_turn: TURNS.setup,
   completed_trip: false,
 })
 
@@ -48,11 +48,6 @@ const board = (
     laws_passed
   } = state
   switch(action.type) {
-    case 'NEW_GAME':
-      return {
-        ...state,
-        current_turn: TURNS.setup2,
-      }
     case 'START_GAME':
       return {
         ...state,

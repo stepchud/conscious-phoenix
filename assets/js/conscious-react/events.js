@@ -17,7 +17,7 @@ import laws, {
 import fd, { entering, deathEvent, allNotes } from './reducers/food_diagram'
 import ep from './reducers/being'
 import modal from './reducers/modal'
-import { startGame, updateGame, showModal, updateModal, hideModal } from './actions'
+import { startGame, updateGame, startTurn, showModal, updateModal, hideModal } from './actions'
 
 const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal })
 const store = createStore(reducers)
@@ -152,7 +152,7 @@ const presentExtra = async (extra) => {
     default:
       console.warn(`present unknown extra: ${extra}`)
   }
-  console.log("presentExtra out "+extra)
+  console.log("[END] presentExtra "+extra)
 }
 
 // NOTE: keep synchronous
@@ -620,6 +620,7 @@ const handleRollClick = async () => {
     default:
   }
   await handleEndGame()
+  store.dispatch({ type: "WAIT_FOR_TURN" })
 }
 
 const endDeath = () => {
@@ -646,8 +647,9 @@ const handleEndGame = async () => {
 }
 
 export const gameActions = {
-  onNewGame: () => store.dispatch({ type: 'NEW_GAME' }),
-  onGameStarted: (name, uid, sides) => store.dispatch(startGame(name, uid, sides)),
+  onGameStarted: (name, pid, sides) => store.dispatch(startGame(name, pid, sides)),
+  onGameJoined: (payload) => store.dispatch(joinGame(payload)),
+  onTurnStarted: (pid) => store.dispatch(startTurn(pid)),
   onUpdateGame: (payload) => store.dispatch(updateGame(payload)),
   onUpdateModal: (props) => store.dispatch(updateModal(props)),
   onHideModal: () => store.dispatch(hideModal()),
@@ -684,7 +686,7 @@ export const gameActions = {
     title: 'basic',
     body: "has\nmany\n\nlines"
   }),
-  onToast: () => toast("wow it worked 🤔"),
+  onToast: (message, type) => toast(message, { type }),
   onRandomLaw: () => {
     const roll = Dice(store.getState().board.sides).roll()
     store.dispatch({ type: "ONE_BY_RANDOM", roll })

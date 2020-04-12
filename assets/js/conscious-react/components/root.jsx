@@ -20,9 +20,11 @@ export class ConsciousBoardgame extends React.Component {
 
   onJoinGame = () => {
     const { channel } = this.props
-    const gid = reduxStore.getState().modal.game || channel.gid
+    const modal = reduxStore.getState().modal
+    const gid = modal.game || channel.gid
+    const name = modal.name
     channel.join(gid)
-    this.props.channel.push('game:join', { gameId: gid })
+    this.props.channel.push('game:join', { gid, name })
     localStorage.setItem(GAME_ID, gid)
   }
 
@@ -47,16 +49,14 @@ export class ConsciousBoardgame extends React.Component {
     const gameId = modal.gameId || channel.gid || ''
 
     switch(board.current_turn) {
-      case TURNS.setup1:
-      case TURNS.setup2:
+      case TURNS.setup:
         return (
           <SetupModal
-            step={board.current_turn}
+            step={modal.setup_step}
             gameId={gameId}
             name={modal.name}
             sides={modal.sides}
             onStart={this.onStartGame}
-            onNewGame={gameActions.onNewGame}
             onJoinGame={!!gameId && this.onJoinGame}
             errorMessage={modal.error_message}
           />
@@ -72,6 +72,7 @@ export class ConsciousBoardgame extends React.Component {
               laws={laws}
               ep={ep}
               currentTurn={board.current_turn}
+              waiting={!player.active}
             />
             <TestButtons
               actions={gameActions}

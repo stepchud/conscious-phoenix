@@ -2,10 +2,10 @@ defmodule ConsciousPhoenix.Player do
   # alias __MODULE__
 
   @derive {Jason.Encoder,
-    only: [:uid, :name, :age, :alive, :position]}
+    only: [:pid, :name, :age, :alive, :position]}
 
   defstruct(
-    uid: "",
+    pid: String.slice(UUID.uuid4(), 0, 5),
     name: "anon",
     alive: true,
     age: 0,
