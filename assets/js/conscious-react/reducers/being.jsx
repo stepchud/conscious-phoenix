@@ -122,7 +122,8 @@ const ep = (
       }
     case 'UPDATE_GAME':
       return {
-        ...action.game.ep
+        ...state,
+        ...action.ep,
       }
     case 'PLAY_SELECTED':
       if (!action.pieces) { return state }

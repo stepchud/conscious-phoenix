@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import ReactModal from 'react-modal'
 import { ToastContainer, toast } from 'react-toastify'
 
-import { TURNS, GAME_ID } from '../constants'
+import { TURNS, getGameId, getPlayerId } from '../constants'
 import { gameActions, reduxStore } from '../events'
 
 import Buttons from './buttons'
@@ -11,42 +11,48 @@ import TestButtons from './test_buttons'
 import Board   from './board'
 import { CardHand, LawHand } from './cards'
 import FoodDiagram from './food'
-import { GameId, PlayerStats, ThreeBrains } from './being'
+import ThreeBrains from './being'
+import { GameId, PlayerStats } from './game_stats'
 import GameModal, { IntroModal, SetupModal } from './modal'
 
 import "react-toastify/dist/ReactToastify.css";
 
 export class ConsciousBoardgame extends React.Component {
 
-  onJoinGame = () => {
+  onJoinGame = (gid, name) => {
     const { channel } = this.props
-    const modal = reduxStore.getState().modal
-    const gid = modal.game || channel.gid
-    const name = modal.name
-    channel.join(gid)
-    this.props.channel.push('game:join', { gid, name })
-    localStorage.setItem(GAME_ID, gid)
+    const pid = getPlayerId()
+    this.props.channel.push('game:join', { gid, pid, name })
+  }
+
+  onContinueGame = (gid) => {
+    const { channel } = this.props
+    const pid = getPlayerId()
+    this.props.channel.push('game:continue', { gid, pid })
   }
 
   onStartGame = (name, sides) => {
     const { channel } = this.props
     this.props.channel.push('game:start', { name, sides })
-    localStorage.setItem(GAME_ID, channel.gid)
   }
 
   onRoll = async () => {
     await gameActions.onRollClick()
-    this.props.channel.push('game:end_turn', { game: reduxStore.getState() })
+    const game = reduxStore.getState()
+    const pid = getPlayerId()
+    console.log("saving game", game)
+    this.props.channel.push('game:end_turn', { pid, game })
   }
 
   componentWillUnmount () {
-    this.props.channel.diconnect()
+    this.props.channel.disconnect()
   }
 
   render () {
     const { channel } = this.props
     const { player, board, cards, laws, fd, ep, modal } = reduxStore.getState()
     const gameId = modal.gameId || channel.gid || ''
+    const playerId = getPlayerId()
 
     switch(board.current_turn) {
       case TURNS.setup:
@@ -58,6 +64,7 @@ export class ConsciousBoardgame extends React.Component {
             sides={modal.sides}
             onStart={this.onStartGame}
             onJoinGame={!!gameId && this.onJoinGame}
+            onContinueGame={!!playerId && this.onContinueGame}
             errorMessage={modal.error_message}
           />
         )
@@ -91,7 +98,7 @@ export class ConsciousBoardgame extends React.Component {
             }
             <ThreeBrains {...ep} onSelect={gameActions.onSelectPart} />
             <FoodDiagram {...fd} />
-            <GameId gid={gameId} />
+            <GameId gameId={getGameId()} playerId={playerId} />
             <GameModal {...modal} />
             <ToastContainer position={toast.POSITION.BOTTOM_CENTER} autoClose={4000} />
           </div>

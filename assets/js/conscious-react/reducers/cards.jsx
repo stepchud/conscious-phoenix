@@ -31,21 +31,26 @@ const generateDeck = () => {
   return shuffle(deck)
 }
 
-const drawCard = (state) => {
-  let deck = state.deck.slice(1)
-  let discards = state.discards
-  if (isEmpty(state.deck)) {
-    deck = shuffle(state.discards).slice(1)
+const drawCard = (state, count=1) => {
+  let deck = [...state.deck]
+  let discards = [...state.discards]
+  const hand = [...state.hand]
+  if (!deck.length) {
+    deck = shuffle(state.discards)
     discards = []
   }
-  const hand = sortedHand(state.hand.concat({ c: deck[0], selected: false }))
-
-  return {
+  const card = deck.shift()
+  hand.push({ c: card, selected: false })
+  const drawOne = {
     ...state,
+    hand: sortBySuitedRank(hand),
     deck,
-    discards,
-    hand,
+    discards
   }
+
+  return (count == 1)
+  ? drawOne
+  : drawCard(drawOne, count-1)
 }
 
 const suit = card => card[card.length-1]
@@ -98,7 +103,7 @@ const grouped = (...cards) => {
 }
 
 export const selectedCards = (cards) => cards.filter(c => c.selected).map(c => c.c)
-const sortedHand = (cards) => sortBy(cards, c => suitInt(c.c) + rankInt(c.c))
+const sortBySuitedRank = (cards) => sortBy(cards, c => suitInt(c.c) + rankInt(c.c))
 // cards can be played together to make new parts
 export const playable = (selected) => {
   if (selected.length == 0 || selected.length > 3) {
@@ -177,25 +182,12 @@ const cards = (
     case 'DRAW_CARD':
       return drawCard(state)
     case 'START_GAME':
-      const newDeck = generateDeck()
-      return {
-        ...state,
-        deck: newDeck.slice(7),
-        hand: sortedHand(
-          hand.concat([
-            { c: newDeck[0], selected: false },
-            { c: newDeck[1], selected: false },
-            { c: newDeck[2], selected: false },
-            { c: newDeck[3], selected: false },
-            { c: newDeck[4], selected: false },
-            { c: newDeck[5], selected: false },
-            { c: newDeck[6], selected: false },
-          ])
-        )
-      }
+      state.deck = deck.length ? deck : generateDeck()
+      return drawCard(state, 7)
     case 'UPDATE_GAME':
       return {
-        ...action.game.cards
+        ...state,
+        ...action.cards,
       }
     case 'SELECT_CARD': {
       const card = hand[action.card]
@@ -244,9 +236,7 @@ const cards = (
     case 'END_DEATH': {
       let nextState = { ...state }
       if (hand.length <= 7) {
-        for (let i=hand.length; i<7; i++) {
-          nextState = drawCard(nextState)
-        }
+        nextState = drawCard(nextState, 7 - hand.length)
       } else {
         // hand.length > 7
         let [nextHand, discarded] =  partition(hand, 'selected')
@@ -268,9 +258,7 @@ const cards = (
       const discarded = hand.slice()
       nextState.hand = []
       nextState.discards = [...discards, ...discarded]
-      for (let i=0; i<7; i++) {
-        nextState = drawCard(nextState)
-      }
+      nextState = drawCard(nextState, 7)
       return nextState
     }
     case 'CLEAR_PIECES':

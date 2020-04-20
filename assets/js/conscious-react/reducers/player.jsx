@@ -23,7 +23,7 @@ const player = (
         ...state,
       }
     case 'START_TURN':
-      const active = action.player === pid
+      const active = action.pid === pid
       return {
         active,
         ...state,

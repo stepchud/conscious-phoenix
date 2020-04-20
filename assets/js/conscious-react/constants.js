@@ -9,7 +9,14 @@ export const INITIAL_SPACES =
 
 export const LAST_SPACE = INITIAL_SPACES.length - 1
 
-export const GAME_ID = 'game_id'
+const GAME_ID = 'game_id'
+const PLAYER_ID = 'player_id'
+
+export const getGameId = () => localStorage.getItem(GAME_ID)
+export const setGameId = (gid) => localStorage.setItem(GAME_ID, gid)
+export const getPlayerId = () => localStorage.getItem(PLAYER_ID)
+export const setPlayerId = (pid) => localStorage.setItem(PLAYER_ID, pid)
+
 
 export const TURNS = {
   setup: 'setup',

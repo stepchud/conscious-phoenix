@@ -36,6 +36,7 @@ const JoinGameModal = ({
   gameId,
   name,
   onJoinGame,
+  onContinueGame,
   errorMessage,
 }) => {
   const body =
@@ -49,7 +50,10 @@ const JoinGameModal = ({
         <input type="text" name="game_id" placeholder={'Game ID'} value={gameId} onChange={onGameChange} />
       </label>
     </div>
-  const options = [{ text: 'Join Game', onClick: onJoinGame }]
+  const options = [{ text: 'Join Game', onClick: () => onJoinGame(gameId, name) }]
+  if (onContinueGame) {
+    options.push({ text: 'Continue Game', onClick: () => onContinueGame(gameId) })
+  }
   const props = {
     show: true,
     title: `Welcome back!`,
@@ -58,6 +62,7 @@ const JoinGameModal = ({
     errorMessage,
     escapable: false,
   }
+
   return <ModalComponent {...props} />
 }
 
@@ -100,11 +105,12 @@ const WaitGameModal = ({
 }) => {
   let body
   if (joiners.length) {
-    body =
+    body = <>
       <h3>Other players:</h3>
       <ol>
         {joiners.map(p => <li>{p}</li>)}
       </ol>
+    </>
   } else {
     body = <h3>Waiting for other players to join...</h3>
   }
@@ -130,18 +136,26 @@ export const SetupModal = ({
   onStart,
   gameId,
   onJoinGame,
+  onContinueGame,
   errorMessage,
 }) => {
   switch(step) {
   case 'new':
     return <PickGameModal />
   case 'join':
-    return <JoinGameModal name={name} gameId={gameId} onJoinGame={onJoinGame} errorMessage={errorMessage} />
+    return <JoinGameModal
+      name={name}
+      gameId={gameId}
+      onJoinGame={onJoinGame}
+      onContinueGame={onContinueGame}
+      errorMessage={errorMessage}
+    />
   case 'name':
     return <NewGameModal name={name} sides={sides} onStart={onStart} />
   case 'wait':
     return <WaitGameModal name={name} sides={sides} joiners={joiners} onStart={onStart} />
   default:
+    console.warn("SetupModal rendered with unknown step="+step)
     return null
   }
 }

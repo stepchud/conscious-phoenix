@@ -11,21 +11,24 @@ const modal = (
   switch (action.type) {
     case 'SHOW_MODAL':
       return {
+        ...state,
+        ...action,
         show: true,
-        ...action
       }
     case 'HIDE_MODAL':
       return {
-        show: false
+        ...state,
+        show: false,
       }
     case 'UPDATE_MODAL':
       return {
         ...state,
-        [action.field]: action.value
+        [action.field]: action.value,
       }
     case 'UPDATE_GAME':
       return {
-        ...action.game.modal
+        ...state,
+        ...action.modal,
       }
     case 'FOUND_SCHOOL':
       return {

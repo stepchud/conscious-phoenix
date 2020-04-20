@@ -5,6 +5,5 @@ export const hideModal = () => ({ type: 'HIDE_MODAL' })
 
 // Game Actions
 export const startGame = (name, pid, sides) => ({ type: 'START_GAME', name, pid, sides })
-export const joinGame = (updates) => ({ type: 'JOIN_GAME', ...updates })
 export const updateGame = (updates) => ({ type: 'UPDATE_GAME', ...updates })
 export const startTurn = (pid) => ({ type: 'START_TURN', pid })

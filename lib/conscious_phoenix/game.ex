@@ -15,11 +15,10 @@ defmodule ConsciousPhoenix.Game do
     laws:  %{ }
   )
 
-  def save_turn(game, updates) do
-    IO.puts "save_turn 1"
+  def save_turn(game, pid, updates) do
     game = save_game(game, updates)
-    IO.puts "save_turn 2"
-    %Game{ game | players: save_player(game.players, updates) }
+    players = save_player(pid, game.players, updates)
+    %Game{ game | players: players }
   end
 
   # TODO: implement the real next player rules
@@ -28,13 +27,15 @@ defmodule ConsciousPhoenix.Game do
     pid
   end
 
-  def save_player(players, updates) do
+  def save_player(pid, players, updates) do
     playerUpdate = Map.fetch!(updates, "player")
     boardUpdate = Map.fetch!(updates, "board")
     lawUpdate = Map.fetch!(updates, "laws")
     cardUpdate = Map.fetch!(updates, "cards")
-    pid = playerUpdate["pid"]
+    fd = Map.fetch!(updates, "fd")
+    ep = Map.fetch!(updates, "ep")
     player = players[pid]
+    IO.puts "save player:#{player.pid}, players:#{Map.keys(players)}"
     player = %Player{
       player |
       age: playerUpdate["age"],
@@ -45,8 +46,8 @@ defmodule ConsciousPhoenix.Game do
       laws_passed: boardUpdate["laws_passed"],
       hand: cardUpdate["hand"],
       laws: %{ active: lawUpdate["active"], hand: lawUpdate["hand"] },
-      fd: updates["fd"],
-      ep: updates["ep"]
+      fd: fd,
+      ep: ep,
     }
     put_in(players[pid], player)
   end

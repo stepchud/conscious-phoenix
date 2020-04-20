@@ -56,7 +56,8 @@ const board = (
       }
     case 'UPDATE_GAME':
       return {
-        ...action.game.board
+        ...state,
+        ...action.board,
       }
     case 'ROLL_DICE': {
       return {

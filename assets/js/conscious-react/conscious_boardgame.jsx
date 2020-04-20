@@ -4,10 +4,22 @@ import React from 'react'
 import Channel from './channel'
 import { reduxStore } from './events'
 import { renderRoot, ConsciousBoardgame } from './components/root'
-import { GAME_ID } from './constants'
+import { getGameId, getPlayerId } from './constants'
 
-const gid = localStorage.getItem(GAME_ID) || uuid().slice(0, 5)
-console.log("conscious_boardgame gid="+gid)
+let gid = getGameId()
+if (gid) {
+  console.log("found gid="+gid)
+} else {
+  // auto-generate a gid locally
+  gid = uuid().slice(0, 5)
+  console.log("generated new gid="+gid)
+}
+
+const pid = getPlayerId()
+if (pid) {
+  console.log("found pid="+pid)
+}
+
 const channel = new Channel()
 channel.join(gid)
 const render = renderRoot(channel)

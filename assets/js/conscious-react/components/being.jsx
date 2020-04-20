@@ -15,29 +15,6 @@ const mapPiece = (n, i) =>
     {times(n, (j) => <div key={i*j} className="piece" />)}
   </div>
 
-const PlayerStats = ({
-  name,
-  level_of_being,
-  card_plays,
-  transforms,
-  wild_shock,
-  all_shocks,
-  gid,
-}) =>
-  <div className="section lob">
-    {name},
-    Level: {level_of_being},
-    Card plays: {card_plays},
-    Transform: {transforms},
-    Wild: {wild_shock},
-    All: {all_shocks}
-  </div>
-
-const GameId = ({ gid }) =>
-  <div className="section gid">
-    Game: {gid}
-  </div>
-
 const ThreeBrains = ({
   parts,
   pieces,
@@ -68,8 +45,5 @@ const ThreeBrains = ({
     </div>
   )
 }
-export {
-  PlayerStats,
-  GameId,
-  ThreeBrains
-}
+
+export default ThreeBrains

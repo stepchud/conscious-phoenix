@@ -323,7 +323,8 @@ const foodDiagram = (
   switch(action.type) {
     case 'UPDATE_GAME':
       return {
-        ...action.game.fd
+        ...state,
+        ...action.fd,
       }
     case "ADVANCE_FOOD_DIAGRAM":
       return enterNotes({ current, enter, extras })

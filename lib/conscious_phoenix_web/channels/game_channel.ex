@@ -11,17 +11,22 @@ defmodule ConsciousPhoenixWeb.GameChannel do
   end
 
   def handle_in("game:start", %{"name" => name, "sides" => sides}, socket) do
-    GameServer.start(socket.assigns.gid, name, sides)
+    GameServer.start_game(socket.assigns.gid, name, sides)
     {:noreply, socket}
   end
 
-  def handle_in("game:join", %{"game" => gid, "pid" => pid, "name" => name}, socket) do
-    GameServer.join(socket.assigns.gid, gid, pid, name)
+  def handle_in("game:join", %{"gid" => gid, "pid" => pid, "name" => name}, socket) do
+    GameServer.join_game(socket.assigns.gid, gid, pid, name)
     {:noreply, socket}
   end
 
-  def handle_in("game:end_turn", %{"game" => game}, socket) do
-    GameServer.endTurn(socket.assigns.gid, game)
+  def handle_in("game:continue", %{"gid" => gid, "pid" => pid}, socket) do
+    GameServer.continue_game(socket.assigns.gid, gid, pid)
+    {:noreply, socket}
+  end
+
+  def handle_in("game:end_turn", %{"pid" => pid, "game" => game}, socket) do
+    GameServer.endTurn(socket.assigns.gid, pid, game)
     {:noreply, socket}
   end
 end

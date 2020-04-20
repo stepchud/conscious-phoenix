@@ -213,6 +213,7 @@ span.laws {
   background-color: #fefefe;
   margin: auto;
   width: 65%;
+  max-width: 480px;
   top: 40px;
   bottom: 40px;
   left: 40px;
@@ -225,13 +226,21 @@ span.laws {
   padding: 20px;
 }
 
+.modal-container {
+  text-align: center;
+}
+
 .modal-body {
   white-space: pre-line;
 }
 
+.modal-body input {
+  margin-left: 8px;
+  max-width: 300px;
+}
+
 .modal-buttons {
   width: 100%;
-  text-align: center;
 }
 
 .modal-buttons button {

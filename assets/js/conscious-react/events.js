@@ -648,10 +648,16 @@ const handleEndGame = async () => {
 
 export const gameActions = {
   onGameStarted: (name, pid, sides) => store.dispatch(startGame(name, pid, sides)),
-  onGameJoined: (payload) => store.dispatch(joinGame(payload)),
+  onGameJoined: (pid, payload) => {
+    const { player: { name }, board: { sides } } = payload
+    store.dispatch(startGame(name, pid, sides))
+    store.dispatch(updateGame(payload))
+  },
+  onGameContinued: (payload) => store.dispatch(updateGame(payload)),
   onTurnStarted: (pid) => store.dispatch(startTurn(pid)),
   onUpdateGame: (payload) => store.dispatch(updateGame(payload)),
   onUpdateModal: (props) => store.dispatch(updateModal(props)),
+  onShowModal: () => store.dispatch(showModal()),
   onHideModal: () => store.dispatch(hideModal()),
   onRollClick: handleRollClick,
   onEndDeath: endDeath,
@@ -686,7 +692,10 @@ export const gameActions = {
     title: 'basic',
     body: "has\nmany\n\nlines"
   }),
-  onToast: (message, type) => toast(message, { type }),
+  onToast: (message, level) => {
+    const type = level || toast.type.INFO
+    toast(message, { type })
+  },
   onRandomLaw: () => {
     const roll = Dice(store.getState().board.sides).roll()
     store.dispatch({ type: "ONE_BY_RANDOM", roll })

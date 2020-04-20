@@ -77,22 +77,21 @@ const isLawSuit = (suit, law) => {
 const isAce = (card) => ['AD','AC','AH','AS'].includes(card)
 const isJoker = (card) => 'JO'===card
 
-const drawLawCard = (state) => {
-  let {
-    hand,
-    deck,
-    discards,
-  } = state
+const drawLawCard = (state, count = 1) => {
+  let deck = [...state.deck]
+  let discards = [...state.discards]
+  const hand = [...state.hand]
   if (!deck.length) {
     deck = shuffle(discards)
     discards = []
   }
-  return {
-    ...state,
-    hand: hand.concat({ c: deck[0], selected: false }),
-    deck: deck.slice(1),
-    discards,
-  }
+  const card = deck.shift()
+  hand.push({ c: card, selected: false })
+  const drawOne = { ...state, hand, deck, discards }
+
+  return (count == 1)
+  ? drawOne
+  : drawLawCard(drawOne, count-1)
 }
 
 const testLawCard = (deck, law_text) => {
@@ -141,20 +140,14 @@ const laws = (
     case 'DRAW_LAW_CARD': {
       return drawLawCard(state)
     }
-    case 'START_GAME':
-      const newDeck = generateLawDeck()
-      return {
-        ...state,
-        deck: newDeck.slice(3),
-        hand: hand.concat([
-          { c: newDeck[0], selected: false },
-          { c: newDeck[1], selected: false },
-          { c: newDeck[2], selected: false }
-        ])
-      }
+    case 'START_GAME': {
+      state.deck = deck.length ? deck : generateLawDeck()
+      return drawLawCard(state, 3)
+    }
     case 'UPDATE_GAME':
       return {
-        ...action.game.laws
+        ...state,
+        ...action.laws,
       }
     case 'SELECT_LAW_CARD':
       const card = in_play[action.card]
