@@ -15,7 +15,7 @@ defmodule ConsciousPhoenix.Game do
     laws:  %{ }
   )
 
-  def save_turn(game, pid, updates) do
+  def save_state(game, pid, updates) do
     game = save_game(game, updates)
     players = save_player(pid, game.players, updates)
     %Game{ game | players: players }

@@ -17,7 +17,7 @@ import laws, {
 import fd, { entering, deathEvent, allNotes } from './reducers/food_diagram'
 import ep from './reducers/being'
 import modal from './reducers/modal'
-import { startGame, updateGame, startTurn, showModal, updateModal, hideModal } from './actions'
+import { startGame, joinGame, updateGame, startTurn, showModal, updateModal, hideModal } from './actions'
 
 const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal })
 const store = createStore(reducers)
@@ -647,12 +647,12 @@ const handleEndGame = async () => {
 }
 
 export const gameActions = {
-  onGameStarted: (name, pid, sides) => store.dispatch(startGame(name, pid, sides)),
-  onGameJoined: (pid, payload) => {
-    const { player: { name }, board: { sides } } = payload
-    store.dispatch(startGame(name, pid, sides))
-    store.dispatch(updateGame(payload))
+  onGameStarted: (pid, name, sides, channel) => {
+    store.dispatch(startGame(name, sides))
+    // save state so others can join immediately
+    channel.push('game:save_state', { pid, game: store.getState() })
   },
+  onGameJoined: (state) => store.dispatch(joinGame(state)),
   onGameContinued: (payload) => store.dispatch(updateGame(payload)),
   onTurnStarted: (pid) => store.dispatch(startTurn(pid)),
   onUpdateGame: (payload) => store.dispatch(updateGame(payload)),

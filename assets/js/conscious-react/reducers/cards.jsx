@@ -182,8 +182,11 @@ const cards = (
     case 'DRAW_CARD':
       return drawCard(state)
     case 'START_GAME':
-      state.deck = deck.length ? deck : generateDeck()
+      state.deck = generateDeck()
       return drawCard(state, 7)
+    case 'JOIN_GAME':
+      const joinedState = { ...state, ...action.state.cards }
+      return drawCard(joinedState, 7)
     case 'UPDATE_GAME':
       return {
         ...state,

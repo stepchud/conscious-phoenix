@@ -54,6 +54,12 @@ const board = (
         current_turn: TURNS.randomLaw,
         sides: parseInt(action.sides),
       }
+    case 'JOIN_GAME':
+      return {
+        ...state,
+        current_turn: TURNS.randomLaw,
+        sides: parseInt(action.state.board.sides),
+      }
     case 'UPDATE_GAME':
       return {
         ...state,

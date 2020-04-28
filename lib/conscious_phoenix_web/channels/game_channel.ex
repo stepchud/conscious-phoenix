@@ -6,7 +6,7 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     IO.puts "Join #{gid}"
     socket = socket
       |> assign(:gid, gid)
-    state = GameServer.getGame(gid)
+    state = GameServer.get_game(gid)
     {:ok, state, socket}
   end
 
@@ -26,7 +26,12 @@ defmodule ConsciousPhoenixWeb.GameChannel do
   end
 
   def handle_in("game:end_turn", %{"pid" => pid, "game" => game}, socket) do
-    GameServer.endTurn(socket.assigns.gid, pid, game)
+    GameServer.end_turn(socket.assigns.gid, pid, game)
+    {:noreply, socket}
+  end
+
+  def handle_in("game:save_state", %{"pid" => pid, "game" => game}, socket) do
+    GameServer.save_state(socket.assigns.gid, pid, game)
     {:noreply, socket}
   end
 end

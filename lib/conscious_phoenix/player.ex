@@ -19,13 +19,13 @@ defmodule ConsciousPhoenix.Player do
     :completed_trip,
     :death_space,
     :laws_passed,
-    :hand,
     :fd,
     :ep,
-    laws: %{ }
+    hand: [ ],
+    laws: %{ active: [ ], hand: [ ] }
   ])
 
   def generate_pid() do
-    String.slice(UUID.uuid4(), 0, 5)
+    String.slice(UUID.uuid4(), 0, 6)
   end
 end

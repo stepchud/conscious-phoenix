@@ -23,7 +23,35 @@ const GameId = ({ gameId, playerId }) =>
     Game: {gameId}, Player: {playerId}
   </div>
 
+
+const LogEntry = ({
+  name,
+  text,
+  color,
+}) =>
+  <div className='log-entry' style={{ color: `#${color}` }}>
+    <span className='name'>{name}:</span>
+    <span className='log-event'>{text}</span>
+  </div>
+
+const GameLog = ({
+  entries,
+  expanded,
+  onToggle,
+}) => {
+  const cn = expanded ? 'view-log active' : 'view-log'
+  return (
+    <div>
+      <button className={cn} onClick={onToggle}>{expanded ? '' : 'View '}Game Log</button>
+      <div className='game-events'>
+        {entries.map(e => <LogEntry {...e} />)}
+      </div>
+    </div>
+  )
+}
+
 export {
   PlayerStats,
   GameId,
+  GameLog,
 }

@@ -11,7 +11,7 @@ if (gid) {
   console.log("found gid="+gid)
 } else {
   // auto-generate a gid locally
-  gid = uuid().slice(0, 5)
+  gid = uuid().slice(0, 6)
   console.log("generated new gid="+gid)
 }
 

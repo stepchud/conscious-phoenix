@@ -49,8 +49,8 @@ const localState = (payload) => {
 
 export default function Connect() {
   const scheme = location.protocol.startsWith('https') ? 'wss' : 'ws'
-  const url = location.port === "" ? location.hostname : `${location.hostname}:${location.port}`
-  this.socket = new Socket(`${scheme}://${url}/socket`, {})
+  //const url = location.port === "" ? location.hostname : `${location.hostname}:${location.port}`
+  this.socket = new Socket(`${scheme}://${location.host}/socket`, {})
   this.socket.connect()
 
   this.leave = () => {
@@ -82,7 +82,7 @@ export default function Connect() {
     this.channel.on("game:started", payload => {
       const { name, pid, sides } = payload
       setPlayerId(pid)
-      gameActions.onGameStarted(name, pid, sides)
+      gameActions.onGameStarted(pid, name, sides, this.channel)
     })
     this.channel.on("game:update", payload => {
       console.log('game:update', payload)
@@ -104,7 +104,7 @@ export default function Connect() {
       this.join(gid)
       if (getPlayerId() !== pid) { setPlayerId(pid) }
       const state = localState(payload)
-      gameActions.onGameJoined(pid, state)
+      gameActions.onGameJoined(state)
       gameActions.onHideModal()
     })
     this.channel.on("game:continued", payload => {
@@ -118,6 +118,9 @@ export default function Connect() {
       } else {
         console.warn("mismatched pid for continue")
       }
+    })
+    this.channel.on("game:saved", payload => {
+      console.log(`game saved for ${payload.pid}`)
     })
     this.channel.on("modal:error", payload => {
       const { error } = payload

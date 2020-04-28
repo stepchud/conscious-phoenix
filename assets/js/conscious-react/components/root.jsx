@@ -40,7 +40,6 @@ export class ConsciousBoardgame extends React.Component {
     await gameActions.onRollClick()
     const game = reduxStore.getState()
     const pid = getPlayerId()
-    console.log("saving game", game)
     this.props.channel.push('game:end_turn', { pid, game })
   }
 

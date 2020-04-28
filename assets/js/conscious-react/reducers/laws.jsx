@@ -137,13 +137,14 @@ const laws = (
     discards,
   } = state
   switch(action.type) {
-    case 'DRAW_LAW_CARD': {
+    case 'DRAW_LAW_CARD':
       return drawLawCard(state)
-    }
-    case 'START_GAME': {
-      state.deck = deck.length ? deck : generateLawDeck()
+    case 'START_GAME':
+      state.deck = generateLawDeck()
       return drawLawCard(state, 3)
-    }
+    case 'JOIN_GAME':
+      const joinedState = { ...state, ...action.state.laws }
+      return drawLawCard(joinedState, 3)
     case 'UPDATE_GAME':
       return {
         ...state,

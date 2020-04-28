@@ -18,7 +18,7 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.start_link(__MODULE__, :ok, name: name)
   end
 
-  def getGame(gid) do
+  def get_game(gid) do
     GenServer.call(__MODULE__, %{action: :get_game, gid: gid})
   end
 
@@ -34,8 +34,12 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :continue_game, assigns_gid: assigns_gid, gid: gid, pid: pid})
   end
 
-  def endTurn(gid, pid, game) do
+  def end_turn(gid, pid, game) do
     GenServer.cast(__MODULE__, %{action: :end_turn, gid: gid, pid: pid, game: game})
+  end
+
+  def save_state(gid, pid, game) do
+    GenServer.cast(__MODULE__, %{action: :save_state, gid: gid, pid: pid, game: game})
   end
 
   def reset() do
@@ -112,9 +116,10 @@ defmodule ConsciousPhoenix.GameServer do
       Endpoint.broadcast!("game:#{assigns_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
-      IO.puts "found a game with players #{Map.keys(game.players)}"
+      IO.puts "found a game with players #{Enum.join(Map.keys(game.players), ", ")}"
       {msg, game, pid} = join_player(game, pid, name)
       state = put_in(state.games[gid], game)
+      IO.puts "game now has players #{Enum.join(Map.keys(state.games[gid].players), ", ")}"
       Endpoint.broadcast!( "game:#{assigns_gid}", msg, %{ gid: gid, pid: pid, game: game })
       {:noreply, state}
     end
@@ -122,10 +127,19 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{:action => :end_turn, :gid => gid, :pid => pid, :game => updates}, state) do
     # Save the game state...
-    game = Game.save_turn(state.games[gid], pid, updates)
+    game = Game.save_state(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
     nextPid = Game.next_turn(game)
     Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid })
+    {:noreply, state}
+  end
+
+  def handle_cast(%{:action => :save_state, :gid => gid, :pid => pid, :game => updates}, state) do
+    IO.puts "state saved"
+    # Save the game state...
+    game = Game.save_state(state.games[gid], pid, updates)
+    state = put_in(state.games[gid], game)
+    Endpoint.broadcast!("game:#{gid}", "game:saved", %{ pid: pid })
     {:noreply, state}
   end
 
@@ -151,12 +165,12 @@ defmodule ConsciousPhoenix.GameServer do
   defp join_player(game, pid, name) do
     case { pid, game.players[pid] } do
       { nil, _ } ->
-        IO.puts "new player without pid joined"
         player = %Player{ name: name, pid: Player.generate_pid() }
+        IO.puts "new player pid joined: #{player.pid}"
         game = put_in(game.players, Map.put(game.players, player.pid, player))
         {"game:joined", game, player.pid}
       { _, nil } ->
-        IO.puts "player with pid joined:#{pid}"
+        IO.puts "existing pid joined:#{pid}"
         player = %Player{ name: name, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
         {"game:joined", game, pid}

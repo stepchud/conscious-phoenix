@@ -18,9 +18,9 @@ const Dice = ({
   return <span className="dice">{roll}</span>
 }
 
-const Message = ({ turn, hasLaws }) => {
+const Message = ({ turn, hasLaws, waiting }) => {
   let message = ''
-  if (turn==TURNS.wait) {
+  if (waiting) {
     message = "Waiting for your turn..."
   } else if (turn===TURNS.choiceLaw) {
     message = '* Choose a law card from your hand'
@@ -36,12 +36,15 @@ const Message = ({ turn, hasLaws }) => {
 const Buttons = ({
   actions,
   turn,
+  waiting,
   laws,
   cards,
   hasLaws,
   ep,
   onRoll,
 }) => {
+  if (waiting) { return [] }
+
   const buttons = []
   const asleep = jackDiamonds(laws.active)
   const nopowers = jackHearts(laws.active)
@@ -103,7 +106,7 @@ const ButtonRow = ({
   return (
     <div className="section actions fixed-nav">
       <Dice roll={roll} />
-      <Buttons hasLaws={hasLaws} turn={turn} {...props} />
+      <Buttons hasLaws={hasLaws} turn={turn} waiting={waiting} {...props} />
       <Message turn={turn} hasLaws={hasLaws} waiting={waiting} />
     </div>
   )
