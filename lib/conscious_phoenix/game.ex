@@ -12,19 +12,23 @@ defmodule ConsciousPhoenix.Game do
     players: %{ },
     board: %{ },
     cards: %{ },
-    laws:  %{ }
+    laws:  %{ },
+    turns: [ ],
   )
 
   def save_state(game, pid, updates) do
     game = save_game(game, updates)
     players = save_player(pid, game.players, updates)
-    %Game{ game | players: players }
+    turns = [pid | List.delete(game.turns)]
+    %Game{ game | players: players, turns: turns }
   end
 
-  # TODO: implement the real next player rules
+  # TODO: edge case when everyone is on first space
   def next_turn(game) do
-    { pid, _ } = Enum.random(game.players)
-    pid
+    game.players
+    |> filter_active
+    |> filter_min_position
+    |> last_by_turns(game.turns)
   end
 
   def save_player(pid, players, updates) do
@@ -59,6 +63,30 @@ defmodule ConsciousPhoenix.Game do
       cards: %{ deck: cardUpdate["deck"], discards: cardUpdate["discards"] },
       laws: %{ deck: lawUpdate["deck"], discards: lawUpdate["discards"] }
     }
+  end
+
+  defp filter_active(players) do
+    Enum.filter(players, fn {_, player} -> player.status == Player.Statuses.active end)
+  end
+
+  defp min_position(players) do
+    players
+    |> Map.values
+    |> Enum.sort
+    |> hd
+  end
+
+  defp filter_min_position(players) do
+    position = min_position(players)
+    Enum.filter(players, fn {_, player} -> player.position === position end)
+  end
+
+  defp last_by_turns(players, turns) do
+    turns
+    |> Enum.map(fn pid -> players[pid] end)
+    |> Enum.reject(&is_nil(&1))
+    |> hd
+    |> elem(0)
   end
 end
 

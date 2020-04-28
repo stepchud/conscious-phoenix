@@ -52,8 +52,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_call(%{action: :get_game, gid: gid}, _, state) do
-    IO.puts "Games (#{map_size(state.games)}):"
-    Enum.each(state.games, fn {gid, _} -> IO.puts "gid=#{gid}" end)
+    IO.puts "Games (#{map_size(state.games)}): [#{Enum.join(Enum.keys(state.games), ", ")}]"
     {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
