@@ -1,12 +1,9 @@
 defmodule ConsciousPhoenix.Player do
   # alias __MODULE__
-  Statuses = %{
-    active: :active,
-    away: :away,
-    dead: :dead,
-    complete: :complete,
-    quit: :quit,
-  }
+
+  @statuses %{ active: :active, away: :away, dead: :dead, complete: :complete, quit: :quit }
+
+  def statuses, do: @statuses
 
   @derive {Jason.Encoder,
     only: [
@@ -28,7 +25,7 @@ defmodule ConsciousPhoenix.Player do
     :laws_passed,
     :fd,
     :ep,
-    status: Statuses.active,
+    status: @statuses.active,
     hand: [ ],
     laws: %{ active: [ ], hand: [ ] },
   ])

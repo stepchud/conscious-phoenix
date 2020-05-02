@@ -52,7 +52,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_call(%{action: :get_game, gid: gid}, _, state) do
-    IO.puts "Games (#{map_size(state.games)}): [#{Enum.join(Enum.keys(state.games), ", ")}]"
+    IO.puts "Games (#{map_size(state.games)}): [#{Enum.join(Map.keys(state.games), ", ")}]"
     {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
@@ -94,7 +94,6 @@ defmodule ConsciousPhoenix.GameServer do
           )
           {:noreply, state}
         { _, _ } ->
-          IO.puts "existing player continued #{gid}:#{pid}"
           Endpoint.broadcast!(
             "game:#{assigns_gid}",
             "game:continued",
@@ -115,10 +114,9 @@ defmodule ConsciousPhoenix.GameServer do
       Endpoint.broadcast!("game:#{assigns_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
-      IO.puts "found a game with players #{Enum.join(Map.keys(game.players), ", ")}"
       {msg, game, pid} = join_player(game, pid, name)
       state = put_in(state.games[gid], game)
-      IO.puts "game now has players #{Enum.join(Map.keys(state.games[gid].players), ", ")}"
+      IO.inspect Map.keys(state.games[gid].players), label: "game players"
       Endpoint.broadcast!( "game:#{assigns_gid}", msg, %{ gid: gid, pid: pid, game: game })
       {:noreply, state}
     end
@@ -128,13 +126,12 @@ defmodule ConsciousPhoenix.GameServer do
     # Save the game state...
     game = Game.save_state(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
-    nextPid = Game.next_turn(game)
+    nextPid = Game.next_pid(game)
     Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid })
     {:noreply, state}
   end
 
   def handle_cast(%{:action => :save_state, :gid => gid, :pid => pid, :game => updates}, state) do
-    IO.puts "state saved"
     # Save the game state...
     game = Game.save_state(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
@@ -173,7 +170,7 @@ defmodule ConsciousPhoenix.GameServer do
         player = %Player{ name: name, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
         {"game:joined", game, pid}
-      true -> # continue game
+      { _, _ } -> # continue game
         IO.puts "existing player continued:#{pid}"
         {"game:continued", game, pid}
     end

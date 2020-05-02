@@ -13,18 +13,17 @@ defmodule ConsciousPhoenix.Game do
     board: %{ },
     cards: %{ },
     laws:  %{ },
-    turns: [ ],
+    turns: [ ]
   )
 
   def save_state(game, pid, updates) do
     game = save_game(game, updates)
     players = save_player(pid, game.players, updates)
-    turns = [pid | List.delete(game.turns)]
+    turns = [pid | List.delete(game.turns, pid)]
     %Game{ game | players: players, turns: turns }
   end
 
-  # TODO: edge case when everyone is on first space
-  def next_turn(game) do
+  def next_pid(game) do
     game.players
     |> filter_active
     |> filter_min_position
@@ -39,7 +38,6 @@ defmodule ConsciousPhoenix.Game do
     fd = Map.fetch!(updates, "fd")
     ep = Map.fetch!(updates, "ep")
     player = players[pid]
-    IO.puts "save player:#{player.pid}, players:#{Map.keys(players)}"
     player = %Player{
       player |
       age: playerUpdate["age"],
@@ -66,12 +64,14 @@ defmodule ConsciousPhoenix.Game do
   end
 
   defp filter_active(players) do
-    Enum.filter(players, fn {_, player} -> player.status == Player.Statuses.active end)
+    Enum.filter(players, fn {_, player} -> player.status == Player.statuses().active end)
+    |> Enum.into(%{})
   end
 
   defp min_position(players) do
     players
     |> Map.values
+    |> Enum.map(fn p -> p.position end)
     |> Enum.sort
     |> hd
   end
@@ -79,14 +79,19 @@ defmodule ConsciousPhoenix.Game do
   defp filter_min_position(players) do
     position = min_position(players)
     Enum.filter(players, fn {_, player} -> player.position === position end)
+    |> Enum.into(%{})
   end
 
   defp last_by_turns(players, turns) do
-    turns
-    |> Enum.map(fn pid -> players[pid] end)
-    |> Enum.reject(&is_nil(&1))
+    players
+    |> Map.keys
+    |> Enum.sort_by(
+      fn pid -> Enum.find_index(turns,
+        fn turnPid ->
+          pid == turnPid
+        end)
+      end)
     |> hd
-    |> elem(0)
   end
 end
 

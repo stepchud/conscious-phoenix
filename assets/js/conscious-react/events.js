@@ -649,10 +649,12 @@ const handleEndGame = async () => {
 export const gameActions = {
   onGameStarted: (pid, name, sides, channel) => {
     store.dispatch(startGame(name, sides))
-    // save state so others can join immediately
     channel.push('game:save_state', { pid, game: store.getState() })
   },
-  onGameJoined: (state) => store.dispatch(joinGame(state)),
+  onGameJoined: (pid, state, channel) => {
+    store.dispatch(joinGame(state))
+    channel.push('game:save_state', { pid, game: store.getState() })
+  },
   onGameContinued: (payload) => store.dispatch(updateGame(payload)),
   onTurnStarted: (pid) => store.dispatch(startTurn(pid)),
   onUpdateGame: (payload) => store.dispatch(updateGame(payload)),

@@ -104,7 +104,7 @@ export default function Connect() {
       this.join(gid)
       if (getPlayerId() !== pid) { setPlayerId(pid) }
       const state = localState(payload)
-      gameActions.onGameJoined(state)
+      gameActions.onGameJoined(pid, state, this.channel)
       gameActions.onHideModal()
     })
     this.channel.on("game:continued", payload => {
