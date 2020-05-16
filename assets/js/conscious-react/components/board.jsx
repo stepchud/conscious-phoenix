@@ -9,26 +9,39 @@ const classMap = {
   'L': 'law',
   'D': 'decay',
 }
-const spaceElem = (space, index, position) =>
-  (<span key={index} className={`${classMap[space]} ${index==position ? 'player' : ''}`}></span>)
 
-const split = (spaces, position) => ({
-  before: spaces.slice(0, position),
-  at: spaces.slice(position, position+1),
-  after: spaces.slice(position+1, spaces.length),
-})
-
-const board = ({
-  spaces,
-  position,
+const Space = ({
+  space,
+  index,
+  players
 }) => {
-  const spacesMapped = spaces.split('').map((letter, index) => spaceElem(letter, index, position))
+  const playersAtIndex = players.filter(p => p.position===index)
+
+  return (
+    <span key={`space-wrap-${index}`} className="space-wrap">
+      <span key={`space-${index}`} className={`${classMap[space]}`}></span>
+      { playersAtIndex.map(
+        (player, pIdx) =>
+        <span key={`player-${index}-${pIdx}`} className="player" style={{top: `${-3 * (pIdx+1)}px`, "backgroundColor": `#${player.pid}`}}></span>
+        )
+      }
+    </span>
+  )
+}
+
+const Board = ({
+  spaces,
+  players,
+}) => {
+  const spacesElements = spaces.split('').map(
+    (space, index) => <Space key={index} space={space} index={index} players={players} />
+  )
   return (
     <div className="section board">
       <h3>Board</h3>
-      {spacesMapped}
+      {spacesElements}
     </div>
   )
 }
 
-export default board
+export default Board

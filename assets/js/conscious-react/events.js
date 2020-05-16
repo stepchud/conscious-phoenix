@@ -1,12 +1,9 @@
-import { bindActionCreators, combineReducers, createStore} from 'redux'
 import { toast } from 'react-toastify'
 
-import { Dice } from './constants'
-// reducers
-import player from './reducers/player'
-import board from './reducers/board'
-import cards, { sameSuit, makeFaceCard } from './reducers/cards'
-import laws, {
+import store from './redux_store'
+import actions from './actions'
+import { makeFaceCard } from './reducers/cards'
+import {
   hasnamuss,
   jackDiamonds,
   jackClubs,
@@ -14,18 +11,14 @@ import laws, {
   tenSpades,
   cantChooseLaw,
 } from './reducers/laws'
-import fd, { entering, deathEvent, allNotes } from './reducers/food_diagram'
-import ep from './reducers/being'
-import modal from './reducers/modal'
-import { startGame, joinGame, updateGame, startTurn, showModal, updateModal, hideModal } from './actions'
+import { entering, deathEvent, allNotes } from './reducers/food_diagram'
+import { BOARD_SPACES, LAST_SPACE, Dice, getPlayer, noop } from './constants'
 
-const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal })
-const store = createStore(reducers)
-const dispatchShowModal = (props) => store.dispatch(showModal(props))
+const dispatchShowModal = (props) => store.dispatch(actions.showModal(props))
 const promiseShowModal = (props) => {
   return new Promise((resolve, reject) => {
     const modalProps = Object.assign({}, props, { onResolve: resolve })
-    const show = showModal(modalProps)
+    const show = actions.showModal(modalProps)
     dispatchShowModal(modalProps)
   })
 }
@@ -200,20 +193,22 @@ const presentEvent = (event) => {
     case 'CANT-CHOOSE-DEATH':
       dispatchShowModal({
         title: "Can't choose death",
-        body: "You can't choose death when there are other options available."
+        body: "You can't choose death when there are other options available.",
+        onClick: noop,
       })
       break
     case 'CANT-CHOOSE-HASNAMUSS':
       dispatchShowModal({
         title: "Can't choose hasnamuss",
-        body: "You can't choose hasnamuss when there are other non-death options available."
+        body: "You can't choose hasnamuss when there are other non-death options available.",
+        onClick: noop,
       })
       break
     case 'GAME-OVER':
       dispatchShowModal({
         title: 'Game over :(',
         body: 'Nothing else to do but try again.',
-        onClick: () => { }
+        onClick: noop,
       })
       break
     case 'ASTRAL-DEATH':
@@ -241,7 +236,8 @@ const presentEvent = (event) => {
       const { num_brains } = store.getState().ep
       dispatchShowModal({
         title: 'Reincarnated',
-        body: `You reincarnated as a ${num_brains}-brained being. Each roll multiplies by ${4-num_brains}.`
+        body: `You reincarnated as a ${num_brains}-brained being. Each roll multiplies by ${4-num_brains}.`,
+        onClick: noop,
       })
       break
     case 'CAUSAL-DEATH':
@@ -524,7 +520,7 @@ const handleRollClick = async () => {
   store.dispatch({ type: 'ROLL_DICE' })
 
   const {
-    board: { position: initial_position },
+    player: { position, direction, alive },
     ep: { num_brains, level_of_being },
     laws: { active },
   } = store.getState()
@@ -566,25 +562,16 @@ const handleRollClick = async () => {
 
   roll = store.getState().board.roll
   const roll_multiplier = 4 - num_brains
-  store.dispatch({ type: 'MOVE_ROLL', roll_multiplier })
-  const { position, spaces, laws_cancel } = store.getState().board
-  const spaces_passed = roll < 2 ? '' : spaces.substring(initial_position+1, position)
-  for (let s of spaces_passed) {
-    if (s==='L' && !asleep) {
-      store.dispatch({ type: 'DRAW_LAW_CARD' })
-      store.dispatch({ type: 'PASS_LAW' })
-    }
-  }
-  for (let card of laws_cancel) {
-    store.dispatch({ type: 'REMOVE_ACTIVE', card })
-  }
-
+  let next_position = (roll_multiplier * roll) * direction + position
+  if (next_position < 0) { next_position = 0 }
+  if (next_position > LAST_SPACE) { next_position = LAST_SPACE }
+  store.dispatch({ type: 'MOVE_SPACE', position, next_position, alive, asleep })
   const stillAsleep = jackDiamonds(store.getState().laws.active)
 
   // no stuff while asleep
   if (stillAsleep) { return }
 
-  switch(spaces[position]) {
+  switch(BOARD_SPACES[next_position]) {
     case 'F':
       await dispatchWithExtras({ type: 'EAT_FOOD' })()
       break;
@@ -595,15 +582,19 @@ const handleRollClick = async () => {
       await dispatchWithExtras({ type: 'TAKE_IMPRESSION' })()
       break;
     case 'C':
-      store.dispatch({ type: 'DRAW_CARD' })
+      if (alive) {
+        store.dispatch({ type: 'DRAW_CARD' })
+      } else {
+        await handleDecay()
+      }
       break;
     case 'L':
-      store.dispatch({ type: 'DRAW_LAW_CARD' })
-      store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
-      break;
-    case 'D':
-      await handleDecay()
-      break;
+      if (alive) {
+        store.dispatch({ type: 'DRAW_LAW_CARD' })
+        store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
+        break;
+      }
+    // NOTE: Dead players fall through to Wild here
     case '*':
       store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
       await promiseShowModal({
@@ -648,19 +639,24 @@ const handleEndGame = async () => {
 
 export const gameActions = {
   onGameStarted: (pid, name, sides, channel) => {
-    store.dispatch(startGame(name, sides))
+    store.dispatch(actions.startGame(name, sides))
     channel.push('game:save_state', { pid, game: store.getState() })
   },
   onGameJoined: (pid, state, channel) => {
-    store.dispatch(joinGame(state))
+    store.dispatch(actions.joinGame(state))
     channel.push('game:save_state', { pid, game: store.getState() })
   },
-  onGameContinued: (payload) => store.dispatch(updateGame(payload)),
-  onTurnStarted: (pid) => store.dispatch(startTurn(pid)),
-  onUpdateGame: (payload) => store.dispatch(updateGame(payload)),
-  onUpdateModal: (props) => store.dispatch(updateModal(props)),
-  onShowModal: () => store.dispatch(showModal()),
-  onHideModal: () => store.dispatch(hideModal()),
+  onGameContinued: (payload) => store.dispatch(actions.updateGame(payload)),
+  onGameSaved: ({ players }) => store.dispatch(actions.updatePlayerPositions(players)),
+  onTurnStarted: ({ pid, players }) => {
+    store.dispatch(actions.updatePlayerPositions(players))
+    store.dispatch(actions.startTurn(pid))
+  },
+  onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
+  onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
+  onEventLog: (event) => store.dispatch(actions.logEvent(event)),
+  onShowModal: () => store.dispatch(actions.showModal()),
+  onHideModal: () => store.dispatch(actions.hideModal()),
   onRollClick: handleRollClick,
   onEndDeath: endDeath,
   onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),

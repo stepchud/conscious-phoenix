@@ -1,33 +1,46 @@
 defmodule ConsciousPhoenix.Player do
   # alias __MODULE__
 
-  @statuses %{ active: :active, away: :away, dead: :dead, complete: :complete, quit: :quit }
+  @statuses %{ present: :present, away: :away, done: :done, quit: :quit }
 
   def statuses, do: @statuses
 
   @derive {Jason.Encoder,
     only: [
-      :pid, :name, :age,
-      :position, :current_turn, :completed_trip,
-      :death_space, :laws_passed,
-      :hand, :laws, :fd, :ep, :status
+      :pid,
+      :name,
+      :current_turn,
+      :death_space,
+      :laws_passed,
+      :fd,
+      :ep,
+      :age,
+      :position,
+      :direction,
+      :completed_trips,
+      :alive,
+      :hand,
+      :laws,
+      :status
     ]
   }
 
   defstruct([
     :pid,
     :name,
-    :age,
-    :position,
     :current_turn,
-    :completed_trip,
     :death_space,
     :laws_passed,
     :fd,
     :ep,
-    status: @statuses.active,
+    age: 0,
+    position: 0,
+    direction: 1,
+    completed_trips: 0,
+    alive: true,
     hand: [ ],
     laws: %{ active: [ ], hand: [ ] },
+    status: @statuses.present,
   ])
 
   def generate_pid() do

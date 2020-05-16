@@ -50,6 +50,16 @@
   word-wrap: break-word;
 }
 
+blockquote .board {
+  position: relative;
+  height: 0;
+  top: -40px;
+}
+
+.board .space-wrap {
+  position: relative;
+}
+
 .board span {
   height: 16px;
   width: 16px;
@@ -58,36 +68,64 @@
   margin: 1px;
 }
 
-.board span.wild {
-  background-color: #C62168;
+.board .description {
+  position: absolute;
+  top: 0px;
+  left: 20px;
 }
 
-.board span.food {
+.board .wild {
+  background-color: #BB3EDA;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.board .food {
   background-color: #F6D155;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
-.board span.air {
+.board .air {
   background-color: #95DEE3;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
-.board span.impression {
+.board .impression {
   background-color: #FA9A85;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
-.board span.card {
-  background-color: #D1B894;
+.board .card {
+  background-color: #CBCBCB;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
-.board span.law {
-  background-color: #264E36;
+.board .law {
+  background-color: #65B384;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
-.board span.decay {
+.board .decay {
   background-color: grey;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
-.board span.player {
-  box-shadow: 0 0 0 2px black;
+.board .player {
+  position: absolute;
+  left: 0px;
 }
 
 .cards .card {

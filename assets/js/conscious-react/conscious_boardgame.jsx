@@ -2,7 +2,7 @@ import uuid from 'uuid/v4'
 import React from 'react'
 
 import Channel from './channel'
-import { reduxStore } from './events'
+import Store from './redux_store'
 import { renderRoot, ConsciousBoardgame } from './components/root'
 import { getGameId, getPlayerId } from './constants'
 
@@ -25,6 +25,6 @@ channel.join(gid)
 const render = renderRoot(channel)
 
 // re-render each redux store change
-reduxStore.subscribe(render)
+Store.subscribe(render)
 
 export default ConsciousBoardgame

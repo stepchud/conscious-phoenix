@@ -1,13 +1,24 @@
 import { findIndex } from 'lodash/array'
 
-export const INITIAL_SPACES =
+export const noop = () => {}
+
+export const BOARD_SPACES =
   '*AFAIFCACFFCIAACFFICAFACCFICFAAFCCLAFICCFAFICAFCC' +
   'IAACFFICAICAFFICCAAIFCLLCFFIAAICCFIACIFACIAFICAIL' +
   'FCAACICCFAICFFACICAIFCCFICACFALLCCFACCCFICFCAICCI' +
   'AFFICAALCCIFACCCIFICAACCICFFCCIAFCCALLCCCAFFACIAF' +
   'CCIACFACILCAFFCCAIAFCCIACFFICCCAICCFCALLCCAAFCIC*'
 
-export const LAST_SPACE = INITIAL_SPACES.length - 1
+export const LAST_SPACE = BOARD_SPACES.length - 1
+export const lawsPassed = (position, next_position) => {
+  let laws
+  if (position > next_position) {
+    laws = BOARD_SPACES.substring(position+1, next_position).match(/L/g)
+  } else {
+    laws = BOARD_SPACES.substring(position+1, next_position).match(/L/g)
+  }
+  return laws ? laws.length : 0
+}
 
 const GAME_ID = 'game_id'
 const PLAYER_ID = 'player_id'
@@ -16,7 +27,8 @@ export const getGameId = () => localStorage.getItem(GAME_ID)
 export const setGameId = (gid) => localStorage.setItem(GAME_ID, gid)
 export const getPlayerId = () => localStorage.getItem(PLAYER_ID)
 export const setPlayerId = (pid) => localStorage.setItem(PLAYER_ID, pid)
-
+export const getPlayer = (players) => players.find(p => p.pid === getPlayerId())
+export const getPlayerIndex = (players) => players.findIndex(p => p.pid === getPlayerId())
 
 export const TURNS = {
   setup: 'setup',
@@ -178,8 +190,7 @@ export const LAW_DECK = [
     "card": "JD",
     "text": "MECHANICAL LIFE:\nSTAY ASLEEP FOR\n21 SPACES.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 18},
-      {type: 'MECHANICAL', card: 'JD', for: 21},
+      {type: 'ACTIVE_LAW', card: 18, until: 21},
     ]
   },
   {
@@ -335,8 +346,7 @@ export const LAW_DECK = [
     "card": "JC",
     "text": "MECHANICAL LIFE:\nLOSE YOUR SKILLS\nFOR 37 SPACES.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 40},
-      {type: 'MECHANICAL', card: 'JC', for: 37},
+      {type: 'ACTIVE_LAW', card: 40, until: 37},
     ]
   },
   {
@@ -470,8 +480,7 @@ export const LAW_DECK = [
     "card": "JH",
     "text": "MECHANICAL LIFE:\nLOSE YOUR POWERS\nFOR 33 SPACES.",
     "actions": [
-      {type: 'ACTIVE_LAW', card: 58},
-      {type: 'MECHANICAL', card: 'JH', for: 33},
+      {type: 'ACTIVE_LAW', card: 58, until: 33},
     ]
   },
   {

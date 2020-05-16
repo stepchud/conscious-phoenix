@@ -1,5 +1,8 @@
 import React from 'react'
 
+import { getGameId, getPlayerId } from '../constants'
+import { getPlayerName } from '../reducers/board'
+
 const PlayerStats = ({
   name,
   level_of_being,
@@ -18,33 +21,36 @@ const PlayerStats = ({
     All: {all_shocks}
   </div>
 
-const GameId = ({ gameId, playerId }) =>
+const GameId = () =>
   <div className="section game-id">
-    Game: {gameId}, Player: {playerId}
+    Game: {getGameId()}, Player: {getPlayerId()}
   </div>
 
 
 const LogEntry = ({
-  name,
-  text,
-  color,
+  pid,
+  entry,
 }) =>
-  <div className='log-entry' style={{ color: `#${color}` }}>
-    <span className='name'>{name}:</span>
-    <span className='log-event'>{text}</span>
+  <div className='log-entry' style={{ color: `#${pid}` }}>
+    <span className='name'>{name || pid}:</span>
+    <span className='log-event'>{entry}</span>
   </div>
 
 const GameLog = ({
+  board,
   entries,
   expanded,
   onToggle,
 }) => {
   const cn = expanded ? 'view-log active' : 'view-log'
+  const logEntries = entries.map( entry => <LogEntry name={getPlayerName(board, entry.pid)} {...entry} /> )
+
   return (
     <div>
       <button className={cn} onClick={onToggle}>{expanded ? '' : 'View '}Game Log</button>
+      {expanded && <GameId />}
       <div className='game-events'>
-        {entries.map(e => <LogEntry {...e} />)}
+        {logEntries}
       </div>
     </div>
   )

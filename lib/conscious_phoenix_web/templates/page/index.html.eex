@@ -58,13 +58,52 @@ the way you play it is free will.
       The rows of colored dots are board spaces. There are 245 total spaces.
       There are the three types of being food and landing on them creates a piece of
       stuff on the corresponding part of the player&#8217;s <a href="#fd">Food Diagram</a>.
-      <div class="board">
-<blockquote><span class="wild player"></span> - black border around the player position
-<span class="food"></span> - food space
-<span class="air"></span> - air space
-<span class="impression"></span> - impression space
-<span class="card"></span> - card space, draw a card into your <a href="#cards">card hand</a>
-<span class="law"></span> - law spaces, draw a law card into your <a href="#lawcards">law hand</a></blockquote>
+      <blockquote>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="wild"></span>
+            <span class="description"> - Wild space (player's choice)</span>
+          </span>
+        </div>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="food"></span>
+            <span class="description"> - Food space</span>
+          </span>
+        </div>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="air"></span>
+            <span class="description"> - Air space</span>
+          </span>
+        </div>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="impression"></span>
+            <span class="description"> - Impression space</span>
+          </span>
+        </div>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="card"></span>
+            <span class="description"> - Card space, draw a card into your <a href="#cards">card hand</a></span>
+          </span>
+        </div>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="law"></span>
+            <span class="description"> - Law spaces, draw a law card into your <a href="#lawcards">law hand</a></span>
+          </span>
+        </div>
+        <div class="board">
+          <span class="space-wrap">
+            <span class="card"></span>
+            <span class="player" style="top: -2px; background-color: #B0126C;"></span>
+            <span class="player" style="top: -4px; background-color: #73AD21;"></span>
+            <span class="description"> - Two players landed on a card space</span>
+          </span>
+        </div>
+      </blockquote>
 
       Landing on a law space causes a &#8220;magnetic center moment&#8221;, one additional game card may be played from the card hand.
       See the <a href="#lawcards">Law Cards</a> section for details about what happens when law spaces are passed over.

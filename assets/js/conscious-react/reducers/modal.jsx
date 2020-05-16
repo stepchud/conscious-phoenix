@@ -1,9 +1,10 @@
+import { noop } from '../constants'
+
 const InitialState = {
   show: false,
   setup_step: 'new',
 }
 
-const noop = () => { }
 const modal = (
   state = InitialState,
   action

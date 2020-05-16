@@ -92,7 +92,7 @@ export const LawHand = ({
       { !!laws.active.length && <span className="laws">Active:</span> }
       { !!laws.active.length &&
         map(laws.active, (c, i) =>
-          <ActiveLawCard key={i} card={lawAtIndex(c)} covered={c.protected} />
+          <ActiveLawCard key={i} card={lawAtIndex(c)} covered={c.covered} />
         )
       }
     </div>

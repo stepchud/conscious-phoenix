@@ -14,6 +14,7 @@ import { toast } from 'react-toastify'
 
 import { sameSuit } from './cards'
 import {
+  lawsPassed,
   LAW_DECK,
   KD,
   KC,
@@ -44,7 +45,7 @@ const activeKings = (active) => map(
          filter(active, (c) => [ KD, KC, KH, KS ].includes(c.index)),
   lawAtIndex
 )
-const isProtected = (card) => !!card.protected.length
+const isCovered = (card) => !!card.covered.length
 
 // only works with active cards
 const isLawCard = (card) => {
@@ -78,6 +79,7 @@ const isAce = (card) => ['AD','AC','AH','AS'].includes(card)
 const isJoker = (card) => 'JO'===card
 
 const drawLawCard = (state, count = 1) => {
+  if (count == 0) { return state }
   let deck = [...state.deck]
   let discards = [...state.discards]
   const hand = [...state.hand]
@@ -137,6 +139,27 @@ const laws = (
     discards,
   } = state
   switch(action.type) {
+    case 'MOVE_SPACE': {
+      const { position, next_position, alive, asleep } = action
+      const laws_passed = asleep || !alive ? 0 : lawsPassed(position, next_position)
+      const nextState = drawLawCard({ ...state }, laws_passed)
+      const nextActive = []
+      active.forEach(lc => {
+        if (lc.until) {
+          const moved = next_position > position ? next_position - position : position - next_position
+          const until = lc.until - moved
+          if (until >= 0) {
+            nextActive.push({ ...lc, until })
+          }
+        } else {
+          nextActive.push(lc)
+        }
+      })
+      return {
+        ...nextState,
+        active: nextActive,
+      }
+    }
     case 'DRAW_LAW_CARD':
       return drawLawCard(state)
     case 'START_GAME':
@@ -233,7 +256,7 @@ const laws = (
         toast("No escape from the law!")
         each(actions, (action) => {
           if ('ACTIVE_LAW' == action.type) {
-            action.protected = lawCard.no_escape
+            action.covered = lawCard.no_escape
           } else if ('OBEY_WITHOUT_ESCAPE' == action.type) {
             action.no_escape = lawCard.no_escape
           }
@@ -249,7 +272,8 @@ const laws = (
       }
     }
     case 'ACTIVE_LAW': {
-      const nextActive = [...active, { index: action.card, protected: (action.protected||[]) }]
+      const { card, until, covered } = action
+      const nextActive = [...active, { index: card, covered: (covered||[]), until }]
       return {
         ...state,
         active: nextActive
@@ -261,10 +285,10 @@ const laws = (
         // king moon
         nextActive = compact(
           map(active, (law) => {
-            if (isProtected(law)) {
-              if ((action.suit == 'C' && law.protected[0] == '2C') ||
-                  (action.suit == 'S' && law.protected[0] == '2S')) {
-                law.protected.shift()
+            if (isCovered(law)) {
+              if ((action.suit == 'C' && law.covered[0] == '2C') ||
+                  (action.suit == 'S' && law.covered[0] == '2S')) {
+                law.covered.shift()
               }
             } else if (isLawSuit(action.suit, law)) {
               return undefined
@@ -284,8 +308,8 @@ const laws = (
     case 'CLEANSE_JOKER': {
       const [jokers, rest] = partition(active, isLawCard('JO'))
       const joker = jokers[0]
-      if (isProtected(joker)) {
-        joker.protected.shift()
+      if (isCovered(joker)) {
+        joker.covered.shift()
         rest.push(joker)
       }
       return {
@@ -334,10 +358,10 @@ const laws = (
       }
     }
     case 'CANCEL_ALL_LAWS':
-      // remove first protected
+      // remove first covered
       const newActive = map(
-        filter(active, isProtected),
-        l => ({ ...l, protected: l.protected.slice(1) })
+        filter(active, isCovered),
+        l => ({ ...l, covered: l.covered.slice(1) })
       )
       // remove first no_escape from current in_play, mark others obeyed
       const newInPlay = map(in_play, lc => {

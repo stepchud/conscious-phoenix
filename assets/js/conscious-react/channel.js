@@ -13,37 +13,35 @@ const localState = (payload) => {
       board,
       cards,
       laws,
+      log,
+      turns,
     }
   } = payload
+
   const player = players[pid]
   const {
-    position,
-    current_turn,
-    completed_trip,
-    death_space,
-    laws_passed,
     hand,
     laws: { active, hand: lawHand },
     fd,
     ep
   } = player
 
+  const localPlayers = turns.map(plyrId => {
+    const { name, position } = players[plyrId]
+    return { name, position }
+  }).reverse()
+
   return {
-    player: {
-      name: player.name,
-      age: player.age,
-    },
+    player,
     board: {
       ...board,
-      position,
-      current_turn,
-      completed_trip,
-      laws_passed,
+      players: localPlayers,
     },
     cards: { ...cards, hand },
     laws: { ...laws, active, hand: lawHand },
     fd,
     ep,
+    log,
   }
 }
 
@@ -95,9 +93,8 @@ export default function Connect() {
       }
     })
     this.channel.on("game:next_turn", payload => {
-      const { pid } = payload
-      console.log(`next player ${pid}`)
-      gameActions.onTurnStarted(pid)
+      console.log(`next_turn ${payload.pid}`)
+      gameActions.onTurnStarted(payload)
     })
     this.channel.on("game:joined", payload => {
       const { gid, pid } = payload
@@ -120,12 +117,15 @@ export default function Connect() {
       }
     })
     this.channel.on("game:saved", payload => {
-      console.log(`game saved for ${payload.pid}`)
+      gameActions.onGameSaved(payload)
     })
     this.channel.on("modal:error", payload => {
       const { error } = payload
       gameActions.onUpdateModal({ field: "error_message", value: error.message })
       gameActions.onShowModal()
+    })
+    this.channel.on("log:event", payload => {
+      gameActions.onEventLog(payload)
     })
     this.channel.on("broadcast:message", payload => {
       if (getPlayerId() === payload.pid) { return }
