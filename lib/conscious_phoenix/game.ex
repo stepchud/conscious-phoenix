@@ -76,6 +76,10 @@ defmodule ConsciousPhoenix.Game do
     %Game{ game | log: [ event | game.log ] }
   end
 
+  def update_player_status(game, pid, status) do
+    put_in(game.players[pid].status, status)
+  end
+
   def players_by_turn(game) do
     Enum.map(game.turns, fn pid ->
       player = game.players[pid]

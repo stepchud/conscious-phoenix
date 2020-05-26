@@ -10,6 +10,15 @@ import ep from './reducers/being'
 import modal from './reducers/modal'
 import log from './reducers/log'
 
-const reducers = combineReducers({ player, board, cards, laws, fd, ep, modal, log })
-const store = createStore(reducers)
+const appReducer = combineReducers({ player, board, cards, laws, fd, ep, modal, log })
+
+// Resets the state back to initial default
+const rootReducer = (state, action) => {
+  if (action.type === 'RESET_GAME') {
+    state = undefined
+  }
+  return appReducer(state, action)
+}
+
+const store = createStore(rootReducer)
 export default store

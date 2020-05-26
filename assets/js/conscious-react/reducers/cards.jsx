@@ -32,6 +32,8 @@ const generateDeck = () => {
 }
 
 const drawCard = (state, count=1) => {
+  if (count===0) { return state }
+
   let deck = [...state.deck]
   let discards = [...state.discards]
   const hand = [...state.hand]
@@ -48,9 +50,7 @@ const drawCard = (state, count=1) => {
     discards
   }
 
-  return (count == 1)
-  ? drawOne
-  : drawCard(drawOne, count-1)
+  return drawCard(drawOne, count-1)
 }
 
 const suit = card => card[card.length-1]
@@ -222,43 +222,52 @@ const cards = (
         pieces: [newPart, 1],
       }
     case 'DISCARD_BY_RANDOM':
-      const rand = Dice(hand.length).roll()
+      const dice = Dice(hand.length)
+      // adjust index for non-zero basis
+      const rand = hand.length == 10 ? dice.roll() : dice.roll() - 1
       return {
         ...state,
         hand: [...hand.slice(0, rand), ...hand.slice(rand+1)],
-        discards: discards.concat(hand[rand]),
+        discards: discards.concat(hand[rand]).map(card => card.c),
       }
-    case 'LOSE_HALF_CARDS':
+    case 'LOSE_HALF_CARDS': {
       const shuffled = shuffle(hand)
       const half = Math.floor(hand.length/2)
+      const discarded = shuffled .slice(0, half).map(card => card.c)
       return {
         ...state,
-        hand: hand.slice(half),
-        discards: discards.concat(hand.slice(0, half)),
+        hand: sortBySuitedRank(shuffled.slice(half)),
+        discards: [...discards, ...discarded],
       }
+    }
     case 'END_DEATH': {
       let nextState = { ...state }
       if (hand.length <= 7) {
+        // draw up to 7
         nextState = drawCard(nextState, 7 - hand.length)
       } else {
-        // hand.length > 7
-        let [nextHand, discarded] =  partition(hand, 'selected')
+        // cut hand back to 7
+        let [nextHand, discardedHand] =  partition(hand, 'selected')
+        const discarded = discardedHand.map(card => card.c)
         if (nextHand.length>7) {
-          discarded.push(nextHand.slice(7))
+          // selected more than 7, keep first 7
+          discarded.concat(nextHand.slice(7).map(card => card.c))
           nextHand = nextHand.slice(0, 7)
         } else if (nextHand.length===0) {
-          discarded.push(hand.slice(7))
+          // no cards selected, hand has more than 7, keep the first 7
+          discarded.concat(hand.slice(7).map(card => card.c))
           nextHand = hand.slice(0, 7)
         }
         nextState.hand = nextHand
         nextState.discards = [...discards, ...discarded]
       }
+      // deselect all cards
       nextState.hand = nextState.hand.map(card => ({ c: card.c, selected: false }))
       return nextState
     }
     case 'REINCARNATE': {
       let nextState = { ...state }
-      const discarded = hand.slice()
+      const discarded = hand.slice().map(card => card.c)
       nextState.hand = []
       nextState.discards = [...discards, ...discarded]
       nextState = drawCard(nextState, 7)

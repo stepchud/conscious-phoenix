@@ -1,3 +1,4 @@
+import uuid from 'uuid/v4'
 import { findIndex } from 'lodash/array'
 
 export const noop = () => {}
@@ -8,8 +9,8 @@ export const BOARD_SPACES =
   'FCAACICCFAICFFACICAIFCCFICACFALLCCFACCCFICFCAICCI' +
   'AFFICAALCCIFACCCIFICAACCICFFCCIAFCCALLCCCAFFACIAF' +
   'CCIACFACILCAFFCCAIAFCCIACFFICCCAICCFCALLCCAAFCIC*'
-
 export const LAST_SPACE = BOARD_SPACES.length - 1
+
 export const lawsPassed = (position, next_position) => {
   let laws
   if (position > next_position) {
@@ -24,7 +25,18 @@ const GAME_ID = 'game_id'
 const PLAYER_ID = 'player_id'
 
 export const getGameId = () => localStorage.getItem(GAME_ID)
+export const generateGameId = () => {
+  // auto-generate a gid locally
+  const gid = uuid().slice(0, 6)
+  console.log("generated new gid="+gid)
+  return gid
+}
 export const setGameId = (gid) => localStorage.setItem(GAME_ID, gid)
+export const resetGameId = () => {
+  const newId = generateGameId()
+  setGameId(newId)
+  return newId
+}
 export const getPlayerId = () => localStorage.getItem(PLAYER_ID)
 export const setPlayerId = (pid) => localStorage.setItem(PLAYER_ID, pid)
 export const getPlayer = (players) => players.find(p => p.pid === getPlayerId())
@@ -33,11 +45,11 @@ export const getPlayerIndex = (players) => players.findIndex(p => p.pid === getP
 export const TURNS = {
   setup: 'setup',
   wait: 'wait',
-  initial: 'initial',
   normal: 'normal',
   randomLaw: 'random',
   choiceLaw: 'choice',
   death: 'death',
+  end: 'end',
 }
 
 export const Dice = (sides=6) => {

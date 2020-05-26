@@ -42,6 +42,14 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :save_state, gid: gid, pid: pid, game: game})
   end
 
+  def log_event(gid, event) do
+    GenServer.cast(__MODULE__, %{action: :log_event, gid: gid, event: event})
+  end
+
+  def game_over(gid, pid) do
+    GenServer.cast(__MODULE__, %{action: :game_over, gid: gid, pid: pid})
+  end
+
   def reset() do
     GenServer.cast(__MODULE__, %{action: :reset})
   end
@@ -142,6 +150,13 @@ defmodule ConsciousPhoenix.GameServer do
     game = Game.add_log_event(state.games[gid], event)
     state = put_in(state.games[gid], game)
     Endpoint.broadcast!("game:#{gid}", "game:event", %{ event: event })
+    {:noreply, state}
+  end
+
+  def handle_cast(%{:action => :game_over, :gid => gid, :pid => pid}, state) do
+    game = Game.update_player_status(state.games[gid], pid, Player.statuses.done)
+    state = put_in(state.games[gid], game)
+    Endpoint.broadcast!("game:#{gid}", "player:done", %{ pid: pid })
     {:noreply, state}
   end
 

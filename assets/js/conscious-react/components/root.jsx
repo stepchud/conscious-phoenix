@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom'
 import ReactModal from 'react-modal'
 import { ToastContainer, toast } from 'react-toastify'
 
-import { TURNS, getPlayerId, noop } from '../constants'
+import { TURNS, getPlayerId, resetGameId, noop } from '../constants'
 import Store from '../redux_store'
 import { gameActions } from '../events'
+import { hasnamuss } from '../reducers/laws'
 
-import Buttons from './buttons'
+import ButtonRow from './buttons'
 import TestButtons from './test_buttons'
 import Board   from './board'
 import { CardHand, LawHand } from './cards'
@@ -24,31 +25,40 @@ export class ConsciousBoardgame extends React.Component {
     expandLog: false,
   }
 
-  onJoinGame = (gid, name) => {
-    const { channel } = this.props
+  handleJoinGame = (gid, name) => {
     const pid = getPlayerId()
     this.props.channel.push('game:join', { gid, pid, name })
   }
 
-  onContinueGame = (gid) => {
-    const { channel } = this.props
+  handleContinueGame = (gid) => {
     const pid = getPlayerId()
     this.props.channel.push('game:continue', { gid, pid })
   }
 
-  onStartGame = (name, sides) => {
-    const { channel } = this.props
+  handleStartGame = (name, sides) => {
     this.props.channel.push('game:start', { name, sides })
   }
 
-  onRoll = async () => {
-    await gameActions.onRollClick()
+  handleGameOver = () => {
+    const pid = getPlayerId()
+    gameActions.handleGameOver()
+    this.props.channel.push('game:over', { pid })
+  }
+
+  handleGameExit = () => {
+    const gid = resetGameId()
+    this.props.channel.join(gid)
+    Store.dispatch({ type: 'RESET_GAME' })
+  }
+
+  handleRoll = async () => {
+    await gameActions.handleRollClick()
     const game = Store.getState()
     const pid = getPlayerId()
     this.props.channel.push('game:end_turn', { pid, game })
   }
 
-  onLogEvent = (event) => {
+  handleLogEvent = (event) => {
     this.props.channel.push('game:log_event', { event })
   }
 
@@ -59,10 +69,12 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   render () {
-    const { channel } = this.props
     const { player, board, cards, laws, fd, ep, modal, log } = Store.getState()
-    const gameId = modal.gameId || channel.gid || ''
+    const { current: { astral, mental } } = fd
+    const gameId = modal.gameId || this.props.channel.gid || ''
     const playerId = getPlayerId()
+    const gameOver = player.current_turn===TURNS.death &&
+      (!astral || (!mental && !hasnamuss(laws.active) && player.completed_trips > 1))
 
     switch(player.current_turn) {
       case TURNS.setup:
@@ -72,23 +84,26 @@ export class ConsciousBoardgame extends React.Component {
             gameId={gameId}
             name={modal.name}
             sides={modal.sides}
-            onStart={this.onStartGame}
-            onJoinGame={!!gameId && this.onJoinGame}
-            onContinueGame={!!playerId && this.onContinueGame}
+            onStart={this.handleStartGame}
+            onJoinGame={!!gameId && this.handleJoinGame}
+            onContinueGame={!!playerId && this.handleContinueGame}
             errorMessage={modal.error_message}
           />
         )
       default: {
         return (
           <div>
-            <Buttons
+            <ButtonRow
               actions={gameActions}
               roll={board.roll}
-              onRoll={this.onRoll}
+              onRoll={this.handleRoll}
               cards={cards.hand}
               laws={laws}
               ep={ep}
               currentTurn={player.current_turn}
+              gameOver={gameOver}
+              onGameOver={this.handleGameOver}
+              onExit={this.handleGameExit}
               waiting={!player.active}
             />
             <TestButtons

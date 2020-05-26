@@ -130,6 +130,7 @@ const ep = (
       return {
         ...state,
         card_plays: card_plays - action.cards.length,
+        shocks,
       }
     case 'EAT_WHEN_YOU_BREATHE':
       return {
@@ -261,11 +262,6 @@ const ep = (
       return {
         ...state,
         pieces,
-      }
-    case 'GAME_OVER':
-      return {
-        ...state,
-        game_over: true
       }
     default:
       return state

@@ -204,13 +204,6 @@ const presentEvent = (event) => {
         onClick: noop,
       })
       break
-    case 'GAME-OVER':
-      dispatchShowModal({
-        title: 'Game over :(',
-        body: 'Nothing else to do but try again.',
-        onClick: noop,
-      })
-      break
     case 'ASTRAL-DEATH':
       dispatchShowModal({
         title: 'You are dead',
@@ -264,8 +257,8 @@ const startCausalDeath = () => {
     if (roll1 == roll2) {
       dispatchShowModal({
         title: 'Eternal retribution!',
-        body: "There is no escape from this loathesome place. You're out of the game backwards.",
-        onClick: () => store.dispatch({ type: 'GAME_OVER' })
+        body: "There is no escape from this loathesome place. You are out of the game backwards.",
+        onClick: () => store.dispatch({ type: 'GAME_OVER' }),
       })
       return
     }
@@ -381,7 +374,7 @@ const handlePieces = async (action) => {
   if (store.getState().ep.pieces[17] > 3 && hasnamuss(active)) {
     presentEvent('CLEANSE-HASNAMUSS')
   }
-  handleEndGame()
+  handleStartOver()
 }
 
 const handleDecay = async () => {
@@ -504,7 +497,7 @@ const handleChooseLaw = (card) => {
     store.dispatch({ type: "ONE_BY_CHOICE", card })
   }
 }
-const handleLawEvents = async () => {
+const handleObeyLaw = async () => {
   const { being_type } = store.getState().ep
   store.dispatch({ type: 'OBEY_LAW' })
   for (let lawAction of store.getState().laws.actions) {
@@ -512,7 +505,7 @@ const handleLawEvents = async () => {
   }
   store.dispatch({ type: 'CLEAR_ACTIONS' })
   await handleExtras()
-  await handleEndGame()
+  await handleStartOver()
 }
 
 const handleRollClick = async () => {
@@ -610,20 +603,27 @@ const handleRollClick = async () => {
       break;
     default:
   }
-  await handleEndGame()
+  await handleStartOver()
   store.dispatch({ type: "WAIT_FOR_TURN" })
 }
 
-const endDeath = () => {
+const handleEndDeath = () => {
   const {
-    fd: { current },
-    board: { completed_trip },
+    fd: { current: { mental } },
     laws: { active },
   } = store.getState()
-  presentEvent(deathEvent(current, completed_trip, hasnamuss(active)))
+  presentEvent(deathEvent(mental, hasnamuss(active)))
 }
 
-const handleEndGame = async () => {
+const handleGameOver = () => {
+  dispatchShowModal({
+    title: 'Game over :(',
+    body: 'Nothing else to do but try again.',
+    onClick: () => store.dispatch({ type: 'GAME_OVER' }),
+  })
+}
+
+const handleStartOver = async () => {
   const {
     fd: { current },
     ep: { pieces },
@@ -633,6 +633,7 @@ const handleEndGame = async () => {
     await promiseShowModal({
       title: 'You are a winner!',
       body: 'Proudly proclaim "I start over!"',
+      onClick: noop,
     })
   }
 }
@@ -655,10 +656,14 @@ export const gameActions = {
   onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
   onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
   onEventLog: (event) => store.dispatch(actions.logEvent(event)),
-  onShowModal: () => store.dispatch(actions.showModal()),
+  onShowModal: () => {
+    const modalProps = store.getState().modal
+    dispatchShowModal(modalProps)
+  },
   onHideModal: () => store.dispatch(actions.hideModal()),
-  onRollClick: handleRollClick,
-  onEndDeath: endDeath,
+  handleRollClick,
+  handleEndDeath,
+  handleGameOver,
   onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),
   onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
   onSelectCard: (card) => store.dispatch({ type: 'SELECT_CARD', card }),
@@ -669,7 +674,7 @@ export const gameActions = {
     cards,
     pieces: makeFaceCard(cards.concat(lawCards))
   }),
-  onObeyLaw: handleLawEvents,
+  onObeyLaw: handleObeyLaw,
   onEatFood: dispatchWithExtras({ type: 'EAT_FOOD' }),
   onBreatheAir: dispatchWithExtras({ type: 'BREATHE_AIR' }),
   onTakeImpression: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }),
@@ -677,7 +682,7 @@ export const gameActions = {
   onTransformEmotions: dispatchWithExtras({ type: 'TRANSFORM_EMOTIONS' }),
   onCombineSelectedParts: (selected) => handlePieces({ type: 'COMBINE_PARTS', selected }),
   onAdvanceFoodDiagram: dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
-  onDying: () => store.dispatch({ type: 'DEATH' }),
+  onDying: () => store.dispatch({ type: 'DEATH_NOW' }),
   onOptions: () => dispatchShowModal({
     title: "Title Ho!",
     body: "this a good body",

@@ -3,9 +3,9 @@ import { toast } from 'react-toastify'
 
 const InitialState = () => ({
   current: {
-    food:        [1,1,1,0,0,0,0,0,0],
-    air:         [1,1,1,0,0,0,0],
-    impressions: [1,0,0,0,0],
+    food:        [1,1,1,0,0,0,2,1,2],
+    air:         [1,1,1,0,0,0,3],
+    impressions: [1,0,0,1,1],
     alive:  true,
     astral: false,
     astralDiscarded: false,
@@ -91,8 +91,7 @@ const hasNewBody = ({ food, air, impressions, astral, mental, alive }) => {
   return food[8]>=3 && air[6]>=3 && impressions[4]>=1
 }
 
-export const deathEvent = ({ astral, mental }, completed_trip, hasnamuss) => {
-  if (!astral || (!mental && completed_trip && !hasnamuss)) { return 'GAME-OVER' }
+export const deathEvent = (mental, hasnamuss) => {
   if (hasnamuss) { return mental ? 'CAUSAL-DEATH' : 'REINCARNATE' }
   if (mental) { return 'MENTAL-DEATH' }
   return 'ASTRAL-DEATH'
@@ -319,7 +318,6 @@ const foodDiagram = (
     enter,
     extras
   } = state
-  let nextState = state
   switch(action.type) {
     case 'UPDATE_GAME':
       return {

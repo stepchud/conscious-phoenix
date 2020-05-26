@@ -34,4 +34,9 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     GameServer.save_state(socket.assigns.gid, pid, game)
     {:noreply, socket}
   end
+
+  def handle_in("game:over", %{"pid" => pid}, socket) do
+    GameServer.game_over(socket.assigns.gid, pid)
+    {:noreply, socket}
+  end
 end

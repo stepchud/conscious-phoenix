@@ -12,7 +12,6 @@ const modal = (
   switch (action.type) {
     case 'SHOW_MODAL':
       return {
-        ...state,
         ...action,
         show: true,
       }

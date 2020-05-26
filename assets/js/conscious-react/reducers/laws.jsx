@@ -111,13 +111,18 @@ const testLawCard = (deck, law_text) => {
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
   return newDeck
-  //return testLawCard(
-  //  testLawCard(
-  //    newDeck,
-  //    "ALL LAWS OF WILL"
-  //  ),
-  //  'LAWS OF FATE'
-  //)
+  return (
+    testLawCard(
+    testLawCard(
+    testLawCard(
+      newDeck,
+      'BY RANDOM DRAW'
+    ),
+      'CRAZED IDENTIFIED MAN'
+    ),
+      'DISCARD ONE CARD'
+    )
+  )
 }
 
 const laws = (
@@ -229,12 +234,14 @@ const laws = (
             played: c.selected ? true : c.played,
         })),
       }
-    case 'DISCARD_LAW_HAND':
+    case 'DISCARD_LAW_HAND': {
+      const discarded = map(hand, 'c')
       return {
         ...state,
-        discards: discards.concat(map(hand, 'c')),
+        discards: [...discards, ...discarded],
         hand: []
       }
+    }
     case 'OBEY_LAW': {
       const selectedLaws = filter(in_play, 'selected')
       if (selectedLaws.length !== 1) {
@@ -321,7 +328,7 @@ const laws = (
       const discarded = map(hand.concat(in_play), 'c').concat(map(active, lawAtIndex))
       return {
         ...state,
-        discards: discards.concat(discarded),
+        discards: [...discards, ...discarded],
         hand: [],
         active: [],
         in_play: [],
@@ -334,7 +341,7 @@ const laws = (
       const discarded = map(hand.concat(in_play), 'c').concat(map(discardActive, lawAtIndex))
       let nextState = {
         ...state,
-        discards: discards.concat(discarded),
+        discards: [...discards, ...discarded],
         hand: [],
         active: nextActive,
         in_play: [],
@@ -353,7 +360,7 @@ const laws = (
       )
       return {
         ...state,
-        discards: discards.concat(to_discard),
+        discards: [...discards, ...to_discard],
         in_play: [],
       }
     }
