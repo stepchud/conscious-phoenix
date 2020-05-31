@@ -3,7 +3,7 @@ import { getPlayerId, lawsPassed, TURNS, LAST_SPACE } from '../constants'
 const InitialState = {
   name: "",
   age: 0,
-  position: LAST_SPACE-4,
+  position: 0,
   direction: 1,
   active: false,
   alive: true,

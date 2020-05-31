@@ -110,17 +110,14 @@ const testLawCard = (deck, law_text) => {
 
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
-  return newDeck
+  //return newDeck
   return (
-    testLawCard(
-    testLawCard(
+    //testLawCard(
     testLawCard(
       newDeck,
-      'BY RANDOM DRAW'
-    ),
-      'CRAZED IDENTIFIED MAN'
-    ),
-      'DISCARD ONE CARD'
+      'DOUBLE CRYSTALLIZE'
+    //),
+    //  'OLD FAMILY DISEASE'
     )
   )
 }
@@ -150,7 +147,7 @@ const laws = (
       const nextState = drawLawCard({ ...state }, laws_passed)
       const nextActive = []
       active.forEach(lc => {
-        if (lc.until) {
+        if (lc.until >= 0) {
           const moved = next_position > position ? next_position - position : position - next_position
           const until = lc.until - moved
           if (until >= 0) {
