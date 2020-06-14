@@ -12,11 +12,7 @@ import {
 import { selectedParts } from '../reducers/being'
 import { TURNS } from '../constants'
 
-const Dice = ({
-  roll
-}) => {
-  return <span className="dice">{roll}</span>
-}
+const Dice = ({ roll }) => <span className="dice">{roll}</span>
 
 const Message = ({ turn, hasLaws, waiting, gameOver }) => {
   let message = ''

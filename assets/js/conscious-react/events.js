@@ -12,7 +12,7 @@ import {
   cantChooseLaw,
 } from './reducers/laws'
 import { entering, deathEvent, allNotes } from './reducers/food_diagram'
-import { BOARD_SPACES, LAST_SPACE, Dice, getPlayer, noop } from './constants'
+import { BOARD_SPACES, LAST_SPACE, Dice, noop } from './constants'
 
 const dispatchShowModal = (props) => store.dispatch(actions.showModal(props))
 const promiseShowModal = (props) => {
@@ -377,6 +377,56 @@ const handlePieces = async (action) => {
   handleStartOver()
 }
 
+const takePiece = async (position) => {
+  const {
+    laws: { active },
+    player: { alive },
+  } = store.getState()
+
+  // no stuff while asleep
+  if (jackDiamonds(active)) { return }
+
+  switch(BOARD_SPACES[position]) {
+    case 'F':
+      await dispatchWithExtras({ type: 'EAT_FOOD' })()
+      break;
+    case 'A':
+      await dispatchWithExtras({ type: 'BREATHE_AIR' })()
+      break;
+    case 'I':
+      await dispatchWithExtras({ type: 'TAKE_IMPRESSION' })()
+      break;
+    case 'C':
+      if (alive) {
+        store.dispatch({ type: 'DRAW_CARD' })
+      } else {
+        await handleDecay()
+      }
+      break;
+    case 'L':
+      if (alive) {
+        store.dispatch({ type: 'DRAW_LAW_CARD' })
+        store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
+        break;
+      }
+    // NOTE: Dead players fall through to Wild here
+    case '*':
+      store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
+      await promiseShowModal({
+        title: 'Wild space!',
+        body: 'Take your choice:',
+        options: [
+          { text: 'Card', onClick: () => store.dispatch({ type: 'DRAW_CARD' }) },
+          { text: 'Food',  onClick: dispatchWithExtras({ type: 'EAT_FOOD' }) },
+          { text: 'Air', onClick: dispatchWithExtras({ type: 'BREATHE_AIR' }) },
+          { text: 'Impression', onClick: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }) }
+        ],
+      })
+      break;
+    default:
+  }
+}
+
 const handleDecay = async () => {
   const { fd: { current }, board: { sides } } = store.getState()
   const roll = Dice(sides).roll()
@@ -559,50 +609,8 @@ const handleRollClick = async () => {
   if (next_position < 0) { next_position = 0 }
   if (next_position > LAST_SPACE) { next_position = LAST_SPACE }
   store.dispatch({ type: 'MOVE_SPACE', position, next_position, alive, asleep })
-  const stillAsleep = jackDiamonds(store.getState().laws.active)
 
-  // no stuff while asleep
-  if (stillAsleep) { return }
-
-  switch(BOARD_SPACES[next_position]) {
-    case 'F':
-      await dispatchWithExtras({ type: 'EAT_FOOD' })()
-      break;
-    case 'A':
-      await dispatchWithExtras({ type: 'BREATHE_AIR' })()
-      break;
-    case 'I':
-      await dispatchWithExtras({ type: 'TAKE_IMPRESSION' })()
-      break;
-    case 'C':
-      if (alive) {
-        store.dispatch({ type: 'DRAW_CARD' })
-      } else {
-        await handleDecay()
-      }
-      break;
-    case 'L':
-      if (alive) {
-        store.dispatch({ type: 'DRAW_LAW_CARD' })
-        store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
-        break;
-      }
-    // NOTE: Dead players fall through to Wild here
-    case '*':
-      store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
-      await promiseShowModal({
-        title: 'Wild space!',
-        body: 'Which would you choose:',
-        options: [
-          { text: 'Card', onClick: () => store.dispatch({ type: 'DRAW_CARD' }) },
-          { text: 'Food',  onClick: dispatchWithExtras({ type: 'EAT_FOOD' }) },
-          { text: 'Air', onClick: dispatchWithExtras({ type: 'BREATHE_AIR' }) },
-          { text: 'Impression', onClick: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }) }
-        ],
-      })
-      break;
-    default:
-  }
+  await takePiece(next_position)
   await handleStartOver()
   store.dispatch({ type: "WAIT_FOR_TURN" })
 }
@@ -648,11 +656,7 @@ export const gameActions = {
     channel.push('game:save_state', { pid, game: store.getState() })
   },
   onGameContinued: (payload) => store.dispatch(actions.updateGame(payload)),
-  onGameSaved: ({ players }) => store.dispatch(actions.updatePlayerPositions(players)),
-  onTurnStarted: ({ pid, players }) => {
-    store.dispatch(actions.updatePlayerPositions(players))
-    store.dispatch(actions.startTurn(pid))
-  },
+  onTurnStarted: ({ pid }) => store.dispatch(actions.startTurn(pid)),
   onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
   onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
   onEventLog: (event) => store.dispatch(actions.logEvent(event)),

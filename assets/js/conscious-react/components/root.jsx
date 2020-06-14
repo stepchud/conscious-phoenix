@@ -59,7 +59,8 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   handleLogEvent = (event) => {
-    this.props.channel.push('game:log_event', { event })
+    const pid = getPlayerId()
+    this.props.channel.push('game:log_event', { pid, event })
   }
 
   toggleEventLog = () => this.setState({ expandLog: !this.state.expandLog })

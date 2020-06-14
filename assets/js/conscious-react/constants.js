@@ -44,7 +44,6 @@ export const getPlayerIndex = (players) => players.findIndex(p => p.pid === getP
 
 export const TURNS = {
   setup: 'setup',
-  wait: 'wait',
   normal: 'normal',
   randomLaw: 'random',
   choiceLaw: 'choice',

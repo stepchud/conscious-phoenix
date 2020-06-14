@@ -21,18 +21,19 @@ const PlayerStats = ({
     All: {all_shocks}
   </div>
 
-const GameId = () =>
+const GameId = ({ gid, pid }) =>
   <div className="section game-id">
-    Game: {getGameId()}, Player: {getPlayerId()}
+    Game: {gid}, Player: {pid}
   </div>
 
 
 const LogEntry = ({
   pid,
+  name,
   entry,
 }) =>
   <div className='log-entry' style={{ color: `#${pid}` }}>
-    <span className='name'>{name || pid}:</span>
+    <span className='name'>{name || pid}: </span>
     <span className='log-event'>{entry}</span>
   </div>
 
@@ -42,13 +43,17 @@ const GameLog = ({
   expanded,
   onToggle,
 }) => {
-  const cn = expanded ? 'view-log active' : 'view-log'
-  const logEntries = entries.map( entry => <LogEntry name={getPlayerName(board, entry.pid)} {...entry} /> )
+  const gid = getGameId()
+  const pid = getPlayerId()
+  const cn = expanded ? 'game-log expand' : 'game-log collapse'
+  const logEntries = entries.map(
+    (entry, index) => <LogEntry key={index} name={getPlayerName(board, entry.pid)} {...entry} />
+  )
 
   return (
-    <div>
-      <button className={cn} onClick={onToggle}>{expanded ? '' : 'View '}Game Log</button>
-      {expanded && <GameId />}
+    <div className={cn}>
+      <GameId gid={gid} pid={pid} />
+      <button onClick={onToggle}>{expanded ? '' : 'View '}Game Log</button>
       <div className='game-events'>
         {logEntries}
       </div>

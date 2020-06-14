@@ -288,3 +288,7 @@ span.laws {
 .modal-error {
   color: red;
 }
+
+.game-log.collapse .game-events {
+  display: none;
+}

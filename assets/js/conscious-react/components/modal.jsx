@@ -1,7 +1,6 @@
 import React from 'react'
 import Modal from 'react-modal'
 import { gameActions } from '../events'
-import { TURNS } from '../constants'
 
 const ButtonTag = (text, onClick, key=1) => <button key={key} onClick={onClick}>{text}</button>
 const TitleTag = (title) => title && <h1 className='modal-title'>{title}</h1>

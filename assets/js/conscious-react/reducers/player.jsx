@@ -106,7 +106,7 @@ const player = (
       return {
         ...state,
         name: action.state.player.name,
-        current_turn: TURNS.wait,
+        current_turn: TURNS.randomLaw,
       }
     case 'WAIT_FOR_TURN':
       return {

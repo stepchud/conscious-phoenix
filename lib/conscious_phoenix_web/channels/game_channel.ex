@@ -39,4 +39,9 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     GameServer.game_over(socket.assigns.gid, pid)
     {:noreply, socket}
   end
+
+  def handle_in("game:log_event", %{"pid" => pid, "event" => event}, socket) do
+    GameServer.log_event(socket.assigns.gid, pid, event)
+    {:noreply, socket}
+  end
 end

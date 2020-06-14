@@ -3,9 +3,9 @@ import { toast } from 'react-toastify'
 
 const InitialState = () => ({
   current: {
-    food:        [1,1,1,0,0,0,2,1,2],
-    air:         [1,1,1,0,0,0,3],
-    impressions: [1,0,0,1,1],
+    food:        [1,1,1,0,0,0,0,0,0],
+    air:         [1,1,1,0,0,0,0],
+    impressions: [1,0,0,0,0],
     alive:  true,
     astral: false,
     astralDiscarded: false,

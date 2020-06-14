@@ -112,12 +112,9 @@ const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
   //return newDeck
   return (
-    //testLawCard(
     testLawCard(
       newDeck,
-      'DOUBLE CRYSTALLIZE'
-    //),
-    //  'OLD FAMILY DISEASE'
+      'OLD FAMILY DISEASE'
     )
   )
 }

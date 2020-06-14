@@ -66,9 +66,11 @@ defmodule ConsciousPhoenix.Game do
   def save_game(game, updates) do
     cardUpdate = Map.fetch!(updates, "cards")
     lawUpdate = Map.fetch!(updates, "laws")
+    board = Map.merge(game.board, %{ "roll" => updates["board"]["roll"] })
     %Game{ game |
       cards: %{ deck: cardUpdate["deck"], discards: cardUpdate["discards"] },
-      laws: %{ deck: lawUpdate["deck"], discards: lawUpdate["discards"] }
+      laws: %{ deck: lawUpdate["deck"], discards: lawUpdate["discards"] },
+      board: board
     }
   end
 
@@ -78,13 +80,6 @@ defmodule ConsciousPhoenix.Game do
 
   def update_player_status(game, pid, status) do
     put_in(game.players[pid].status, status)
-  end
-
-  def players_by_turn(game) do
-    Enum.map(game.turns, fn pid ->
-      player = game.players[pid]
-      %{ pid: pid, name: player.name, position: player.position }
-    end)
   end
 
   defp filter_active(players) do

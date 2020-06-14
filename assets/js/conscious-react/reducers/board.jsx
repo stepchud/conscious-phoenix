@@ -1,5 +1,5 @@
 import { map, filter, isEmpty, every, some, isNaN } from 'lodash'
-import { BOARD_SPACES, LAST_SPACE, TURNS, Dice } from '../constants'
+import { BOARD_SPACES, LAST_SPACE, Dice } from '../constants'
 
 const InitialState = () => ({
   sides: 6,
@@ -43,11 +43,6 @@ const board = (
         roll: Dice(sides).roll(),
       }
     }
-    case 'BOARD_POSITIONS':
-      return {
-        ...state,
-        players: action.players
-      }
     case 'TAKE_OPPOSITE':
       return {
         ...state,

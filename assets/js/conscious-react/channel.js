@@ -6,8 +6,6 @@ import { getGameId, setGameId, getPlayerId, setPlayerId } from './constants'
 // maps the server game state to local state
 const localState = (payload) => {
   const {
-    gid,
-    pid,
     game: {
       players,
       board,
@@ -17,6 +15,7 @@ const localState = (payload) => {
       turns,
     }
   } = payload
+  const pid = getPlayerId()
 
   const player = players[pid]
   const {
@@ -28,7 +27,7 @@ const localState = (payload) => {
 
   const localPlayers = turns.map(plyrId => {
     const { name, position } = players[plyrId]
-    return { name, position }
+    return { pid: plyrId, name, position }
   }).reverse()
 
   return {
@@ -84,16 +83,13 @@ export default function Connect() {
     })
     this.channel.on("game:update", payload => {
       console.log('game:update', payload)
-      const { pid } = payload
-      if (getPlayerId() === pid) {
-        const state = localState(payload)
-        gameActions.onUpdateGame(state)
-      } else {
-        console.log(`updated other pid (${getPlayerId()},${pid})`)
-      }
+      const state = localState(payload)
+      gameActions.onUpdateGame(state)
     })
     this.channel.on("game:next_turn", payload => {
-      console.log(`next_turn ${payload.pid}`)
+      console.log(`game:next_turn ${payload.pid}`)
+      const state = localState(payload)
+      gameActions.onUpdateGame(state)
       gameActions.onTurnStarted(payload)
     })
     this.channel.on("game:joined", payload => {
@@ -111,20 +107,16 @@ export default function Connect() {
         const state = localState(payload)
         gameActions.onGameContinued(state)
         gameActions.onHideModal()
-        console.log(`game continued (${pid})`)
       } else {
         console.warn("mismatched pid for continue")
       }
-    })
-    this.channel.on("game:saved", payload => {
-      gameActions.onGameSaved(payload)
     })
     this.channel.on("modal:error", payload => {
       const { error } = payload
       gameActions.onUpdateModal({ field: "error_message", value: error.message })
       gameActions.onShowModal()
     })
-    this.channel.on("log:event", payload => {
+    this.channel.on("game:event", payload => {
       gameActions.onEventLog(payload)
     })
     this.channel.on("broadcast:message", payload => {

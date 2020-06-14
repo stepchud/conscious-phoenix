@@ -42,8 +42,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :save_state, gid: gid, pid: pid, game: game})
   end
 
-  def log_event(gid, event) do
-    GenServer.cast(__MODULE__, %{action: :log_event, gid: gid, event: event})
+  def log_event(gid, pid, event) do
+    GenServer.cast(__MODULE__, %{action: :log_event, gid: gid, pid: pid, event: event})
   end
 
   def game_over(gid, pid) do
@@ -133,39 +133,42 @@ defmodule ConsciousPhoenix.GameServer do
     state = put_in(state.games[gid], game)
     nextPid = Game.next_pid(game)
     IO.puts "next pid=#{nextPid}"
-    players = Game.players_by_turn(game)
-    Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, players: players })
+    Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
     {:noreply, state}
   end
 
   def handle_cast(%{:action => :save_state, :gid => gid, :pid => pid, :game => updates}, state) do
     game = Game.save_state(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
-    players = Game.players_by_turn(game)
-    Endpoint.broadcast!("game:#{gid}", "game:saved", %{ pid: pid, players: players })
+    Endpoint.broadcast!("game:#{gid}", "game:update", %{ game: game })
     {:noreply, state}
   end
 
-  def handle_cast(%{:action => :log_event, :gid => gid, :event => event}, state) do
-    game = Game.add_log_event(state.games[gid], event)
+  def handle_cast(%{:action => :log_event, :gid => gid, :pid => pid, :event => event}, state) do
+    game = Game.add_log_event(state.games[gid], %{ pid: pid, entry: event })
     state = put_in(state.games[gid], game)
     Endpoint.broadcast!("game:#{gid}", "game:event", %{ event: event })
     {:noreply, state}
   end
 
   def handle_cast(%{:action => :game_over, :gid => gid, :pid => pid}, state) do
-    game = Game.update_player_status(state.games[gid], pid, Player.statuses.done)
+    game = state.games[gid]
+    entry = "#{game.players[pid].name}'s game is over."
+    game = game
+      |> Game.update_player_status(pid, Player.statuses.done)
+      |> Game.add_log_event(%{ pid: pid, entry: entry })
     state = put_in(state.games[gid], game)
-    Endpoint.broadcast!("game:#{gid}", "player:done", %{ pid: pid })
+    nextPid = Game.next_pid(game)
+    Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
     {:noreply, state}
   end
 
-  def handle_cast(%{:action => :reset, :gid => gid}, state) do
-    state = put_in(state.games[gid], %{})
-    game = state.games[gid]
-    Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
-    {:noreply, state}
-  end
+  # def handle_cast(%{:action => :reset, :gid => gid}, state) do
+  #   state = put_in(state.games[gid], %{})
+  #   game = state.games[gid]
+  #   Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
+  #   {:noreply, state}
+  # end
 
   defp join_player(game, pid, name) do
     case { pid, game.players[pid] } do
