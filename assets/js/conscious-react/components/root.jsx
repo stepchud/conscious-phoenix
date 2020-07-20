@@ -58,6 +58,11 @@ export class ConsciousBoardgame extends React.Component {
     this.props.channel.push('game:end_turn', { pid, game })
   }
 
+  handleDuplicate = (elem) => {
+    const pid = getPlayerId()
+    this.props.channel.push('game:exchange_dupes', { pid })
+  }
+
   handleLogEvent = (event) => {
     const pid = getPlayerId()
     this.props.channel.push('game:log_event', { pid, event })
@@ -115,7 +120,7 @@ export class ConsciousBoardgame extends React.Component {
             />
             <PlayerStats name={player.name} {...ep} />
             <Board {...board} />
-            <CardHand cards={cards.hand} onSelect={gameActions.onSelectCard} />
+            <CardHand cards={cards.hand} active={player.active} onSelect={gameActions.onSelectCard} onDuplicate={this.handleDuplicate} />
             { fd.current.alive && <LawHand
                 laws={laws}
                 byChoice={player.current_turn===TURNS.choiceLaw}

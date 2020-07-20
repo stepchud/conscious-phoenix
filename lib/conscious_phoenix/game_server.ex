@@ -50,6 +50,14 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :game_over, gid: gid, pid: pid})
   end
 
+  def exchange_dupes(gid, pid) do
+    GenServer.cast(__MODULE__, %{action: :exchange_dupes, gid: gid, pid: pid})
+  end
+
+  def fifth_striving(gid, pid) do
+    GenServer.cast(__MODULE__, %{action: :fifth_striving, gid: gid, pid: pid})
+  end
+
   def reset() do
     GenServer.cast(__MODULE__, %{action: :reset})
   end
@@ -131,7 +139,7 @@ defmodule ConsciousPhoenix.GameServer do
   def handle_cast(%{:action => :end_turn, :gid => gid, :pid => pid, :game => updates}, state) do
     game = Game.save_state(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
-    nextPid = Game.next_pid(game)
+    { nextPid, _ } = Player.next_pid(game.players, game.turns)
     IO.puts "next pid=#{nextPid}"
     Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
     {:noreply, state}
@@ -158,9 +166,35 @@ defmodule ConsciousPhoenix.GameServer do
       |> Game.update_player_status(pid, Player.statuses.done)
       |> Game.add_log_event(%{ pid: pid, entry: entry })
     state = put_in(state.games[gid], game)
-    nextPid = Game.next_pid(game)
+    { nextPid, _ } = Player.next_pid(game.players, game.turns)
     Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
     {:noreply, state}
+  end
+
+  def handle_cast(%{:action => :exchange_dupes, :gid => gid, :pid => pid}, state) do
+    case Game.exchange_dupes(state.games[gid], pid) do
+      { :noop, game } ->
+        game = Game.add_log_event(game, %{ pid: pid, entry: "No dupes to exchange" })
+        state = put_in(state.games[gid], game)
+        Endpoint.broadcast!("game:#{gid}", "game:dupes:none", %{ })
+        {:noreply, state}
+      { :swap, game } ->
+        game = Game.add_log_event(game, %{ pid: pid, entry: "Dupes exchanged" })
+        state = put_in(state.games[gid], game)
+        Endpoint.broadcast!("game:#{gid}", "game:dupes:exchanged", %{ pid: pid, game: game })
+        {:noreply, state}
+    end
+  end
+
+  def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid}, state) do
+    case Game.fifth_striving(state.games[gid], pid) do
+      { :none } ->
+        Endpoint.broadcast!("game:#{gid}", "game:fifth_striving:none", %{ pid: pid })
+        {:noreply, state}
+      { game, exchanged } ->
+        state = put_in(state.games[gid], game)
+        {:noreply, state}
+    end
   end
 
   # def handle_cast(%{:action => :reset, :gid => gid}, state) do

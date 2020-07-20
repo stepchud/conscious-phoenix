@@ -1,20 +1,30 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { map } from 'lodash'
 import { lawAtIndex } from '../reducers/laws'
-
-const imgTag = (card) => card=='JO' || card=='XJ'
-  ? <img className='card-img' src={`images/${card}.png`} alt={card} />
-  : <img className='card-img' src={`images/${card}.gif`} alt={card} />
+import { CardImage } from './card_image'
+import { useDoubleClick } from '../hooks/useDoubleClick'
 
 export const Card = ({
   card,
+  active,
   onClick,
+  onDuplicate,
 }) => {
   const classes = `card ${card.selected ? 'selected' : ''}`
-  return <div className={classes} onClick={onClick} onKeyDown={onClick} tabIndex='0'>
-    {imgTag(card.c)}
-  </div>
+  const [ callbackRef, _ ] = useDoubleClick(onDuplicate)
+  return (
+    <div ref={callbackRef} className={classes} onClick={onClick} onKeyDown={onClick} tabIndex='0'>
+      <CardImage card={card.c} />
+    </div>
+  )
 }
+
+const InactiveCard = ({
+  card
+}) =>
+  <div className={'card'} tabIndex='0'>
+    <CardImage card={card.c} />
+  </div>
 
 const ActiveLawCard = ({
   card,
@@ -25,7 +35,7 @@ const ActiveLawCard = ({
       <span className="card-state">
         {!!covered.length && `(${covered.join(',')})`}
       </span>
-      {imgTag(card.card)}
+      <CardImage card={card.card} />
     </div>
   )
 }
@@ -43,20 +53,34 @@ const LawCard = ({
       <span className="card-state">
         {cardState.join(',')}
       </span>
-      {imgTag(card.c.card)}
+      <CardImage card={card.c.card} />
     </div>
   )
 }
 
 export const CardHand = ({
   cards,
+  active,
   onSelect,
+  onDuplicate,
 }) => {
-  const hand = cards.length ? (
-    map(cards, (c, i) => <Card key={i} card={c} onClick={() => onSelect(i)} tabIndex='0' />)
-  ) : (
-    <span>No Cards.</span>
-    )
+  let hand = <span>No Cards.</span>
+  const [canDupe, setCanDupe] = useState(true)
+  if (!!cards.length) {
+    hand = map(cards, (c, i) => {
+      if (!active) { return <InactiveCard key={i} card={c} /> }
+      const dupe = canDupe && cards.filter(dupes => dupes.c === c.c).length > 1
+      return (
+        <Card key={i}
+          card={c}
+          active={active}
+          onClick={() => onSelect(i)}
+          onDuplicate={() => { if (dupe) { setCanDupe(false); onDuplicate() } }}
+          tabIndex='0'
+        />
+      )
+    })
+  }
   return (
     <div className="section cards">
       <h3>Cards</h3>

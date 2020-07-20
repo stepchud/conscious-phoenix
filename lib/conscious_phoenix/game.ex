@@ -26,26 +26,24 @@ defmodule ConsciousPhoenix.Game do
   )
 
   def save_state(game, pid, updates) do
-    game = save_game(game, updates)
-    players = save_player(pid, game.players, updates)
+    game
+    |> save_game(updates)
+    |> save_player(pid, updates)
+    |> save_turn(pid)
+  end
+
+  def save_turn(game, pid) do
     turns = [pid | List.delete(game.turns, pid)]
-    %Game{ game | players: players, turns: turns }
+    %Game{ game | turns: turns }
   end
 
-  def next_pid(game) do
-    game.players
-    |> filter_active
-    |> filter_min_position
-    |> last_by_turns(game.turns)
-  end
-
-  def save_player(pid, players, updates) do
+  def save_player(game, pid, updates) do
     playerUpdate = Map.fetch!(updates, "player")
     lawUpdate = Map.fetch!(updates, "laws")
     cardUpdate = Map.fetch!(updates, "cards")
     fd = Map.fetch!(updates, "fd")
     ep = Map.fetch!(updates, "ep")
-    player = players[pid]
+    player = game.players[pid]
     player = %Player{
       player |
       age: playerUpdate["age"],
@@ -60,7 +58,7 @@ defmodule ConsciousPhoenix.Game do
       fd: fd,
       ep: ep,
     }
-    put_in(players[pid], player)
+    put_in(game.players[pid], player)
   end
 
   def save_game(game, updates) do
@@ -82,35 +80,25 @@ defmodule ConsciousPhoenix.Game do
     put_in(game.players[pid].status, status)
   end
 
-  defp filter_active(players) do
-    Enum.filter(players, fn {_, player} -> player.status == Player.statuses().present end)
-    |> Enum.into(%{})
+  def exchange_dupes(game, pid) do
+    offerer = game.players[pid]
+    # active players with dupes at same position, ordered by turn
+    other_dupes = Player.other_dupes(game.players, offerer, game.turns)
+
+    Enum.reduce(other_dupes, { :noop, game }, fn { _, offeree }, { status, acc_game } ->
+      case Player.swap_dupes(offerer, offeree) do
+        { :noop, _, _ } ->
+          { status, acc_game }
+        { :swap, p1, p2 } ->
+          acc_game = put_in(acc_game.players[p1.pid], p1)
+          acc_game = put_in(acc_game.players[p2.pid], p2)
+          { :swap, acc_game }
+      end
+    end)
   end
 
-  defp min_position(players) do
-    players
-    |> Map.values
-    |> Enum.map(fn p -> p.position end)
-    |> Enum.sort
-    |> hd
-  end
-
-  defp filter_min_position(players) do
-    position = min_position(players)
-    Enum.filter(players, fn {_, player} -> player.position === position end)
-    |> Enum.into(%{})
-  end
-
-  defp last_by_turns(players, turns) do
-    players
-    |> Map.keys
-    |> Enum.sort_by(
-      fn pid -> Enum.find_index(turns,
-        fn turnPid ->
-          pid == turnPid
-        end)
-      end)
-    |> hd
+  def fifth_striving(game, pid) do
+    { :none }
   end
 end
 

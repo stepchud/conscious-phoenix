@@ -40,6 +40,16 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
+  def handle_in("game:exchange_dupes", %{"pid" => pid}, socket) do
+    GameServer.exchange_dupes(socket.assigns.gid, pid)
+    {:noreply, socket}
+  end
+
+  def handle_in("game:fifth_striving", %{"pid" => pid}, socket) do
+    GameServer.fifth_striving(socket.assigns.gid, pid)
+    {:noreply, socket}
+  end
+
   def handle_in("game:log_event", %{"pid" => pid, "event" => event}, socket) do
     GameServer.log_event(socket.assigns.gid, pid, event)
     {:noreply, socket}

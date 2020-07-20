@@ -13,22 +13,24 @@ const InitialState = {
   death_space: LAST_SPACE,
 }
 
-const stateAfterDeath = (state, reincarnate) => reincarnate ?
-  {
-    ...state,
-    alive: true,
-    current_turn: TURNS.randomLaw,
-    laws_passed: 2,
-    death_space: state.direction > 0 ? LAST_SPACE : 0
-  }
+const stateAfterDeath = (state, reincarnate) =>
+  reincarnate
+  ?
+    {
+      ...state,
+      alive: true,
+      current_turn: TURNS.randomLaw,
+      laws_passed: 2,
+      death_space: state.direction > 0 ? LAST_SPACE : 0
+    }
   :
-  {
-    ...state,
-    alive: false,
-    current_turn: TURNS.normal,
-    laws_passed: 0,
-    death_space: state.direction > 0 ? LAST_SPACE : 0
-  }
+    {
+      ...state,
+      alive: false,
+      current_turn: TURNS.normal,
+      laws_passed: 0,
+      death_space: state.direction > 0 ? LAST_SPACE : 0
+    }
 
 const player = (
   state = InitialState,
@@ -114,9 +116,11 @@ const player = (
         active: false,
       }
     case 'START_TURN': {
+      // when the game ends, stay active so they can quit when they want
+      const active = action.pid === getPlayerId() || state.current_turn === TURNS.end
       return {
         ...state,
-        active: action.pid === getPlayerId(),
+        active,
       }
     }
     case 'END_TURN':

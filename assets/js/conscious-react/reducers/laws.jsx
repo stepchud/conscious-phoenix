@@ -110,13 +110,13 @@ const testLawCard = (deck, law_text) => {
 
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
-  //return newDeck
-  return (
-    testLawCard(
-      newDeck,
-      'OLD FAMILY DISEASE'
-    )
-  )
+  return newDeck
+  //return (
+  //  testLawCard(
+  //    newDeck,
+  //    'OLD FAMILY DISEASE'
+  //  )
+  //)
 }
 
 const laws = (
