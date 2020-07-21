@@ -665,6 +665,7 @@ export const gameActions = {
     dispatchShowModal(modalProps)
   },
   onHideModal: () => store.dispatch(actions.hideModal()),
+  onExchageDuplicates: () => store.dispatch(actions.exchangeDupes()),
   handleRollClick,
   handleEndDeath,
   handleGameOver,

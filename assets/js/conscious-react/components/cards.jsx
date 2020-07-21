@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { map } from 'lodash'
 import { lawAtIndex } from '../reducers/laws'
 import { CardImage } from './card_image'
@@ -61,11 +61,11 @@ const LawCard = ({
 export const CardHand = ({
   cards,
   active,
+  canDupe,
   onSelect,
   onDuplicate,
 }) => {
   let hand = <span>No Cards.</span>
-  const [canDupe, setCanDupe] = useState(true)
   if (!!cards.length) {
     hand = map(cards, (c, i) => {
       if (!active) { return <InactiveCard key={i} card={c} /> }
@@ -75,7 +75,7 @@ export const CardHand = ({
           card={c}
           active={active}
           onClick={() => onSelect(i)}
-          onDuplicate={() => { if (dupe) { setCanDupe(false); onDuplicate() } }}
+          onDuplicate={() => { dupe ? onDuplicate() : () => {} } }}
           tabIndex='0'
         />
       )

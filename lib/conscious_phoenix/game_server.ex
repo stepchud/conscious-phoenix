@@ -172,18 +172,13 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :exchange_dupes, :gid => gid, :pid => pid}, state) do
-    case Game.exchange_dupes(state.games[gid], pid) do
-      { :noop, game } ->
-        game = Game.add_log_event(game, %{ pid: pid, entry: "No dupes to exchange" })
-        state = put_in(state.games[gid], game)
-        Endpoint.broadcast!("game:#{gid}", "game:dupes:none", %{ })
-        {:noreply, state}
-      { :swap, game } ->
-        game = Game.add_log_event(game, %{ pid: pid, entry: "Dupes exchanged" })
-        state = put_in(state.games[gid], game)
-        Endpoint.broadcast!("game:#{gid}", "game:dupes:exchanged", %{ pid: pid, game: game })
-        {:noreply, state}
-    end
+    { status, game } = Game.exchange_dupes(state.games[gid], pid)
+    game = if (status == :swap),
+      do: Game.add_log_event(game, %{ pid: pid, entry: "Dupes exchanged" }),
+      else: Game.add_log_event(game, %{ pid: pid, entry: "No dupes to exchange" })
+    state = put_in(state.games[gid], game)
+    Endpoint.broadcast!("game:#{gid}", "game:dupes", %{ pid: pid, game: game })
+    {:noreply, state}
   end
 
   def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid}, state) do

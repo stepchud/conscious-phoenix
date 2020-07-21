@@ -7,6 +7,7 @@ const InitialState = {
   direction: 1,
   active: false,
   alive: true,
+  can_dupe: true,
   current_turn: TURNS.setup,
   laws_passed: 2,
   completed_trips: 0,
@@ -121,12 +122,18 @@ const player = (
       return {
         ...state,
         active,
+        can_dupe: true,
       }
     }
     case 'END_TURN':
       return {
         ...state,
         age: state.age + 1
+      }
+    case 'EXCHANGE_DUPES':
+      return {
+        ...state,
+        can_dupe: false
       }
     case 'END_DEATH':
       return stateAfterDeath(state, false)

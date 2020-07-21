@@ -60,6 +60,7 @@ export class ConsciousBoardgame extends React.Component {
 
   handleDuplicate = (elem) => {
     const pid = getPlayerId()
+    gameActions.onExchageDuplicates()
     this.props.channel.push('game:exchange_dupes', { pid })
   }
 
@@ -120,7 +121,7 @@ export class ConsciousBoardgame extends React.Component {
             />
             <PlayerStats name={player.name} {...ep} />
             <Board {...board} />
-            <CardHand cards={cards.hand} active={player.active} onSelect={gameActions.onSelectCard} onDuplicate={this.handleDuplicate} />
+            <CardHand cards={cards.hand} active={player.active} canDupe={player.can_dupe} onSelect={gameActions.onSelectCard} onDuplicate={this.handleDuplicate} />
             { fd.current.alive && <LawHand
                 laws={laws}
                 byChoice={player.current_turn===TURNS.choiceLaw}
