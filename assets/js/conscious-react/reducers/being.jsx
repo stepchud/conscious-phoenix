@@ -13,6 +13,7 @@ const InitialState = {
   wild_shock: 0,
   all_shocks: 0,
   level_of_being: 'MULTIPLICITY',
+  school_type: undefined,
   new_levels: [],
   bwe: false,
   ewb: false,
@@ -34,21 +35,28 @@ const levelOfBeing = (pieces) => {
   if (pieces[13]) { distinctAces += 1 }
   if (pieces[12]) { distinctAces += 1 }
   if (pieces[17]) {
-    return 'MASTER'
+    return ['MASTER']
   } else if (aceSpades && distinctAces >= 3) {
-    return 'STEWARD'
-  } else if ((pieces[0] && pieces[1] && pieces[2]) || (pieces[12] > 1) || (pieces[12]==1 && (pieces[0] || pieces[1] || pieces[2])) || // all diamonds
-             (pieces[3] && pieces[4] && pieces[5]) || (pieces[13] > 1) || (pieces[13]==1 && (pieces[3] || pieces[4] || pieces[5])) || // all clubs
-             (pieces[6] && pieces[7] && pieces[8]) || (pieces[14] > 1) || (pieces[14]==1 && (pieces[6] || pieces[7] || pieces[8])) || // all hearts
-             (pieces[9] && pieces[10] && pieces[11]) || (pieces[15] > 1) || (pieces[15]==1 && (pieces[9] || pieces[10] || pieces[11]))) { // all spades
-    return 'DEPUTY-STEWARD'
+    return ['STEWARD']
+  } else if ((pieces[0] && pieces[1] && pieces[2]) || (pieces[12] > 1) || (pieces[12]==1 && (pieces[0] || pieces[1] || pieces[2]))) {
+    // all diamonds
+    return ['DEPUTY-STEWARD', 'Fakir']
+  } else if ((pieces[3] && pieces[4] && pieces[5]) || (pieces[13] > 1) || (pieces[13]==1 && (pieces[3] || pieces[4] || pieces[5]))) {
+    // all clubs
+    return ['DEPUTY-STEWARD', 'Yogi']
+  } else if ((pieces[6] && pieces[7] && pieces[8]) || (pieces[14] > 1) || (pieces[14]==1 && (pieces[6] || pieces[7] || pieces[8]))) {
+    // all hearts
+    return ['DEPUTY-STEWARD', 'Monk']
+  } else if ((pieces[9] && pieces[10] && pieces[11]) || (pieces[15] > 1) || (pieces[15]==1 && (pieces[9] || pieces[10] || pieces[11]))) {
+    // all spades
+    return ['DEPUTY-STEWARD', 'Sly']
   } else {
-    let slyMan = distinctAces
-    slyMan += (pieces[1] || pieces[2]) ? 1 : 0
-    slyMan += (pieces[4] || pieces[5]) ? 1 : 0
-    slyMan += (pieces[7] || pieces[8]) ? 1 : 0
-    slyMan += (pieces[10] || pieces[11]) ? 1 : 0
-    return slyMan > 2 ? 'DEPUTY-STEWARD' : 'MULTIPLICITY'
+    let balanced = distinctAces
+    balanced += (pieces[1] || pieces[2]) ? 1 : 0
+    balanced += (pieces[4] || pieces[5]) ? 1 : 0
+    balanced += (pieces[7] || pieces[8]) ? 1 : 0
+    balanced += (pieces[10] || pieces[11]) ? 1 : 0
+    return balanced > 2 ? ['DEPUTY-STEWARD', 'Balanced'] : ['MULTIPLICITY']
   }
 }
 
@@ -157,6 +165,7 @@ const ep = (
       }
     case 'MAKE_PIECES':
       const [ newPiece, count ] = action.pieces
+      let { school_type } = state
       let i = PARTS.indexOf(newPiece)
       pieces[i] += count
       shocks.push(shock(i))
@@ -166,7 +175,10 @@ const ep = (
         pieces[i] += 1
         shocks.push(shock(i))
       }
-      const new_lob = levelOfBeing(pieces)
+      const [ new_lob, new_school ] = levelOfBeing(pieces)
+      if (!school_type && new_lob==='DEPUTY-STEWARD') {
+        school_type = new_school
+      }
       const new_levels = LOB.slice(LOB.indexOf(level_of_being)+1, LOB.indexOf(new_lob)+1)
       return {
         ...state,
@@ -174,6 +186,7 @@ const ep = (
         shocks,
         new_levels,
         level_of_being: new_lob,
+        school_type,
       }
     case 'COMBINE_PARTS':
       const newPart = makeNewPart(action.selected)

@@ -152,7 +152,8 @@ const presentExtra = async (extra) => {
 const presentEvent = (event) => {
   switch(event) {
     case 'DEPUTY-STEWARD':
-			store.dispatch({ type: 'FOUND_SCHOOL' })
+      const { school_type } = store.getState().ep
+			store.dispatch({ type: 'FOUND_SCHOOL', school_type })
       break
     case 'STEWARD':
       store.dispatch({ type: 'ATTAIN_STEWARD' })

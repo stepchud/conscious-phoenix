@@ -5,6 +5,22 @@ const InitialState = {
   setup_step: 'new',
 }
 
+const schoolMessage = (school) => {
+  const pre = 'After some time, with the help of magnetic center, a man may find a school. '
+  switch(school) {
+    case 'Fakir':
+      return pre + "You're a great Fakir."
+    case 'Yogi':
+      return pre + "You've got to be Yogi-ing."
+    case 'Monk':
+      return pre + "You're all Monk-y business."
+    case 'Sly':
+      return pre + "You even got a 'Sly' grin."
+    case 'Balanced':
+      return pre + "Part of a well-balanced life."
+  }
+}
+
 const modal = (
   state = InitialState,
   action
@@ -34,7 +50,7 @@ const modal = (
       return {
         show: true,
         title: 'Found School',
-        body: 'After some time, with the help of magnetic center, a man may find a school.',
+        body: schoolMessage(action.school_type),
         onClick: noop,
       }
     case 'ATTAIN_STEWARD':

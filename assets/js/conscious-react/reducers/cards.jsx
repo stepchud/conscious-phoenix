@@ -28,6 +28,7 @@ const generateDeck = () => {
   times(2, deck.push('QD'))
   deck.push('JH')
   deck.push('QC')
+  //return deck
   return shuffle(deck)
 }
 

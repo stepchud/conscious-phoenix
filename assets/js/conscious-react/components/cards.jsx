@@ -75,9 +75,8 @@ export const CardHand = ({
           card={c}
           active={active}
           onClick={() => onSelect(i)}
-          onDuplicate={() => { dupe ? onDuplicate() : () => {} } }}
-          tabIndex='0'
-        />
+          onDuplicate={() => {if (dupe) { onDuplicate() }}}
+          tabIndex='0' />
       )
     })
   }
