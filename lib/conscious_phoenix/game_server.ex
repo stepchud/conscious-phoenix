@@ -72,11 +72,14 @@ defmodule ConsciousPhoenix.GameServer do
     {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
-  def handle_cast(%{action: :start_game, gid: gid, name: name, sides: sides}, state) do
+  def handle_cast(%{
+    action: :start_game,
+    gid: gid, name: name, sides: sides
+  }, state) do
     IO.puts "start_game<#{gid}> (#{name}, #{sides})"
     player = %Player{ name: name, pid: Player.generate_pid() }
     new_game = %Game{ players: %{ player.pid => player }, board: %{ sides: sides, roll: sides } }
-               |> Game.add_log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
+               |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
     state = put_in(state.games[gid], new_game)
     Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, pid: player.pid, sides: sides})
     {:noreply, state}
@@ -147,13 +150,11 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{:action => :save_state, :gid => gid, :pid => pid, :game => updates}, state) do
     game = Game.save_state(state.games[gid], pid, updates)
-    state = put_in(state.games[gid], game)
-    Endpoint.broadcast!("game:#{gid}", "game:update", %{ game: game })
-    {:noreply, state}
+    update_game(state, gid, game)
   end
 
   def handle_cast(%{:action => :log_event, :gid => gid, :pid => pid, :event => event}, state) do
-    game = Game.add_log_event(state.games[gid], %{ pid: pid, entry: event })
+    game = Game.log_event(state.games[gid], %{ pid: pid, entry: event })
     state = put_in(state.games[gid], game)
     Endpoint.broadcast!("game:#{gid}", "game:event", %{ event: event })
     {:noreply, state}
@@ -164,7 +165,7 @@ defmodule ConsciousPhoenix.GameServer do
     entry = "#{game.players[pid].name}'s game is over."
     game = game
       |> Game.update_player_status(pid, Player.statuses.done)
-      |> Game.add_log_event(%{ pid: pid, entry: entry })
+      |> Game.log_event(%{ pid: pid, entry: entry })
     state = put_in(state.games[gid], game)
     { nextPid, _ } = Player.next_pid(game.players, game.turns)
     Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
@@ -172,24 +173,18 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :exchange_dupes, :gid => gid, :pid => pid}, state) do
-    { status, game } = Game.exchange_dupes(state.games[gid], pid)
-    game = if (status == :swap) do
-      Game.add_log_event(game, %{ pid: pid, entry: "Dupes exchanged" })
-    else
-      Game.add_log_event(game, %{ pid: pid, entry: "No dupes to exchange" })
-    end
-    state = put_in(state.games[gid], game)
-    Endpoint.broadcast!("game:#{gid}", "game:dupes", %{ pid: pid, game: game })
-    {:noreply, state}
+    game = Game.exchange_dupes(state.games[gid], pid)
+    update_game(state, gid, game)
   end
 
   def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid}, state) do
     case Game.fifth_striving(state.games[gid], pid) do
-      { :none } ->
-        Endpoint.broadcast!("game:#{gid}", "game:fifth_striving:none", %{ pid: pid })
-        {:noreply, state}
-      { game, exchanged } ->
-        state = put_in(state.games[gid], game)
+      { :none, game } ->
+        update_game(state, gid, game)
+      { :one, game } ->
+        update_game(state, gid, game)
+      { :multi, { options, player_id } } ->
+        Endpoint.broadcast!("game:#{gid}", "game:fifth_options", %{ pid: player_id, options: options })
         {:noreply, state}
     end
   end
@@ -201,19 +196,25 @@ defmodule ConsciousPhoenix.GameServer do
   #   {:noreply, state}
   # end
 
+  defp update_game(state, gid, game) do
+    state = put_in(state.games[gid], game)
+    Endpoint.broadcast!("game:#{gid}", "game:update", %{ game: game })
+    {:noreply, state}
+  end
+
   defp join_player(game, pid, name) do
     case { pid, game.players[pid] } do
       { nil, _ } ->
         player = %Player{ name: name, pid: Player.generate_pid() }
         IO.puts "new pid joined: #{player.pid}"
         game = put_in(game.players, Map.put(game.players, player.pid, player))
-               |> Game.add_log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
+               |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
         {"game:joined", game, player.pid}
       { _, nil } ->
         IO.puts "existing pid joined: #{pid}"
         player = %Player{ name: name, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
-               |> Game.add_log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
+               |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
         {"game:joined", game, pid}
       { _, _ } -> # continue game
         IO.puts "existing player continued:#{pid}"

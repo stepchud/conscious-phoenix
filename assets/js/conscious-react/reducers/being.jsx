@@ -29,35 +29,54 @@ const shock = (index) =>
         'WILD-SHOCK' : 'ALL-SHOCKS'
 
 const levelOfBeing = (pieces) => {
+  let newLevel = 'MULTIPLICITY'
+  let newSchool
   const aceSpades = pieces[15] > 0
   let distinctAces = pieces[16] > 1 ? 3 : pieces[16] == 1 ? 2 : 0 // count XJ 'aces'
   if (pieces[14]) { distinctAces += 1 }
   if (pieces[13]) { distinctAces += 1 }
   if (pieces[12]) { distinctAces += 1 }
   if (pieces[17]) {
-    return ['MASTER']
+    newLevel = 'MASTER'
   } else if (aceSpades && distinctAces >= 3) {
-    return ['STEWARD']
-  } else if ((pieces[0] && pieces[1] && pieces[2]) || (pieces[12] > 1) || (pieces[12]==1 && (pieces[0] || pieces[1] || pieces[2]))) {
-    // all diamonds
-    return ['DEPUTY-STEWARD', 'Fakir']
-  } else if ((pieces[3] && pieces[4] && pieces[5]) || (pieces[13] > 1) || (pieces[13]==1 && (pieces[3] || pieces[4] || pieces[5]))) {
-    // all clubs
-    return ['DEPUTY-STEWARD', 'Yogi']
-  } else if ((pieces[6] && pieces[7] && pieces[8]) || (pieces[14] > 1) || (pieces[14]==1 && (pieces[6] || pieces[7] || pieces[8]))) {
-    // all hearts
-    return ['DEPUTY-STEWARD', 'Monk']
-  } else if ((pieces[9] && pieces[10] && pieces[11]) || (pieces[15] > 1) || (pieces[15]==1 && (pieces[9] || pieces[10] || pieces[11]))) {
-    // all spades
-    return ['DEPUTY-STEWARD', 'Sly']
-  } else {
+    newLevel = 'STEWARD'
+  }
+  if ( // all diamonds
+      (pieces[0] && pieces[1] && pieces[2]) ||
+      (pieces[12] > 1) ||
+      (pieces[12]==1 && (pieces[0] || pieces[1] || pieces[2])) ) {
+    newLevel = newLevel || 'DEPUTY-STEWARD'
+    newSchool = 'Fakir'
+  } else if ( // all clubs
+              (pieces[3] && pieces[4] && pieces[5]) ||
+              (pieces[13] > 1) ||
+              (pieces[13]==1 && (pieces[3] || pieces[4] || pieces[5])) ) {
+    newLevel = newLevel || 'DEPUTY-STEWARD'
+    newSchool = 'Yogi'
+  } else if ( // all hearts
+              (pieces[6] && pieces[7] && pieces[8]) ||
+              (pieces[14] > 1) ||
+              (pieces[14]==1 && (pieces[6] || pieces[7] || pieces[8])) ) {
+    newLevel = newLevel || 'DEPUTY-STEWARD'
+    newSchool = 'Monk'
+  } else if ( // all spades
+              (pieces[9] && pieces[10] && pieces[11]) ||
+              (pieces[15] > 1) ||
+              (pieces[15]==1 && (pieces[9] || pieces[10] || pieces[11]))) {
+    newLevel = newLevel || 'DEPUTY-STEWARD'
+    newSchool = 'Sly'
+  } else { // are they a balanced man?
     let balanced = distinctAces
     balanced += (pieces[1] || pieces[2]) ? 1 : 0
     balanced += (pieces[4] || pieces[5]) ? 1 : 0
     balanced += (pieces[7] || pieces[8]) ? 1 : 0
     balanced += (pieces[10] || pieces[11]) ? 1 : 0
-    return balanced > 2 ? ['DEPUTY-STEWARD', 'Balanced'] : ['MULTIPLICITY']
+    if (balanced > 2) {
+      newLevel = newLevel || 'DEPUTY-STEWARD'
+      newSchool = 'Balanced'
+    }
   }
+  return [newLevel, newSchool]
 }
 
 const numBrains = (roll) => roll == 6 ? 3 : (roll > 3 ? 2 : 1)
@@ -176,9 +195,7 @@ const ep = (
         shocks.push(shock(i))
       }
       const [ new_lob, new_school ] = levelOfBeing(pieces)
-      if (!school_type && new_lob==='DEPUTY-STEWARD') {
-        school_type = new_school
-      }
+      school_type = school_type || new_school
       const new_levels = LOB.slice(LOB.indexOf(level_of_being)+1, LOB.indexOf(new_lob)+1)
       return {
         ...state,

@@ -72,7 +72,7 @@ defmodule ConsciousPhoenix.Game do
     }
   end
 
-  def add_log_event(game, event) do
+  def log_event(game, event) do
     %Game{ game | log: [ event | game.log ] }
   end
 
@@ -80,12 +80,13 @@ defmodule ConsciousPhoenix.Game do
     put_in(game.players[pid].status, status)
   end
 
+  # player(pid) automatically exchanges dupes with all players at the same position
   def exchange_dupes(game, pid) do
     offerer = game.players[pid]
     # active players with dupes at same position, ordered by turn
-    other_dupes = Player.other_dupes(game.players, offerer, game.turns)
+    other_players = Player.other_players_by_turn(game.players, offerer, game.turns)
 
-    Enum.reduce(other_dupes, { :noop, game }, fn { _, offeree }, { status, acc_game } ->
+    { status, game } = Enum.reduce(other_players, { :noop, game }, fn { _, offeree }, { status, acc_game } ->
       case Player.swap_dupes(offerer, offeree) do
         { :noop, _, _ } ->
           { status, acc_game }
@@ -95,10 +96,47 @@ defmodule ConsciousPhoenix.Game do
           { :swap, acc_game }
       end
     end)
+    entry = if (status == :noop), do: "No dupes to exchange", else: "Dupes exchanged"
+    log_event(game, %{ pid: pid, entry: entry })
   end
 
+  # find the first player on the same spot that can exchange 5th striving card (either give or take)
+  # if there is only one card, automatically exchange and draw three
+  # if there are options, display them to the higher player for choice
   def fifth_striving(game, pid) do
-    { :none }
+    initiator = game.players[pid]
+    { options, eligible_player_id } = Player.fifth_striving_eligible(game.players, initiator, game.turns)
+    options_count = Enum.count(options)
+    cond do
+      options_count == 0 -> { :none, log_event(game, %{ pid: pid, entry: "No options for fifth striving" }) }
+      options_count == 1 -> { :one, exchange_one_fifth(game, pid, eligible_player_id) }
+      options_count  > 1 -> { :multi, show_fifth_options(game, pid, eligible_player_id) }
+    end
+  end
+
+  # lower player gets the helping card and draw three cards for higher
+  defp exchange_one_fifth(game, opid, epid) do
+  end
+
+  # return { options, player_id } where options array of cards, player_id for higher-player w choice
+  defp show_fifth_options(game, opid, epid) do
+  end
+
+  # draw one card, shuffling first if needed
+  defp draw_card(game, pid) do
+    cards = game.cards
+    hand = game.players[pid].hand
+    { deck, discards } = if Enum.empty?(cards.deck) do
+      { Enum.shuffle(cards.discards), [] }
+    else
+      { cards.deck, cards.discards }
+    end
+    drawn = hd(deck)
+    deck = tl(deck)
+    # update player's hand
+    game = put_in(game.players[pid].hand, hand ++ [drawn])
+    # update deck & discards
+    put_in(game.cards, Map.merge(game.cards, { deck: deck, discards: discards }))
   end
 end
 

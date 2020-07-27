@@ -111,10 +111,6 @@ export default function Connect() {
         console.warn("mismatched pid for continue")
       }
     })
-    this.channel.on("game:dupes", payload => {
-      const state = localState(payload)
-      gameActions.onUpdateGame(state)
-    })
     this.channel.on("modal:error", payload => {
       const { error } = payload
       gameActions.onUpdateModal({ field: "error_message", value: error.message })
