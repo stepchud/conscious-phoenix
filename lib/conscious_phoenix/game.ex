@@ -134,9 +134,9 @@ defmodule ConsciousPhoenix.Game do
     drawn = hd(deck)
     deck = tl(deck)
     # update player's hand
-    game = put_in(game.players[pid].hand, hand ++ [drawn])
+    game = put_in(game.players[pid].hand, [drawn | hand])
     # update deck & discards
-    put_in(game.cards, Map.merge(game.cards, { deck: deck, discards: discards }))
+    put_in(game.cards, Map.merge(game.cards, %{ deck: deck, discards: discards }))
   end
 end
 
