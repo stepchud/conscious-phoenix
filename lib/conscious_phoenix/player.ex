@@ -4,7 +4,6 @@ defmodule ConsciousPhoenix.Player do
   @levels_of_being ["MULTIPLICITY": 0, "DEPUTY-STEWARD": 1, "STEWARD": 2, "MASTER": 3]
 
   @statuses %{ present: :present, away: :away, done: :done, quit: :quit }
-  @suits = ["D","C","H","S"]
 
   def statuses, do: @statuses
 
@@ -175,7 +174,7 @@ defmodule ConsciousPhoenix.Player do
       new_potential = potential_level_of_being(lower_with_card)
       cond do
         orig_potential === new_potential -> false
-        lower_lob === "MULTIPLICITY" ->
+        new_potential === "DEPUTY-STEWARD" ->
           # lower player needs school, only offer help based on higher's school
           case higher.ep["school_type"] do
             "Fakir" ->
@@ -194,25 +193,14 @@ defmodule ConsciousPhoenix.Player do
     end)
   end
 
-  # check if they need one card to earn the next level
-  # they don't already have it in their hand
-  # RETURN: a list of cards which could earn the next level
-  # e.g. ['2D', '5S']
-  defp cards_needed(player) do
-    case potential_level_of_being(player) do
-      "MULTIPLICITY" -> school_cards_needed(player)
-      "MASTER" -> []
-    end
-  end
-
   # 1) convert cards in the hand into chips
   # 2) add these card pieces to the ones on the board
   # 3) combine lower to higher pieces
   # 4) bump pieces up
-  defp potential_pieces(hand, pieces) do
-    pieces_in_hand = card_pieces(hand)
-    |> Enum.with_index
-    |> Enum.map(fn(pieces, index) -> pieces + pieces_in_hand[index] end)
+  defp potential_pieces(hand, current_pieces) do
+    new_pieces_in_hand = card_pieces(hand)
+    Enum.with_index(new_pieces_in_hand)
+    |> Enum.map(fn(new_pieces, index) -> current_pieces[index] + new_pieces end)
     |> make_aces
     |> make_xjos
     |> bump_pieces
@@ -221,7 +209,7 @@ defmodule ConsciousPhoenix.Player do
   # level of being given the potential chips already in hand
   defp potential_level_of_being(player) do
     pieces = potential_pieces(card_hand(player), player.ep["pieces"])
-    [jd, qd, kd, jc, qc, kc, jh, qh, kh, js, qs, ks, ad, ac, ah, as, xj, jo] = pieces
+    [jd, qd, kd, jc, qc, kc, jh, qh, kh, js, qs, ks, ad, ac, ah, as, _, jo] = pieces
     cond do
       jo > 0 -> "MASTER"
       as > 0 and ah > 0 and ac > 0 and ad > 0 -> "STEWARD"
@@ -324,8 +312,8 @@ defmodule ConsciousPhoenix.Player do
   # called recursively until there are no more card plays
   defp number_card_pieces(cards, pieces) do
     card_count = length(cards)
-    { card, pieces } = { cards, pieces }
-      |> maybe_play_cards_add_chips(["2D", "3D", "4D"])
+    { next_cards, next_pieces } =
+      maybe_play_cards_add_chips({cards, pieces}, ["2D", "3D", "4D"])
       |> maybe_play_cards_add_chips(["5D", "6D", "7D"])
       |> maybe_play_cards_add_chips(["8D", "9D", "10D"])
       |> maybe_play_cards_add_chips(["2C", "3C", "4C"])
@@ -338,10 +326,10 @@ defmodule ConsciousPhoenix.Player do
       |> maybe_play_cards_add_chips(["5S", "6S", "7S"])
       |> maybe_play_cards_add_chips(["8S", "9S", "10S"])
 
-    if card_count === length(cards) do
+    if card_count === length(next_cards) do
       pieces
     else
-      number_card_pieces(cards, pieces)
+      number_card_pieces(next_cards, next_pieces)
     end
   end
 
@@ -388,13 +376,9 @@ defmodule ConsciousPhoenix.Player do
     { cards, pieces }
   end
 
-  defp count_pieces(pieces)
-    Enum.reduce(pieces, &(&1 + &2))
-  end
-
   defp count_queens_or_kings(pieces) do
     Enum.reduce(0..3, 0, fn i, count ->
-      if (piece[3*i + 1] > 0 or piece[3*i + 2] > 0), do: count + 1, else: count
+      if (pieces[3*i + 1] > 0 or pieces[3*i + 2] > 0), do: count + 1, else: count
     end)
   end
 
