@@ -108,9 +108,9 @@ defmodule ConsciousPhoenix.Player do
 
   defp exchange_fifth(player, other) do
     with { lower, higher } <- compare_levels(player, other),
-         options <- cards_to_level_up(lower, higher),
-         true <- Enum.count(options) > 0 do
-      { options, other.pid }
+         cards <- cards_to_level_up(lower, higher),
+         true <- Enum.count(cards) > 0 do
+      { cards, other.pid }
     else
       :same_level -> { [], :none }
       :no_options -> { [], :none }
@@ -156,38 +156,40 @@ defmodule ConsciousPhoenix.Player do
   defp compare_levels(p1, p2) do
     p1_lob = Keyword.get(@levels_of_being, String.to_atom(p1.ep["level_of_being"]))
     p2_lob = Keyword.get(@levels_of_being, String.to_atom(p2.ep["level_of_being"]))
+    p1_potential = potential_level_of_being(p1)
+    p2_potential = potential_level_of_being(p2)
 
     cond do
       p1_lob === p2_lob -> :same_level
-      p1_lob > p2_lob -> { p2, p1 }
-      p1_lob < p2_lob -> { p1, p2 }
+      p1_lob > p2_lob && p1_lob > p2_potential -> { p2, p1 }
+      p1_lob < p2_lob && p2_lob > p1_potential -> { p1, p2 }
+      true -> :same_level
     end
   end
 
+  # filter cards from higher that would help lower level up more than they can already
   defp cards_to_level_up(lower, higher) do
-    lower_needs = cards_needed(lower)
+    orig_potential = potential_level_of_being(lower)
     Enum.filter(higher.hand, fn card ->
-      if lower.ep["level_of_being"] === "MULTIPLICITY" do
-        # lower player needs school, only offer help based on higher's school
-        case higher.ep["school_type"] do
-          "Fakir" ->
-            String.ends_with?(card["c"], "D") &&
-            Enum.any?(lower_needs, fn need -> need === card["c"] end)
-          "Yogi" -> {}
-            String.ends_with?(card["c"], "C") &&
-            Enum.any?(lower_needs, fn need -> need === card["c"] end)
-          "Monk" -> {}
-            String.ends_with?(card["c"], "H") &&
-            Enum.any?(lower_needs, fn need -> need === card["c"] end)
-          "Sly"  -> {}
-            String.ends_with?(card["c"], "S") &&
-            Enum.any?(lower_needs, fn need -> need === card["c"] end)
-          "Balanced" ->
-            String.starts_with?(card["c"], ["5","6","7","8","9","10","Q"]) &&
-            Enum.any?(lower_needs, fn need -> need === card["c"] end)
-        end
-      else
-        Enum.any?(lower_needs, fn need -> need === card["c"] end)
+      lower_with_card = %{lower | hand: [ card | lower.hand ]}
+      new_potential = potential_level_of_being(lower_with_card)
+      cond do
+        orig_potential === new_potential -> false
+        lower_lob === "MULTIPLICITY" ->
+          # lower player needs school, only offer help based on higher's school
+          case higher.ep["school_type"] do
+            "Fakir" ->
+              String.ends_with?(card["c"], "D")
+            "Yogi" -> {}
+              String.ends_with?(card["c"], "C")
+            "Monk" -> {}
+              String.ends_with?(card["c"], "H")
+            "Sly"  -> {}
+              String.ends_with?(card["c"], "S")
+            "Balanced" ->
+              String.starts_with?(card["c"], ["5","6","7","8","9","10","Q"])
+          end
+        true -> true
       end
     end)
   end
@@ -199,8 +201,6 @@ defmodule ConsciousPhoenix.Player do
   defp cards_needed(player) do
     case potential_level_of_being(player) do
       "MULTIPLICITY" -> school_cards_needed(player)
-      "DEPUTY-STEWARD" -> steward_cards_needed(player)
-      "STEWARD" -> master_cards_needed(player)
       "MASTER" -> []
     end
   end
@@ -232,28 +232,6 @@ defmodule ConsciousPhoenix.Player do
       count_queens_or_kings(pieces) > 2 -> "DEPUTY-STEWARD"
       true -> "MULTIPLICITY"
     end
-  end
-
-  # player has not found school nor has it in their hand yet
-  defp school_cards_needed(player) do
-    pieces = potential_pieces(card_hand(player), player.ep["pieces"])
-    hand = card_hand(player)
-    Enum.reduce(0..3, [], fn i, acc -> acc ++ one_of_suit_for_school(pieces, hand, i) end)
-    ++ one_queen_king_for_school(pieces, hand)
-  end
-
-  # deputy-steward
-  # player needs one card to be able to make all four aces
-  defp steward_cards_needed(player) do
-    pieces = potential_pieces(card_hand(player), player.ep["pieces"])
-    hand = card_hand(player)
-    Enum.reduce(0..3, [], fn i, acc -> acc ++ one_of_suit_for_steward(pieces, hand, i) end)
-  end
-
-  # player needs one card to be able to bump through XJ
-  defp master_cards_needed(player) do
-    pieces = potential_pieces(card_hand(player), player.ep["pieces"])
-    hand = card_hand(player)
   end
 
   # maximize the number of aces for each suit
@@ -410,158 +388,6 @@ defmodule ConsciousPhoenix.Player do
     { cards, pieces }
   end
 
-  # player needs one diamond card to become Fakir
-  defp one_diamond(jd, qd, kd, hand) do
-    cond do
-      jd == 0 and qd > 0 and kd > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "2D")) -> ["3D", "4D", "JD"]
-          Enum.any?(hand, &(&1 == "3D")) -> ["2D", "4D", "JD"]
-          Enum.any?(hand, &(&1 == "4D")) -> ["2D", "3D", "JD"]
-          true -> ["JD"]
-        end
-      qd == 0 and jd > 0 and kd > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "5D")) -> ["6D", "7D", "QD"]
-          Enum.any?(hand, &(&1 == "6D")) -> ["5D", "7D", "QD"]
-          Enum.any?(hand, &(&1 == "7D")) -> ["5D", "6D", "QD"]
-          true -> ["QD"]
-        end
-      kd == 0 and jd > 0 and qd > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "8D")) -> ["9D", "10D", "KD"]
-          Enum.any?(hand, &(&1 == "9D")) -> ["8D", "10D", "KD"]
-          Enum.any?(hand, &(&1 == "10D")) -> ["8D", "9D", "KD"]
-          true -> ["KD"]
-        end
-      true -> []
-    end
-  end
-
-  # player needs one club card to become Yogi
-  defp one_club(jc, qc, kc, hand) do
-    cond do
-      jc == 0 and qc > 0 and kc > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "2C")) -> ["3C", "4C", "JC"]
-          Enum.any?(hand, &(&1 == "3C")) -> ["2C", "4C", "JC"]
-          Enum.any?(hand, &(&1 == "4C")) -> ["2C", "3C", "JC"]
-          true -> ["JC"]
-        end
-      qc == 0 and jc > 0 and kc > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "5C")) -> ["6C", "7C", "QC"]
-          Enum.any?(hand, &(&1 == "6C")) -> ["5C", "7C", "QC"]
-          Enum.any?(hand, &(&1 == "7C")) -> ["5C", "6C", "QC"]
-          true -> ["QC"]
-        end
-      kc == 0 and jc > 0 and qc > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "8C")) -> ["9C", "10C"]
-          Enum.any?(hand, &(&1 == "9C")) -> ["8C", "10C"]
-          Enum.any?(hand, &(&1 == "10C")) -> ["8C", "9C"]
-          true -> []
-        end
-      true -> []
-    end
-  end
-
-  # player needs one heart card to become Monk
-  defp one_heart(jh, qh, kh, hand) do
-    cond do
-      jh == 0 and qh > 0 and kh > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "2H")) -> ["3H", "4H", "JH"]
-          Enum.any?(hand, &(&1 == "3H")) -> ["2H", "4H", "JH"]
-          Enum.any?(hand, &(&1 == "4H")) -> ["2H", "3H", "JH"]
-          true -> ["JH"]
-        end
-      qh == 0 and jh > 0 and kh > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "5H")) -> ["6H", "7H"]
-          Enum.any?(hand, &(&1 == "6H")) -> ["5H", "7H"]
-          Enum.any?(hand, &(&1 == "7H")) -> ["5H", "6H"]
-          true -> []
-        end
-      kh == 0 and jh > 0 and qh > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "8H")) -> ["9H", "10H"]
-          Enum.any?(hand, &(&1 == "9H")) -> ["8H", "10H"]
-          Enum.any?(hand, &(&1 == "10H")) -> ["8H", "9H"]
-          true -> []
-        end
-      true -> []
-    end
-  end
-
-  # player needs one card from the suit to find their School
-  defp one_of_suit_for_school(pieces, hand, i) do
-    suit = @suits[i]
-    jcnt = pieces[3*i]
-    qcnt = pieces[3*i + 1]
-    kcnt = pieces[3*i + 2]
-    cond do
-      jcnt == 0 and qcnt > 0 and kcnt > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "2#{suit}")) -> ["3#{suit}", "4#{suit}", "J#{suit}"]
-          Enum.any?(hand, &(&1 == "3#{suit}")) -> ["2#{suit}", "4#{suit}", "J#{suit}"]
-          Enum.any?(hand, &(&1 == "4#{suit}")) -> ["2#{suit}", "3#{suit}", "J#{suit}"]
-          true -> ["J#{suit}"]
-        end
-      qcnt == 0 and jcnt > 0 and kcnt > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "5#{suit}")) -> ["6#{suit}", "7#{suit}"]
-          Enum.any?(hand, &(&1 == "6#{suit}")) -> ["5#{suit}", "7#{suit}"]
-          Enum.any?(hand, &(&1 == "7#{suit}")) -> ["5#{suit}", "6#{suit}"]
-          true -> []
-        end
-      kcnt == 0 and jcnt > 0 and qcnt > 0 ->
-        cond do
-          Enum.any?(hand, &(&1 == "8#{suit}")) -> ["9#{suit}", "10#{suit}"]
-          Enum.any?(hand, &(&1 == "9#{suit}")) -> ["8#{suit}", "10#{suit}"]
-          Enum.any?(hand, &(&1 == "10#{suit}")) -> ["8#{suit}", "9#{suit}"]
-          true -> []
-        end
-      true -> []
-    end
-  end
-
-  # player needs one queen or king card to become a Balanced man
-  defp one_queen_king_for_school(pieces, hand) do
-    qk_count = count_queens_or_kings(pieces)
-    if qk_count == 2 do
-      Enum.reduce(0..3, [], fn i, acc ->
-        jcnt = pieces[3*i]
-        qcnt = pieces[3*i + 1]
-        kcnt = pieces[3*i + 2]
-        if (qcnt == 0 and kcnt == 0) do
-          acc ++ one_qk_card(jcnt, qcnt, kcnt, hand, @suits[i])
-        else
-          acc
-        end
-      end)
-    else
-      []
-    end
-  end
-
-  # TODO: check for bumping through other cards
-  defp one_of_suit_for_steward(pieces, hand, i) do
-    suit = @suits[i]
-    suit_ace = pieces[i + 12]
-    other_suits_filled = Enum.reduce(
-      Enum.to_list(0..3) -- [i],
-      true,
-      &(&1 && pieces[&2 + 12] > 0 end) # all other suits have at least one 1 piece
-    )
-    if (suit_ace == 0 and other_suits_filled) do
-      conventional_ace = Enum.reduce(2..10, [], fn acc, rank -> maybe_ace_with_card(pieces, acc, "#{rank}#{suit}", hand, i + 12))
-      conventional_ace ++ maybe_bumped_to_index(pieces, i + 12)
-    else
-      []
-    end
-  end
-
   defp count_pieces(pieces)
     Enum.reduce(pieces, &(&1 + &2))
   end
@@ -574,39 +400,5 @@ defmodule ConsciousPhoenix.Player do
 
   defp card_hand(player) do
     Enum.map(player.hand, fn card -> card["c"] end)
-  end
-
-  defp one_qk_card(j, q, k, hand, suit) do
-    pieces = card_pieces(hand)
-    pieces_count = count_pieces(pieces)
-    needs = if (j == 2), do: maybe_bump_jacks(hand, suit), else: []
-    needs = Enum.reduce(5..10, needs, fn rank, acc -> maybe_piece_with_card(acc, "#{rank}#{suit}", hand, pieces_count) end)
-    needs
-  end
-
-  defp maybe_bump_jacks(hand, suit) do
-    pieces = card_pieces(hand)
-    pieces_count = count_pieces(pieces)
-    cards = []
-    cards = Enum.reduce(2..4, cards, fn rank, acc -> maybe_piece_with_card(acc, "#{rank}#{suit}", hand, pieces_count)
-    cards
-  end
-
-  # add cards that would make a new piece on the board
-  defp maybe_piece_with_card(cards, card, hand, prev_count) do
-    new_count = count_pieces(card_pieces([card | hand]))
-    if (new_count > prev_count), do: [card | cards], else: cards
-  end
-
-  # add cards that would create an Ace in the ace_index position
-  defp maybe_ace_with_card(pieces, cards, card, hand, ace_index) do
-    new_pieces = potential_pieces([card | hand], pieces)
-    if (new_pieces[ace_index] > 0), do: [card | cards], else: cards
-  end
-
-  # add cards that would cause a bump into the index pos
-  defp maybe_bumped_to_index(pieces, index) do
-    bumpable_indexes = Enum.take_while(Enum.to_list((index-1)..0), &(Enum.at(pieces, &1) == 2))
-    # scan the bumpable_indexes to see if we can bump them
   end
 end
