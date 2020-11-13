@@ -183,8 +183,8 @@ defmodule ConsciousPhoenix.GameServer do
         update_game(state, gid, game)
       { :one, game } ->
         update_game(state, gid, game)
-      { :multi, { options, player_id } } ->
-        Endpoint.broadcast!("game:#{gid}", "game:fifth_options", %{ pid: player_id, options: options })
+      { :multi, { cards, lower, higher } } ->
+        Endpoint.broadcast!("game:#{gid}", "game:fifth_options", %{ pid: higher.pid, lower_pid: lower.pid, options: cards })
         {:noreply, state}
     end
   end

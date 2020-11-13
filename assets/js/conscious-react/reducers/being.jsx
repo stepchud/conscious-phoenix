@@ -65,12 +65,12 @@ const levelOfBeing = (pieces) => {
               (pieces[15]==1 && (pieces[9] || pieces[10] || pieces[11]))) {
     newLevel = newLevel || 'DEPUTY-STEWARD'
     newSchool = 'Sly'
-  } else { // are they a balanced man?
-    let balanced = distinctAces
-    balanced += (pieces[1] || pieces[2]) ? 1 : 0
-    balanced += (pieces[4] || pieces[5]) ? 1 : 0
-    balanced += (pieces[7] || pieces[8]) ? 1 : 0
-    balanced += (pieces[10] || pieces[11]) ? 1 : 0
+  } else { // balanced man?
+    let balanced = 0
+    if (pieces[1] || pieces[2] || pieces[12]) balanced += 1
+    if (pieces[4] || pieces[5] || pieces[13]) balanced += 1
+    if (pieces[7] || pieces[8] || pieces[14]) balanced += 1
+    if (pieces[10] || pieces[11] || pieces[15]) balanced +=  1
     if (balanced > 2) {
       newLevel = newLevel || 'DEPUTY-STEWARD'
       newSchool = 'Balanced'

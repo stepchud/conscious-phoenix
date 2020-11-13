@@ -96,24 +96,38 @@ defmodule ConsciousPhoenix.Player do
   # find the first player in same position who can offer/recv help
   def fifth_striving_eligible(players, current, turns) do
     other_players = other_players_by_turn(players, current, turns)
-    Enum.reduce(other_players, { [], :none }, fn { _other_pid, other }, { options, elig_pid } ->
-      if elig_pid === :none do
+    Enum.reduce(other_players, { :none, [] }, fn { _other_pid, other }, { eligible_player, cards_help } ->
+      if eligible_player === :none do
         exchange_fifth(current, other)
       else # already found a match, pass it along (no-op)
-        { options, elig_pid }
+        { eligible_player, cards_help }
       end
     end)
+  end
+
+  def compare_levels(p1, p2) do
+    p1_lob = Keyword.get(@levels_of_being, String.to_atom(p1.ep["level_of_being"]))
+    p2_lob = Keyword.get(@levels_of_being, String.to_atom(p2.ep["level_of_being"]))
+    p1_potential = Keyword.get(@levels_of_being, String.to_atom(potential_level_of_being(p1)))
+    p2_potential = Keyword.get(@levels_of_being, String.to_atom(potential_level_of_being(p2)))
+
+    cond do
+      p1_lob === p2_lob -> :same_level
+      p1_lob > p2_lob && p1_lob > p2_potential -> { p2, p1 }
+      p2_lob > p1_lob && p2_lob > p1_potential -> { p1, p2 }
+      true -> :same_level
+    end
   end
 
   defp exchange_fifth(player, other) do
     with { lower, higher } <- compare_levels(player, other),
          cards <- cards_to_level_up(lower, higher),
          true <- Enum.count(cards) > 0 do
-      { cards, other.pid }
+      { other, cards }
     else
-      :same_level -> { [], :none }
-      :no_options -> { [], :none }
-      false       -> { [], :none }
+      :same_level -> { :none, [] }
+      :no_options -> { :none, [] }
+      false       -> { :none, [] }
     end
   end
 
@@ -152,20 +166,6 @@ defmodule ConsciousPhoenix.Player do
     |> hd
   end
 
-  defp compare_levels(p1, p2) do
-    p1_lob = Keyword.get(@levels_of_being, String.to_atom(p1.ep["level_of_being"]))
-    p2_lob = Keyword.get(@levels_of_being, String.to_atom(p2.ep["level_of_being"]))
-    p1_potential = potential_level_of_being(p1)
-    p2_potential = potential_level_of_being(p2)
-
-    cond do
-      p1_lob === p2_lob -> :same_level
-      p1_lob > p2_lob && p1_lob > p2_potential -> { p2, p1 }
-      p1_lob < p2_lob && p2_lob > p1_potential -> { p1, p2 }
-      true -> :same_level
-    end
-  end
-
   # filter cards from higher that would help lower level up more than they can already
   defp cards_to_level_up(lower, higher) do
     orig_potential = potential_level_of_being(lower)
@@ -174,7 +174,7 @@ defmodule ConsciousPhoenix.Player do
       new_potential = potential_level_of_being(lower_with_card)
       cond do
         orig_potential === new_potential -> false
-        new_potential === "DEPUTY-STEWARD" ->
+        orig_potential === "MULTIPLICITY" ->
           # lower player needs school, only offer help based on higher's school
           case higher.ep["school_type"] do
             "Fakir" ->
@@ -199,8 +199,14 @@ defmodule ConsciousPhoenix.Player do
   # 4) bump pieces up
   defp potential_pieces(hand, current_pieces) do
     new_pieces_in_hand = card_pieces(hand)
-    Enum.with_index(new_pieces_in_hand)
-    |> Enum.map(fn(new_pieces, index) -> current_pieces[index] + new_pieces end)
+    pieces_with_index = Enum.with_index(new_pieces_in_hand)
+    # require IEx; IEx.pry
+    pieces_with_index
+    |> Enum.map(
+      fn(piece_tuples) ->
+        { new_pieces, index } = piece_tuples
+        Enum.at(current_pieces, index) + new_pieces
+      end)
     |> make_aces
     |> make_xjos
     |> bump_pieces
@@ -208,15 +214,36 @@ defmodule ConsciousPhoenix.Player do
 
   # level of being given the potential chips already in hand
   defp potential_level_of_being(player) do
-    pieces = potential_pieces(card_hand(player), player.ep["pieces"])
-    [jd, qd, kd, jc, qc, kc, jh, qh, kh, js, qs, ks, ad, ac, ah, as, _, jo] = pieces
+    current_level = level_of_being(player.ep["pieces"])
+    potential_level = level_of_being(potential_pieces(card_hand(player), player.ep["pieces"]))
+    potential_level
+  end
+
+  defp level_of_being(pieces) do
+    [jd, qd, kd, jc, qc, kc, jh, qh, kh, js, qs, ks, ad, ac, ah, as, xj, jo] = pieces
+    hasAS = as > 0
+    # count XJ 'aces'
+    distinctAces = if xj > 1, do: 3, else: 0
+    distinctAces = if xj == 1, do: 2, else: distinctAces
+    # add 1 for non-spade aces
+    distinctAces = if ah > 0, do: distinctAces + 1, else: distinctAces
+    distinctAces = if ac > 0, do: distinctAces + 1, else: distinctAces
+    distinctAces = if ad > 0, do: distinctAces + 1, else: distinctAces
     cond do
       jo > 0 -> "MASTER"
+      as > 0 and distinctAces >= 3 -> "STEWARD"
       as > 0 and ah > 0 and ac > 0 and ad > 0 -> "STEWARD"
-      jd > 0 and qd > 0 and kd > 0      -> "DEPUTY-STEWARD"
-      jc > 0 and qc > 0 and kc > 0      -> "DEPUTY-STEWARD"
-      jh > 0 and qh > 0 and kh > 0      -> "DEPUTY-STEWARD"
-      js > 0 and qs > 0 and ks > 0      -> "DEPUTY-STEWARD"
+      ad > 1 -> "DEPUTY-STEWARD"
+      ac > 1 -> "DEPUTY-STEWARD"
+      ah > 1 -> "DEPUTY-STEWARD"
+      jd > 0 and qd > 0 and kd > 0 -> "DEPUTY-STEWARD"
+      jc > 0 and qc > 0 and kc > 0 -> "DEPUTY-STEWARD"
+      jh > 0 and qh > 0 and kh > 0 -> "DEPUTY-STEWARD"
+      js > 0 and qs > 0 and ks > 0  -> "DEPUTY-STEWARD"
+      ad == 1 && (jd > 0 || qd > 0 || kd > 0) -> "DEPUTY-STEWARD"
+      ac == 1 && (jc > 0 || qc > 0 || kc > 0) -> "DEPUTY-STEWARD"
+      ah == 1 && (jh > 0 || qh > 0 || kh > 0) -> "DEPUTY-STEWARD"
+      as == 1 && (js > 0 || qs > 0 || ks > 0) -> "DEPUTY-STEWARD"
       count_queens_or_kings(pieces) > 2 -> "DEPUTY-STEWARD"
       true -> "MULTIPLICITY"
     end
@@ -240,7 +267,7 @@ defmodule ConsciousPhoenix.Player do
       [{cnt1, idx1}, {cnt2, idx2}] = has_chips
                                      |> Enum.sort_by(&(elem(&1, 0)), &>=/2)
                                      |> Enum.take(2)
-      ace_index = suit_index / 3 + 12
+      ace_index = trunc(suit_index / 3 + 12)
       ace_val = Enum.at(pieces, ace_index)
       pieces = pieces
                |> List.replace_at(ace_index, ace_val + 1)
@@ -378,7 +405,9 @@ defmodule ConsciousPhoenix.Player do
 
   defp count_queens_or_kings(pieces) do
     Enum.reduce(0..3, 0, fn i, count ->
-      if (pieces[3*i + 1] > 0 or pieces[3*i + 2] > 0), do: count + 1, else: count
+      has_a = Enum.at(pieces, 12 + i) > 0
+      has_q_or_k = Enum.at(pieces, 3*i + 1) > 0 or Enum.at(pieces, 3*i + 2) > 0
+      if has_a || has_q_or_k, do: count + 1, else: count
     end)
   end
 

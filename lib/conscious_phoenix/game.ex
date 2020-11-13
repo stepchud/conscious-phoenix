@@ -102,24 +102,32 @@ defmodule ConsciousPhoenix.Game do
 
   # find the first player on the same spot that can exchange 5th striving card (either give or take)
   # if there is only one card, automatically exchange and draw three
-  # if there are options, display them to the higher player for choice
+  # if there are multiple cards_available, display them to the higher player for choice
   def fifth_striving(game, pid) do
-    initiator = game.players[pid]
-    { options, eligible_player_id } = Player.fifth_striving_eligible(game.players, initiator, game.turns)
-    options_count = Enum.count(options)
+    current = game.players[pid]
+    { eligible_player, cards_available } = Player.fifth_striving_eligible(game.players, current, game.turns)
+    cards_count = Enum.count(cards_available)
     cond do
-      options_count == 0 -> { :none, log_event(game, %{ pid: pid, entry: "No options for fifth striving" }) }
-      options_count == 1 -> { :one, exchange_one_fifth(game, pid, eligible_player_id) }
-      options_count  > 1 -> { :multi, show_fifth_options(game, pid, eligible_player_id) }
+      eligible_player == :none ->
+        { :none, log_event(game, %{ pid: pid, entry: "No players eligible for fifth striving" }) }
+      cards_count == 1 ->
+        { lower, higher } = Player.compare_levels(current, eligible_player)
+        { :one, exchange_one_fifth(game, lower, higher, cards_available) }
+      cards_count > 1 ->
+        { lower, higher } = Player.compare_levels(current, eligible_player)
+        { :multi, { cards_available, lower, higher } }
     end
   end
 
-  # lower player gets the helping card and draw three cards for higher
-  defp exchange_one_fifth(game, opid, epid) do
-  end
-
-  # return { options, player_id } where options array of cards, player_id for higher-player w choice
-  defp show_fifth_options(game, opid, epid) do
+  # adds the helpful card to lower player
+  # takes the helpful card from higher who also draws three cards
+  defp exchange_one_fifth(game, lower, higher, cards) do
+    [helpful_card | _] = cards
+    game = put_in(game.players[lower.pid].hand, [helpful_card | lower.hand])
+    game = put_in(game.players[higher.pid].hand, higher.hand -- [helpful_card])
+    |> draw_card(higher.pid)
+    |> draw_card(higher.pid)
+    |> draw_card(higher.pid)
   end
 
   # draw one card, shuffling first if needed

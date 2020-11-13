@@ -3,6 +3,6 @@ defmodule ConsciousPhoenixWeb.PageControllerTest do
 
   test "GET /", %{conn: conn} do
     conn = get(conn, "/")
-    assert html_response(conn, 200) =~ "Welcome to Phoenix!"
+    assert html_response(conn, 200) =~ "<h1>The Conscious Boardgame</h1>"
   end
 end
