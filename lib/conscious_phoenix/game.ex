@@ -125,6 +125,7 @@ defmodule ConsciousPhoenix.Game do
     [helpful_card | _] = cards
     game = put_in(game.players[lower.pid].hand, [helpful_card | lower.hand])
     game = put_in(game.players[higher.pid].hand, higher.hand -- [helpful_card])
+    game
     |> draw_card(higher.pid)
     |> draw_card(higher.pid)
     |> draw_card(higher.pid)
