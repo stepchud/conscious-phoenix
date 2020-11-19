@@ -8,11 +8,6 @@ const InitialState = () => ({
   players: [],
 })
 
-export const getPlayerName = ({ players }, pid) => {
-  const player = players.find(p => p.pid === pid)
-  return player ? player.name : 'Unknown'
-}
-
 const board = (
   state = InitialState(),
   action

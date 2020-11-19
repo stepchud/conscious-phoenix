@@ -6,6 +6,7 @@ import { getGameId, setGameId, getPlayerId, setPlayerId } from './constants'
 // maps the server game state to local state
 const localState = (payload) => {
   const {
+    pid: payloadPid,
     game: {
       players,
       board,
@@ -76,53 +77,59 @@ export default function Connect() {
   }
 
   this.subscribe = () => {
+    const actions = gameActions(this.channel)
     this.channel.on("game:started", payload => {
       const { name, pid, sides } = payload
       setPlayerId(pid)
-      gameActions.onGameStarted(pid, name, sides, this.channel)
+      actions.onGameStarted(pid, name, sides)
     })
     this.channel.on("game:update", payload => {
       console.log('game:update', payload)
       const state = localState(payload)
-      gameActions.onUpdateGame(state)
+      actions.onUpdateGame(state)
     })
     this.channel.on("game:next_turn", payload => {
       console.log(`game:next_turn ${payload.pid}`)
       const state = localState(payload)
-      gameActions.onUpdateGame(state)
-      gameActions.onTurnStarted(payload)
+      actions.onUpdateGame(state)
+      actions.onTurnStarted(payload)
     })
     this.channel.on("game:joined", payload => {
       const { gid, pid } = payload
       this.join(gid)
       if (getPlayerId() !== pid) { setPlayerId(pid) }
       const state = localState(payload)
-      gameActions.onGameJoined(pid, state, this.channel)
-      gameActions.onHideModal()
+      actions.onGameJoined(pid, state)
+      actions.onHideModal()
     })
     this.channel.on("game:continued", payload => {
       const { gid, pid } = payload
       if (getGameId() !== gid) { this.join(gid) }
       if (getPlayerId() === pid) {
         const state = localState(payload)
-        gameActions.onGameContinued(state)
-        gameActions.onHideModal()
+        actions.onGameContinued(state)
+        actions.onHideModal()
       } else {
         console.warn("mismatched pid for continue")
       }
     })
+    this.channel.on("game:fifth_options", payload => {
+      if (getPlayerId() === payload.pid) {
+        actions.onFifthOptions(payload)
+      }
+    })
     this.channel.on("modal:error", payload => {
       const { error } = payload
-      gameActions.onUpdateModal({ field: "error_message", value: error.message })
-      gameActions.onShowModal()
+      actions.onUpdateModal({ field: "error_message", value: error.message })
+      actions.onShowModal()
     })
     this.channel.on("game:event", payload => {
-      gameActions.onEventLog(payload)
+      actions.onEventLog(payload)
     })
     this.channel.on("broadcast:message", payload => {
       if (getPlayerId() === payload.pid) { return }
       const { message, type } = payload
-      gameActions.onToast(message, type)
+      actions.onToast(message, type)
     })
   }
 

@@ -45,8 +45,13 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_in("game:fifth_striving", %{"pid" => pid}, socket) do
-    GameServer.fifth_striving(socket.assigns.gid, pid)
+  def handle_in("game:fifth_striving", %{"pid" => pid, "game" => game}, socket) do
+    GameServer.fifth_striving(socket.assigns.gid, pid, game)
+    {:noreply, socket}
+  end
+
+  def handle_in("game:choose_fifth", %{"pid" => pid, "lower_pid" => lower, "card" => card}, socket) do
+    GameServer.choose_fifth(socket.assigns.gid, pid, lower, card)
     {:noreply, socket}
   end
 

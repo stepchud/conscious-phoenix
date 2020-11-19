@@ -32,7 +32,6 @@ const Message = ({ turn, hasLaws, waiting, gameOver }) => {
 }
 
 const Buttons = ({
-  actions,
   turn,
   waiting,
   laws,
@@ -41,7 +40,12 @@ const Buttons = ({
   ep,
   onRoll,
   gameOver,
+  onObeyLaw,
+  onCombineSelectedParts,
+  onPlaySelected,
   onGameOver,
+  onRandomLaw,
+  onEndDeath,
   onExit
 }) => {
   if (waiting) { return [] }
@@ -59,7 +63,7 @@ const Buttons = ({
 
   switch(turn) {
     case TURNS.randomLaw:
-      return [<button key={'rand'} onClick={() => { actions.onRandomLaw() }}>One by random...</button>]
+      return [<button key={'rand'} onClick={onRandomLaw}>One by random...</button>]
     case TURNS.end:
       return [<button key={'end'} onClick={onExit}>Exit Game</button>]
     default:
@@ -67,7 +71,7 @@ const Buttons = ({
       if (turn===TURNS.death) {
         const deathButton = gameOver
           ? <button key={buttons.length} onClick={onGameOver}>End Game</button>
-          : <button key={buttons.length} onClick={actions.handleEndDeath}>End Death</button>
+          : <button key={buttons.length} onClick={onEndDeath}>End Death</button>
         buttons.push(deathButton)
       } else if (turn!==TURNS.choiceLaw && !hasLaws) {
         buttons.push(<button key={buttons.length} onClick={onRoll}>Roll Dice</button>)
@@ -76,7 +80,7 @@ const Buttons = ({
         buttons.push(
           <button
             key={buttons.length}
-            onClick={() => { actions.onCombineSelectedParts(selParts)} }>
+            onClick={() => { onCombineSelectedParts(selParts) }}>
             Combine Parts
           </button>
         )
@@ -85,13 +89,13 @@ const Buttons = ({
         buttons.push(
           <button
             key={buttons.length}
-            onClick={() => { actions.onPlaySelected(selCards, selLawCards)} }>
+            onClick={() => { onPlaySelected(selCards, selLawCards)} }>
             Play Cards
           </button>
         )
       }
       if (selLaws.length===1 && !selLaws[0].obeyed) {
-        buttons.push(<button key={buttons.length} onClick={actions.onObeyLaw}>Obey Law</button>)
+        buttons.push(<button key={buttons.length} onClick={onObeyLaw}>Obey Law</button>)
       }
       return buttons
   }

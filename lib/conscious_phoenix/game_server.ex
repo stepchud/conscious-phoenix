@@ -54,8 +54,12 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :exchange_dupes, gid: gid, pid: pid})
   end
 
-  def fifth_striving(gid, pid) do
-    GenServer.cast(__MODULE__, %{action: :fifth_striving, gid: gid, pid: pid})
+  def fifth_striving(gid, pid, game) do
+    GenServer.cast(__MODULE__, %{action: :fifth_striving, gid: gid, pid: pid, game: game})
+  end
+
+  def choose_fifth(gid, pid, lower, card) do
+    GenServer.cast(__MODULE__, %{action: :choose_fifth, gid: gid, pid: pid, lower: lower, card: card})
   end
 
   def reset() do
@@ -150,7 +154,7 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{:action => :save_state, :gid => gid, :pid => pid, :game => updates}, state) do
     game = Game.save_state(state.games[gid], pid, updates)
-    update_game(state, gid, game)
+    update_game(state, gid, pid, game)
   end
 
   def handle_cast(%{:action => :log_event, :gid => gid, :pid => pid, :event => event}, state) do
@@ -174,19 +178,32 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{:action => :exchange_dupes, :gid => gid, :pid => pid}, state) do
     game = Game.exchange_dupes(state.games[gid], pid)
-    update_game(state, gid, game)
+    update_game(state, gid, pid, game)
   end
 
-  def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid}, state) do
-    case Game.fifth_striving(state.games[gid], pid) do
+  def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid, :game => updates }, state) do
+    game = Game.save_state(state.games[gid], pid, updates)
+    case Game.fifth_striving(game, pid) do
       { :none, game } ->
-        update_game(state, gid, game)
+        IO.puts("none fifth_striving")
+        update_game(state, gid, pid, game)
       { :one, game } ->
-        update_game(state, gid, game)
+        IO.puts("one fifth_striving")
+        update_game(state, gid, pid, game)
       { :multi, { cards, lower, higher } } ->
+        IO.puts("multi fifth_striving")
         Endpoint.broadcast!("game:#{gid}", "game:fifth_options", %{ pid: higher.pid, lower_pid: lower.pid, options: cards })
+        state = put_in(state.games[gid], game)
         {:noreply, state}
     end
+  end
+
+  def handle_cast(%{:action => :choose_fifth, :gid => gid, :pid => pid, :lower => lower, :card => card }, state) do
+    game = state.games[gid]
+    higher = game.players[pid]
+    lower = game.players[lower]
+    IO.puts("one fifth_striving")
+    update_game(state, gid, pid, Game.exchange_one_fifth(game, lower, higher, card))
   end
 
   # def handle_cast(%{:action => :reset, :gid => gid}, state) do
@@ -196,9 +213,9 @@ defmodule ConsciousPhoenix.GameServer do
   #   {:noreply, state}
   # end
 
-  defp update_game(state, gid, game) do
+  defp update_game(state, gid, pid, game) do
     state = put_in(state.games[gid], game)
-    Endpoint.broadcast!("game:#{gid}", "game:update", %{ game: game })
+    Endpoint.broadcast!("game:#{gid}", "game:update", %{ pid: pid, game: game })
     {:noreply, state}
   end
 

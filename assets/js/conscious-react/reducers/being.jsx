@@ -6,7 +6,7 @@ const InitialState = {
   num_brains: 3,
   being_type: Dice().roll(),
   parts: PARTS.map((c) => ({ c, selected: false })),
-  pieces: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  pieces: [0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
   shocks: [],
   card_plays: 2,
   transforms: 0,
@@ -40,39 +40,38 @@ const levelOfBeing = (pieces) => {
     newLevel = 'MASTER'
   } else if (aceSpades && distinctAces >= 3) {
     newLevel = 'STEWARD'
-  }
-  if ( // all diamonds
+  } else if ( // all diamonds
       (pieces[0] && pieces[1] && pieces[2]) ||
       (pieces[12] > 1) ||
-      (pieces[12]==1 && (pieces[0] || pieces[1] || pieces[2])) ) {
-    newLevel = newLevel || 'DEPUTY-STEWARD'
+      ((pieces[16]==1 || pieces[12]==1) && (pieces[0] || pieces[1] || pieces[2])) ) {
+    newLevel = 'DEPUTY-STEWARD'
     newSchool = 'Fakir'
   } else if ( // all clubs
               (pieces[3] && pieces[4] && pieces[5]) ||
               (pieces[13] > 1) ||
-              (pieces[13]==1 && (pieces[3] || pieces[4] || pieces[5])) ) {
-    newLevel = newLevel || 'DEPUTY-STEWARD'
+              ((pieces[16]==1 || pieces[13]==1) && (pieces[3] || pieces[4] || pieces[5])) ) {
+    newLevel = 'DEPUTY-STEWARD'
     newSchool = 'Yogi'
   } else if ( // all hearts
               (pieces[6] && pieces[7] && pieces[8]) ||
               (pieces[14] > 1) ||
-              (pieces[14]==1 && (pieces[6] || pieces[7] || pieces[8])) ) {
-    newLevel = newLevel || 'DEPUTY-STEWARD'
+              ((pieces[16]==1 || pieces[14]==1) && (pieces[6] || pieces[7] || pieces[8])) ) {
+    newLevel = 'DEPUTY-STEWARD'
     newSchool = 'Monk'
   } else if ( // all spades
               (pieces[9] && pieces[10] && pieces[11]) ||
               (pieces[15] > 1) ||
-              (pieces[15]==1 && (pieces[9] || pieces[10] || pieces[11]))) {
-    newLevel = newLevel || 'DEPUTY-STEWARD'
+              ((pieces[16]==1 || pieces[15]==1) && (pieces[9] || pieces[10] || pieces[11])) ) {
+    newLevel = 'DEPUTY-STEWARD'
     newSchool = 'Sly'
   } else { // balanced man?
-    let balanced = 0
+    let balanced = pieces[16] * 2
     if (pieces[1] || pieces[2] || pieces[12]) balanced += 1
     if (pieces[4] || pieces[5] || pieces[13]) balanced += 1
     if (pieces[7] || pieces[8] || pieces[14]) balanced += 1
     if (pieces[10] || pieces[11] || pieces[15]) balanced +=  1
     if (balanced > 2) {
-      newLevel = newLevel || 'DEPUTY-STEWARD'
+      newLevel = 'DEPUTY-STEWARD'
       newSchool = 'Balanced'
     }
   }

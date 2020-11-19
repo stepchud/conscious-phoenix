@@ -1,7 +1,6 @@
 import React from 'react'
 
-import { getGameId, getPlayerId } from '../constants'
-import { getPlayerName } from '../reducers/board'
+import { getGameId, getPlayerId, getPlayerName } from '../constants'
 
 const PlayerStats = ({
   name,
@@ -47,7 +46,7 @@ const GameLog = ({
   const pid = getPlayerId()
   const cn = expanded ? 'game-log expand' : 'game-log collapse'
   const logEntries = entries.map(
-    (entry, index) => <LogEntry key={index} name={getPlayerName(board, entry.pid)} {...entry} />
+    (entry, index) => <LogEntry key={index} name={getPlayerName(board.players, entry.pid)} {...entry} />
   )
 
   return (

@@ -41,7 +41,7 @@ export class ConsciousBoardgame extends React.Component {
 
   handleGameOver = () => {
     const pid = getPlayerId()
-    gameActions.handleGameOver()
+    this.actions.handleGameOver()
     this.props.channel.push('game:over', { pid })
   }
 
@@ -52,7 +52,7 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   handleRoll = async () => {
-    await gameActions.handleRollClick()
+    await this.actions.handleRollClick()
     const game = Store.getState()
     const pid = getPlayerId()
     this.props.channel.push('game:end_turn', { pid, game })
@@ -60,8 +60,14 @@ export class ConsciousBoardgame extends React.Component {
 
   handleDuplicate = (elem) => {
     const pid = getPlayerId()
-    gameActions.onExchageDuplicates()
+    this.actions.onExchageDuplicates()
     this.props.channel.push('game:exchange_dupes', { pid })
+  }
+
+  handleFifthStriving = () => {
+    const pid = getPlayerId()
+    const game = Store.getState()
+    this.props.channel.push('game:fifth_striving', { pid, game })
   }
 
   handleLogEvent = (event) => {
@@ -70,6 +76,10 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   toggleEventLog = () => this.setState({ expandLog: !this.state.expandLog })
+
+  componentDidMount () {
+    this.actions = gameActions(this.props.channel)
+  }
 
   componentWillUnmount () {
     this.props.channel.disconnect()
@@ -101,34 +111,44 @@ export class ConsciousBoardgame extends React.Component {
         return (
           <div>
             <ButtonRow
-              actions={gameActions}
               roll={board.roll}
-              onRoll={this.handleRoll}
               cards={cards.hand}
               laws={laws}
               ep={ep}
               currentTurn={player.current_turn}
               gameOver={gameOver}
+              waiting={!player.active}
+              onRoll={this.handleRoll}
+              onObeyLaw={this.actions.handleObeyLaw}
+              onCombineSelectedParts={this.actions.onCombineSelectedParts}
+              onPlaySelected={this.actions.onPlaySelected}
+              onRandomLaw={this.actions.handleRandomLaw}
+              onEndDeath={this.actions.handleEndDeath}
               onGameOver={this.handleGameOver}
               onExit={this.handleGameExit}
-              waiting={!player.active}
             />
             <TestButtons
-              actions={gameActions}
+              actions={this.actions}
               cards={cards.hand}
               laws={laws}
               parts={ep.parts}
             />
             <PlayerStats name={player.name} {...ep} />
-            <Board {...board} />
-            <CardHand cards={cards.hand} active={player.active} canDupe={player.can_dupe} onSelect={gameActions.onSelectCard} onDuplicate={this.handleDuplicate} />
+            <Board {...board} onFifthStriving={this.handleFifthStriving} />
+            <CardHand
+              cards={cards.hand}
+              active={player.active}
+              canDupe={player.can_dupe}
+              onSelect={this.actions.onSelectCard}
+              onDuplicate={this.handleDuplicate}
+            />
             { fd.current.alive && <LawHand
                 laws={laws}
                 byChoice={player.current_turn===TURNS.choiceLaw}
-                onSelect={gameActions.onSelectLawCard}
-                onChoice={gameActions.onChooseLaw} />
+                onSelect={this.actions.onSelectLawCard}
+                onChoice={this.actions.handleChooseLaw} />
             }
-            <ThreeBrains {...ep} onSelect={gameActions.onSelectPart} />
+            <ThreeBrains {...ep} onSelect={this.actions.onSelectPart} />
             <FoodDiagram {...fd} />
             <GameLog board={board} expanded={this.state.expandLog} onToggle={this.toggleEventLog} entries={log} />
             <GameModal {...modal} />

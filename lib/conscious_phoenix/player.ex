@@ -105,7 +105,7 @@ defmodule ConsciousPhoenix.Player do
     end)
   end
 
-  def compare_levels(p1, p2) do
+  defp compare_levels(p1, p2) do
     p1_lob = Keyword.get(@levels_of_being, String.to_atom(p1.ep["level_of_being"]))
     p2_lob = Keyword.get(@levels_of_being, String.to_atom(p2.ep["level_of_being"]))
     p1_potential = Keyword.get(@levels_of_being, String.to_atom(potential_level_of_being(p1)))
@@ -113,19 +113,20 @@ defmodule ConsciousPhoenix.Player do
 
     cond do
       p1_lob === p2_lob -> :same_level
-      p1_lob > p2_lob && p1_lob > p2_potential -> { p2, p1 }
-      p2_lob > p1_lob && p2_lob > p1_potential -> { p1, p2 }
+      p1_lob > p2_lob && p1_lob > p2_potential -> :higher_level
+      p2_lob > p1_lob && p2_lob > p1_potential -> :lower_level
       true -> :same_level
     end
   end
 
   defp exchange_fifth(player, other) do
-    with { lower, higher } <- compare_levels(player, other),
-         cards <- cards_to_level_up(lower, higher),
+    with :higher_level <- compare_levels(player, other),
+         cards <- cards_to_level_up(other, player),
          true <- Enum.count(cards) > 0 do
       { other, cards }
     else
       :same_level -> { :none, [] }
+      :lower_level -> { :none, [] }
       :no_options -> { :none, [] }
       false       -> { :none, [] }
     end

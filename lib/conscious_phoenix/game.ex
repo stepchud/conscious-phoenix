@@ -100,31 +100,35 @@ defmodule ConsciousPhoenix.Game do
     log_event(game, %{ pid: pid, entry: entry })
   end
 
-  # find the first player on the same spot that can exchange 5th striving card (either give or take)
+  # find the first player on the same spot as pid that:
+  #  1. is lower level of being
+  #  2. can receive help from cards in pid's hand
   # if there is only one card, automatically exchange and draw three
-  # if there are multiple cards_available, display them to the higher player for choice
+  # if there are multiple helpful_cards, display them to the higher player for choice
   def fifth_striving(game, pid) do
     current = game.players[pid]
-    { eligible_player, cards_available } = Player.fifth_striving_eligible(game.players, current, game.turns)
-    cards_count = Enum.count(cards_available)
+    { eligible_player, helpful_cards } = Player.fifth_striving_eligible(game.players, current, game.turns)
+    cards_count = Enum.count(helpful_cards)
     cond do
       eligible_player == :none ->
         { :none, log_event(game, %{ pid: pid, entry: "No players eligible for fifth striving" }) }
       cards_count == 1 ->
-        { lower, higher } = Player.compare_levels(current, eligible_player)
-        { :one, exchange_one_fifth(game, lower, higher, cards_available) }
+        card = hd(helpful_cards)
+        entry = "#{current.name} fulfills the fifth striving for #{eligible_player.name}"
+        game = exchange_one_fifth(game, eligible_player, current, card)
+               |> log_event(%{ pid: pid, entry: entry })
+        { :one, game }
       cards_count > 1 ->
-        { lower, higher } = Player.compare_levels(current, eligible_player)
-        { :multi, { cards_available, lower, higher } }
+        { :multi, { helpful_cards, eligible_player, current } }
     end
   end
 
   # adds the helpful card to lower player
   # takes the helpful card from higher who also draws three cards
-  defp exchange_one_fifth(game, lower, higher, cards) do
-    [helpful_card | _] = cards
-    game = put_in(game.players[lower.pid].hand, [helpful_card | lower.hand])
-    game = put_in(game.players[higher.pid].hand, higher.hand -- [helpful_card])
+  def exchange_one_fifth(game, lower, higher, card) do
+    IO.inspect(card)
+    game = put_in(game.players[lower.pid].hand, [card | lower.hand])
+    game = put_in(game.players[higher.pid].hand, higher.hand -- [card])
     game
     |> draw_card(higher.pid)
     |> draw_card(higher.pid)
@@ -140,12 +144,11 @@ defmodule ConsciousPhoenix.Game do
     else
       { cards.deck, cards.discards }
     end
-    drawn = hd(deck)
-    deck = tl(deck)
+    [ drawn | deck ] = deck
     # update player's hand
-    game = put_in(game.players[pid].hand, [drawn | hand])
+    game = put_in(game.players[pid].hand, [%{"c" => drawn, "selected" => false} | hand])
     # update deck & discards
-    put_in(game.cards, Map.merge(game.cards, %{ deck: deck, discards: discards }))
+    put_in(game.cards, %{ deck: deck, discards: discards })
   end
 end
 

@@ -12,7 +12,7 @@ import {
   cantChooseLaw,
 } from './reducers/laws'
 import { entering, deathEvent, allNotes } from './reducers/food_diagram'
-import { BOARD_SPACES, LAST_SPACE, Dice, noop } from './constants'
+import { BOARD_SPACES, LAST_SPACE, Dice, getPlayerName, noop } from './constants'
 
 const dispatchShowModal = (props) => store.dispatch(actions.showModal(props))
 const promiseShowModal = (props) => {
@@ -428,6 +428,20 @@ const takePiece = async (position) => {
   }
 }
 
+const handleFifthOptions = (channel) => async ({ pid, lower_pid, options: cards }) => {
+  debugger
+  const { board: { players } } = store.getState()
+  const lower = getPlayerName(players, lower_pid)
+  const title = 'Fifth Obligolnian Striving'
+  const body = `Choose your card to help ${lower} reach the next level`
+  const options = cards.map((card) => ({
+    text: card["c"],
+    onClick: () => channel.push('game:choose_fifth', { pid, lower_pid, card })
+  }))
+
+  await promiseShowModal({ title, body, options })
+}
+
 const handleDecay = async () => {
   const { fd: { current }, board: { sides } } = store.getState()
   const roll = Dice(sides).roll()
@@ -548,6 +562,11 @@ const handleChooseLaw = (card) => {
     store.dispatch({ type: "ONE_BY_CHOICE", card })
   }
 }
+
+const handleRandomLaw = () => {
+  const roll = Dice(store.getState().board.sides).roll()
+  store.dispatch({ type: "ONE_BY_RANDOM", roll })
+}
 const handleObeyLaw = async () => {
   const { being_type } = store.getState().ep
   store.dispatch({ type: 'OBEY_LAW' })
@@ -647,69 +666,57 @@ const handleStartOver = async () => {
   }
 }
 
-export const gameActions = {
-  onGameStarted: (pid, name, sides, channel) => {
-    store.dispatch(actions.startGame(name, sides))
-    channel.push('game:save_state', { pid, game: store.getState() })
-  },
-  onGameJoined: (pid, state, channel) => {
-    store.dispatch(actions.joinGame(state))
-    channel.push('game:save_state', { pid, game: store.getState() })
-  },
-  onGameContinued: (payload) => store.dispatch(actions.updateGame(payload)),
-  onTurnStarted: ({ pid }) => store.dispatch(actions.startTurn(pid)),
-  onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
-  onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
-  onEventLog: (event) => store.dispatch(actions.logEvent(event)),
-  onShowModal: () => {
-    const modalProps = store.getState().modal
-    dispatchShowModal(modalProps)
-  },
-  onHideModal: () => store.dispatch(actions.hideModal()),
-  onExchageDuplicates: () => store.dispatch(actions.exchangeDupes()),
-  handleRollClick,
-  handleEndDeath,
-  handleGameOver,
-  onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),
-  onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
-  onSelectCard: (card) => store.dispatch({ type: 'SELECT_CARD', card }),
-  onSelectLawCard: (card) => store.dispatch({ type: 'SELECT_LAW_CARD', card }),
-  onSelectPart: (card) => store.dispatch({ type: 'SELECT_PART', card }),
-  onPlaySelected: (cards, lawCards) => handlePieces({
-    type: 'PLAY_SELECTED',
-    cards,
-    pieces: makeFaceCard(cards.concat(lawCards))
-  }),
-  onObeyLaw: handleObeyLaw,
-  onEatFood: dispatchWithExtras({ type: 'EAT_FOOD' }),
-  onBreatheAir: dispatchWithExtras({ type: 'BREATHE_AIR' }),
-  onTakeImpression: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }),
-  onSelfRemember: dispatchWithExtras({ type: 'SELF_REMEMBER' }),
-  onTransformEmotions: dispatchWithExtras({ type: 'TRANSFORM_EMOTIONS' }),
-  onCombineSelectedParts: (selected) => handlePieces({ type: 'COMBINE_PARTS', selected }),
-  onAdvanceFoodDiagram: dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
-  onDying: () => store.dispatch({ type: 'DEATH_NOW' }),
-  onOptions: () => dispatchShowModal({
-    title: "Title Ho!",
-    body: "this a good body",
-    options: [
-      { text: 'Hi There', onClick: () => { console.log("Chose Hi") } },
-      { text: 'Ho Derr', onClick: () => { console.log("Chose Ho") } }
-    ]
-  }),
-  onModal: () => dispatchShowModal({
-    title: 'basic',
-    body: "has\nmany\n\nlines"
-  }),
-  onToast: (message, level) => {
-    const type = level || toast.type.INFO
-    toast(message, { type })
-  },
-  onRandomLaw: () => {
-    const roll = Dice(store.getState().board.sides).roll()
-    store.dispatch({ type: "ONE_BY_RANDOM", roll })
-  },
-  onChooseLaw: (card) => handleChooseLaw(card),
+export const gameActions = (channel) => {
+  return {
+    onGameStarted: (pid, name, sides) => {
+      store.dispatch(actions.startGame(name, sides))
+      channel.push('game:save_state', { pid, game: store.getState() })
+    },
+    onGameJoined: (pid, state) => {
+      store.dispatch(actions.joinGame(state))
+      channel.push('game:save_state', { pid, game: store.getState() })
+    },
+    onGameContinued: (payload) => store.dispatch(actions.updateGame(payload)),
+    onTurnStarted: ({ pid }) => store.dispatch(actions.startTurn(pid)),
+    onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
+    onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
+    onEventLog: (event) => store.dispatch(actions.logEvent(event)),
+    onShowModal: () => {
+      const modalProps = store.getState().modal
+      dispatchShowModal(modalProps)
+    },
+    onHideModal: () => store.dispatch(actions.hideModal()),
+    onExchageDuplicates: () => store.dispatch(actions.exchangeDupes()),
+    onFifthOptions: handleFifthOptions(channel),
+    handleRollClick,
+    handleEndDeath,
+    handleGameOver,
+    onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),
+    onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
+    onSelectCard: (card) => store.dispatch({ type: 'SELECT_CARD', card }),
+    onSelectLawCard: (card) => store.dispatch({ type: 'SELECT_LAW_CARD', card }),
+    onSelectPart: (card) => store.dispatch({ type: 'SELECT_PART', card }),
+    onPlaySelected: (cards, lawCards) => handlePieces({
+      type: 'PLAY_SELECTED',
+      cards,
+      pieces: makeFaceCard(cards.concat(lawCards))
+    }),
+    handleObeyLaw,
+    onEatFood: dispatchWithExtras({ type: 'EAT_FOOD' }),
+    onBreatheAir: dispatchWithExtras({ type: 'BREATHE_AIR' }),
+    onTakeImpression: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }),
+    onSelfRemember: dispatchWithExtras({ type: 'SELF_REMEMBER' }),
+    onTransformEmotions: dispatchWithExtras({ type: 'TRANSFORM_EMOTIONS' }),
+    onCombineSelectedParts: (selected) => handlePieces({ type: 'COMBINE_PARTS', selected }),
+    onAdvanceFoodDiagram: dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
+    onDying: () => store.dispatch({ type: 'DEATH_NOW' }),
+    onToast: (message, level) => {
+      const type = level || toast.type.INFO
+      toast(message, { type })
+    },
+    handleRandomLaw,
+    handleChooseLaw,
+  }
 }
 
 export const reduxStore = store

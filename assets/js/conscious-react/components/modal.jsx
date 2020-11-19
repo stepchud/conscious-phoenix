@@ -2,17 +2,17 @@ import React from 'react'
 import Modal from 'react-modal'
 import { gameActions } from '../events'
 
+const actions = gameActions()
 const ButtonTag = (text, onClick, key=1) => <button key={key} onClick={onClick}>{text}</button>
 const TitleTag = (title) => title && <h1 className='modal-title'>{title}</h1>
 const BodyTag = (body) => body && <div className='modal-body'>{body}</div>
 const clickAndResolve = (onClick, onResolve) => async () => {
-  onHideModal();
+  actions.onHideModal();
   await onClick();
   if (typeof(onResolve)==='function') { onResolve() }
 }
 
-const onHideModal = () => gameActions.onHideModal()
-const onUpdateModal = (field, value) => gameActions.onUpdateModal({ field, value })
+const onUpdateModal = (field, value) => actions.onUpdateModal({ field, value })
 const onNameChange = (event) => onUpdateModal('name', event.target.value)
 const onDiceChange = (event) => onUpdateModal('sides', event.target.value)
 const onGameChange = (event) => onUpdateModal('gameId', event.target.value)
@@ -126,7 +126,6 @@ const WaitGameModal = ({
   return <ModalComponent {...props} />
 }
 
-
 export const SetupModal = ({
   step,
   name='',
@@ -185,7 +184,7 @@ const ModalComponent = ({
     <Modal
       isOpen={show}
       contentLabel={title}
-      onRequestClose={onHideModal}
+      onRequestClose={actions.onHideModal}
       shouldCloseOnOverlayClick={canEscape}
       shouldCloseOnEscape={canEscape}
       closeTimeoutMS={500}

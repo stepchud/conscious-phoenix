@@ -110,13 +110,13 @@ const testLawCard = (deck, law_text) => {
 
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
-  return newDeck
-  //return (
-  //  testLawCard(
-  //    newDeck,
-  //    'OLD FAMILY DISEASE'
-  //  )
-  //)
+  //return newDeck
+  return (
+    testLawCard(
+      newDeck,
+      'OLD FAMILY DISEASE'
+    )
+  )
 }
 
 const laws = (
@@ -183,8 +183,9 @@ const laws = (
         ],
       }
     case 'ONE_BY_RANDOM':
-      // empty hand or rolled a 0 ("none by random")
-      if (!hand.length || !action.roll) {
+      // empty hand or rolled a 0
+      if (hand.length==0 || action.roll==0) {
+        toast("none by random")
         return state
       }
       const shuffledHand = shuffle(hand)
