@@ -109,7 +109,7 @@ const player = (
       return {
         ...state,
         name: action.state.player.name,
-        current_turn: TURNS.randomLaw,
+        current_turn: TURNS.initial,
       }
     case 'WAIT_FOR_TURN':
       return {
@@ -117,18 +117,19 @@ const player = (
         active: false,
       }
     case 'START_TURN': {
-      // when the game ends, stay active so they can quit when they want
-      const active = action.pid === getPlayerId() || state.current_turn === TURNS.end
+      const { active, initial } = action
+      const current_turn = initial ? TURNS.randomLaw : state.current_turn
       return {
         ...state,
         active,
-        can_dupe: true,
+        current_turn,
       }
     }
     case 'END_TURN':
       return {
         ...state,
-        age: state.age + 1
+        age: state.age + 1,
+        can_dupe: true,
       }
     case 'EXCHANGE_DUPES':
       return {

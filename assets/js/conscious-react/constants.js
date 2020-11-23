@@ -48,6 +48,7 @@ export const getPlayerName = (players, pid) => {
 
 export const TURNS = {
   setup: 'setup',
+  initial: 'initial',
   normal: 'normal',
   randomLaw: 'random',
   choiceLaw: 'choice',

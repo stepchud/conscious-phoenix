@@ -1,6 +1,7 @@
 defmodule ConsciousPhoenix.Game do
   alias __MODULE__
   alias ConsciousPhoenix.Player
+  alias ConsciousPhoenix.Deck
 
   # use Ecto.Schema
   # import Ecto.Changeset
@@ -19,7 +20,7 @@ defmodule ConsciousPhoenix.Game do
   defstruct(
     players: %{ },
     board: %{ },
-    cards: %{ },
+    cards: %Deck{},
     laws:  %{ },
     log: [ ],
     turns: [ ]
@@ -135,20 +136,13 @@ defmodule ConsciousPhoenix.Game do
     |> draw_card(higher.pid)
   end
 
-  # draw one card, shuffling first if needed
   defp draw_card(game, pid) do
-    cards = game.cards
     hand = game.players[pid].hand
-    { deck, discards } = if Enum.empty?(cards.deck) do
-      { Enum.shuffle(cards.discards), [] }
-    else
-      { cards.deck, cards.discards }
-    end
-    [ drawn | deck ] = deck
+    {draw, cards} = Deck.draw_card(game.cards)
     # update player's hand
-    game = put_in(game.players[pid].hand, [%{"c" => drawn, "selected" => false} | hand])
+    game = put_in(game.players[pid].hand, [draw | hand])
     # update deck & discards
-    put_in(game.cards, %{ deck: deck, discards: discards })
+    put_in(game.cards, cards)
   end
 end
 

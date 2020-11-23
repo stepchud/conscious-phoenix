@@ -182,12 +182,17 @@ const cards = (
   switch(action.type) {
     case 'DRAW_CARD':
       return drawCard(state)
-    case 'START_GAME':
-      state.deck = generateDeck()
-      return drawCard(state, 7)
-    case 'JOIN_GAME':
-      const joinedState = { ...state, ...action.state.cards }
-      return drawCard(joinedState, 7)
+    case 'START_GAME': {
+      const nextState = {
+        ...state,
+        deck: generateDeck()
+      }
+      return drawCard(nextState, 7)
+    }
+    case 'START_TURN':
+      return (action.active && action.initial)
+        ? drawCard({ ...state }, 7)
+        : state
     case 'UPDATE_GAME':
       return {
         ...state,

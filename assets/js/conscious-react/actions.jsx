@@ -6,8 +6,9 @@ const hideModal = () => ({ type: 'HIDE_MODAL' })
 // Game actions
 const startGame = (name, sides) => ({ type: 'START_GAME', name, sides })
 const joinGame = (state) => ({ type: 'JOIN_GAME', state })
+const playerJoined = ({ pid, game }) => ({ type: 'PLAYER_JOINED', pid, game })
 const updateGame = (updates) => ({ type: 'UPDATE_GAME', ...updates })
-const startTurn = (pid) => ({ type: 'START_TURN', pid })
+const startTurn = ({ pid, active, initial }) => ({ type: 'START_TURN', pid, active, initial })
 const exchangeDupes = (pid) => ({ type: 'EXCHANGE_DUPES' })
 
 // Log Actions, shared game log across players

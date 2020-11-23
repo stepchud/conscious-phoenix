@@ -30,7 +30,6 @@ defmodule ConsciousPhoenix.Player do
   defstruct([
     :pid,
     :name,
-    :current_turn,
     :death_space,
     :laws_passed,
     :fd,
@@ -38,6 +37,7 @@ defmodule ConsciousPhoenix.Player do
     age: 0,
     position: 0,
     direction: 1,
+    current_turn: "initial",
     completed_trips: 0,
     alive: true,
     hand: [ ],

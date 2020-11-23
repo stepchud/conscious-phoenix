@@ -26,12 +26,12 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
   end
 
-  def join_game(assigns_gid, gid, pid, name) do
-    GenServer.cast(__MODULE__, %{action: :join_game, assigns_gid: assigns_gid, gid: gid, pid: pid, name: name})
+  def join_game(current_gid, gid, pid, name) do
+    GenServer.cast(__MODULE__, %{action: :join_game, current_gid: current_gid, gid: gid, pid: pid, name: name})
   end
 
-  def continue_game(assigns_gid, gid, pid) do
-    GenServer.cast(__MODULE__, %{action: :continue_game, assigns_gid: assigns_gid, gid: gid, pid: pid})
+  def continue_game(current_gid, gid, pid) do
+    GenServer.cast(__MODULE__, %{action: :continue_game, current_gid: current_gid, gid: gid, pid: pid})
   end
 
   def end_turn(gid, pid, game) do
@@ -91,32 +91,32 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{
     :action => :continue_game,
-    :assigns_gid => assigns_gid, :gid => gid, :pid => pid
+    :current_gid => current_gid, :gid => gid, :pid => pid
   }, state) do
     game = state.games[gid]
     if (is_nil(game)) do
-      Endpoint.broadcast!("game:#{assigns_gid}",
+      Endpoint.broadcast!("game:#{current_gid}",
         "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
       case { pid, game.players[pid] } do
         { nil, _ } ->
           Endpoint.broadcast!(
-            "game:#{assigns_gid}",
+            "game:#{current_gid}",
             "modal:error",
             %{ error: %{ message: "Player id missing!" } }
           )
           {:noreply, state}
         { _, nil } ->
           Endpoint.broadcast!(
-            "game:#{assigns_gid}",
+            "game:#{current_gid}",
             "modal:error",
             %{ error: %{ message: "Player not found!" } }
           )
           {:noreply, state}
         { _, _ } ->
           Endpoint.broadcast!(
-            "game:#{assigns_gid}",
+            "game:#{current_gid}",
             "game:continued",
             %{ gid: gid, pid: pid, game: game }
           )
@@ -127,18 +127,17 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{
     :action => :join_game,
-    :assigns_gid => assigns_gid, :gid => gid, :pid => pid, name: name
+    :current_gid => current_gid, :gid => gid, :pid => pid, name: name
   }, state) do
     game = state.games[gid]
     if (is_nil(game)) do
       IO.puts "game not found! #{gid}"
-      Endpoint.broadcast!("game:#{assigns_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
+      Endpoint.broadcast!("game:#{current_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
-      {msg, game, pid} = join_player(game, pid, name)
+      game = join_player(current_gid, gid, game, pid, name)
       state = put_in(state.games[gid], game)
-      IO.inspect Map.keys(state.games[gid].players), label: "game players"
-      Endpoint.broadcast!( "game:#{assigns_gid}", msg, %{ gid: gid, pid: pid, game: game })
+      IO.inspect Map.keys(state.games[gid].players), label: "player joined"
       {:noreply, state}
     end
   end
@@ -219,23 +218,28 @@ defmodule ConsciousPhoenix.GameServer do
     {:noreply, state}
   end
 
-  defp join_player(game, pid, name) do
+  defp join_player(current_gid, new_gid, game, pid, name) do
     case { pid, game.players[pid] } do
       { nil, _ } ->
         player = %Player{ name: name, pid: Player.generate_pid() }
         IO.puts "new pid joined: #{player.pid}"
         game = put_in(game.players, Map.put(game.players, player.pid, player))
                |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
-        {"game:joined", game, player.pid}
+        Endpoint.broadcast!( "game:#{new_gid}", "player:joined", %{ gid: new_gid, pid: player.pid, game: game })
+        Endpoint.broadcast!( "game:#{current_gid}", "game:joined", %{ gid: new_gid, pid: player.pid, game: game })
+        game
       { _, nil } ->
         IO.puts "existing pid joined: #{pid}"
         player = %Player{ name: name, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
                |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
-        {"game:joined", game, pid}
+        Endpoint.broadcast!( "game:#{new_gid}", "player:joined", %{ gid: new_gid, pid: pid, game: game })
+        Endpoint.broadcast!( "game:#{current_gid}", "game:joined", %{ gid: new_gid, pid: pid, game: game })
+        game
       { _, _ } -> # continue game
         IO.puts "existing player continued:#{pid}"
-        {"game:continued", game, pid}
+        Endpoint.broadcast!( "game:#{current_gid}", "game:continued", %{ gid: new_gid, pid: pid, game: game })
+        game
     end
   end
 end

@@ -1,7 +1,12 @@
 import { Socket } from 'phoenix'
 
 import { gameActions } from './events'
-import { getGameId, setGameId, getPlayerId, setPlayerId } from './constants'
+import { TURNS, getGameId, setGameId, getPlayerId, setPlayerId } from './constants'
+
+const localPlayers = (players, turns) => turns.map(plyrId => {
+  const { name, position } = players[plyrId]
+  return { pid: plyrId, name, position }
+}).reverse()
 
 // maps the server game state to local state
 const localState = (payload) => {
@@ -26,16 +31,11 @@ const localState = (payload) => {
     ep
   } = player
 
-  const localPlayers = turns.map(plyrId => {
-    const { name, position } = players[plyrId]
-    return { pid: plyrId, name, position }
-  }).reverse()
-
   return {
     player,
     board: {
       ...board,
-      players: localPlayers,
+      players: localPlayers(players, turns),
     },
     cards: { ...cards, hand },
     laws: { ...laws, active, hand: lawHand },
@@ -80,6 +80,8 @@ export default function Connect() {
     const actions = gameActions(this.channel)
     this.channel.on("game:started", payload => {
       const { name, pid, sides } = payload
+      const active = true
+      const initial = true
       setPlayerId(pid)
       actions.onGameStarted(pid, name, sides)
     })
@@ -92,7 +94,11 @@ export default function Connect() {
       console.log(`game:next_turn ${payload.pid}`)
       const state = localState(payload)
       actions.onUpdateGame(state)
-      actions.onTurnStarted(payload)
+      // when the game ends, stay active so they can quit when they want
+      const active = payload.pid === getPlayerId() ||
+        state.player.current_turn === TURNS.end
+      const initial = state.player.current_turn === TURNS.initial
+      actions.onTurnStarted({ pid: payload.pid, active, initial })
     })
     this.channel.on("game:joined", payload => {
       const { gid, pid } = payload
@@ -101,6 +107,10 @@ export default function Connect() {
       const state = localState(payload)
       actions.onGameJoined(pid, state)
       actions.onHideModal()
+    })
+    this.channel.on("player:joined", payload => {
+      const { pid, game } = payload
+      actions.onPlayerJoined(pid, game)
     })
     this.channel.on("game:continued", payload => {
       const { gid, pid } = payload

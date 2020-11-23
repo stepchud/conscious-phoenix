@@ -670,14 +670,18 @@ export const gameActions = (channel) => {
   return {
     onGameStarted: (pid, name, sides) => {
       store.dispatch(actions.startGame(name, sides))
+      store.dispatch(actions.startTurn({ pid, active: true }))
       channel.push('game:save_state', { pid, game: store.getState() })
     },
     onGameJoined: (pid, state) => {
       store.dispatch(actions.joinGame(state))
-      channel.push('game:save_state', { pid, game: store.getState() })
+      //channel.push('game:save_state', { pid, game: store.getState() })
+    },
+    onPlayerJoined: (pid, game) => {
+      store.dispatch(actions.updateGame({ log: game.log }))
     },
     onGameContinued: (payload) => store.dispatch(actions.updateGame(payload)),
-    onTurnStarted: ({ pid }) => store.dispatch(actions.startTurn(pid)),
+    onTurnStarted: (payload) => store.dispatch(actions.startTurn(payload)),
     onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
     onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
     onEventLog: (event) => store.dispatch(actions.logEvent(event)),
