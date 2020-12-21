@@ -69,6 +69,7 @@ const NewGameModal = ({
   name,
   sides,
   onStart,
+  onWait,
 }) => {
   const body =
     <div>
@@ -84,7 +85,7 @@ const NewGameModal = ({
     </div>
   const options =  [
     { text: 'Start now', onClick: () => onStart(name, sides) },
-    { text: 'Wait for players', onClick: () => onUpdateModal('setup_step', 'wait') }
+    { text: 'Wait for players', onClick: () => onWait(name, sides) }
   ]
   const props = {
     show: true,
@@ -96,23 +97,25 @@ const NewGameModal = ({
   return <ModalComponent {...props} />
 }
 
-const WaitGameModal = ({
+export const WaitGameModal = ({
+  gameId,
   name,
   sides,
-  joiners,
+  players,
   onStart,
 }) => {
-  let body
-  if (joiners.length) {
-    body = <>
-      <h3>Other players:</h3>
+  let body = <h3>Waiting for other players to join channel {gameId}</h3>
+  if (players.length) {
+    const other_players = players.map(p => p.name)
+    body = <div>
+      {body}
+      <h4>Players:</h4>
       <ol>
-        {joiners.map(p => <li>{p}</li>)}
+        {players.map(p => <li key={p.pid} style={{ color: `#${p.pid}`}}>{p.name}</li>)}
       </ol>
-    </>
-  } else {
-    body = <h3>Waiting for other players to join...</h3>
+    </div>
   }
+
   const options = [
     { text: "Let's begin!", onClick: () => onStart(name, sides) },
   ]
@@ -130,8 +133,8 @@ export const SetupModal = ({
   step,
   name='',
   sides=6,
-  joiners=[],
   onStart,
+  onWait,
   gameId,
   onJoinGame,
   onContinueGame,
@@ -149,11 +152,14 @@ export const SetupModal = ({
       errorMessage={errorMessage}
     />
   case 'name':
-    return <NewGameModal name={name} sides={sides} onStart={onStart} />
-  case 'wait':
-    return <WaitGameModal name={name} sides={sides} joiners={joiners} onStart={onStart} />
+    return <NewGameModal
+      name={name}
+      sides={sides}
+      onStart={onStart}
+      onWait={onWait}
+    />
   default:
-    console.warn("SetupModal rendered with unknown step="+step)
+    console.warn(`SetupModal unknown step: ${step}`)
     return null
   }
 }

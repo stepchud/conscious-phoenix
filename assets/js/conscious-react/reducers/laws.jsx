@@ -161,17 +161,23 @@ const laws = (
     }
     case 'DRAW_LAW_CARD':
       return drawLawCard(state)
-    case 'START_GAME': {
+    case 'START_GAME':
+    case 'WAIT_GAME': {
       const nextState = {
         ...state,
         deck: generateLawDeck()
       }
       return drawLawCard(nextState, 3)
     }
-    case 'START_TURN':
-      return (action.active && action.initial)
-        ? drawLawCard({ ...state }, 3)
-        : state
+    case 'JOIN_GAME': {
+      const { deck, discards } = action.state.laws
+      const nextState = {
+        ...state,
+        deck,
+        discards,
+      }
+      return drawLawCard(nextState, 3)
+    }
     case 'UPDATE_GAME':
       return {
         ...state,

@@ -26,6 +26,14 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
   end
 
+  def start_after_wait(gid) do
+    GenServer.cast(__MODULE__, %{action: :start_after_wait, gid: gid})
+  end
+
+  def wait_game(gid, name, sides) do
+    GenServer.cast(__MODULE__, %{action: :wait_game, gid: gid, name: name, sides: sides})
+  end
+
   def join_game(current_gid, gid, pid, name) do
     GenServer.cast(__MODULE__, %{action: :join_game, current_gid: current_gid, gid: gid, pid: pid, name: name})
   end
@@ -86,6 +94,34 @@ defmodule ConsciousPhoenix.GameServer do
                |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
     state = put_in(state.games[gid], new_game)
     Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, pid: player.pid, sides: sides})
+    {:noreply, state}
+  end
+
+  def handle_cast(%{ action: :start_after_wait, gid: gid }, state) do
+    IO.puts "start_after_wait<#{gid}>"
+    game = state.games[gid]
+    game = put_in(game.board.status, "active")
+    state = put_in(state.games[gid], game)
+    first = if (Enum.count(game.turns) > 1) do
+      Enum.at(game.turns, -2)
+    else
+      hd(game.turns)
+    end
+    Endpoint.broadcast!("game:#{gid}", "game:started_after_wait", %{first: first})
+    {:noreply, state}
+  end
+
+  def handle_cast(%{
+    action: :wait_game,
+    gid: gid, name: name, sides: sides
+  }, state) do
+    IO.puts "wait_game<#{gid}> (#{name}, #{sides})"
+    player = %Player{ name: name, pid: Player.generate_pid() }
+    new_game = %Game{ players: %{ player.pid => player }, board: %{ sides: sides, roll: sides, status: "wait" } }
+               |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
+               |> Game.log_event(%{ pid: player.pid, entry: "Waiting for players to join." })
+    state = put_in(state.games[gid], new_game)
+    Endpoint.broadcast!("game:#{gid}", "game:waited", %{name: name, pid: player.pid, sides: sides})
     {:noreply, state}
   end
 
@@ -224,6 +260,7 @@ defmodule ConsciousPhoenix.GameServer do
         player = %Player{ name: name, pid: Player.generate_pid() }
         IO.puts "new pid joined: #{player.pid}"
         game = put_in(game.players, Map.put(game.players, player.pid, player))
+               |> Game.save_turn(player.pid)
                |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
         Endpoint.broadcast!( "game:#{new_gid}", "player:joined", %{ gid: new_gid, pid: player.pid, game: game })
         Endpoint.broadcast!( "game:#{current_gid}", "game:joined", %{ gid: new_gid, pid: player.pid, game: game })
@@ -232,6 +269,7 @@ defmodule ConsciousPhoenix.GameServer do
         IO.puts "existing pid joined: #{pid}"
         player = %Player{ name: name, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
+               |> Game.save_turn(pid)
                |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
         Endpoint.broadcast!( "game:#{new_gid}", "player:joined", %{ gid: new_gid, pid: pid, game: game })
         Endpoint.broadcast!( "game:#{current_gid}", "game:joined", %{ gid: new_gid, pid: pid, game: game })

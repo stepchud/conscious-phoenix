@@ -80,10 +80,18 @@ export default function Connect() {
     const actions = gameActions(this.channel)
     this.channel.on("game:started", payload => {
       const { name, pid, sides } = payload
-      const active = true
-      const initial = true
       setPlayerId(pid)
       actions.onGameStarted(pid, name, sides)
+    })
+    this.channel.on("game:started_after_wait", (payload) => {
+      const pid = getPlayerId()
+      const active = pid===payload.first
+      actions.onGameStartedAfterWait(pid, active)
+    })
+    this.channel.on("game:waited", payload => {
+      const { name, pid, sides } = payload
+      setPlayerId(pid)
+      actions.onGameWaited(pid, name, sides)
     })
     this.channel.on("game:update", payload => {
       console.log('game:update', payload)
@@ -106,11 +114,10 @@ export default function Connect() {
       if (getPlayerId() !== pid) { setPlayerId(pid) }
       const state = localState(payload)
       actions.onGameJoined(pid, state)
-      actions.onHideModal()
     })
     this.channel.on("player:joined", payload => {
-      const { pid, game } = payload
-      actions.onPlayerJoined(pid, game)
+      const state = localState(payload)
+      actions.onPlayerJoined(state)
     })
     this.channel.on("game:continued", payload => {
       const { gid, pid } = payload

@@ -41,11 +41,6 @@ const modal = (
         ...state,
         [action.field]: action.value,
       }
-    case 'UPDATE_GAME':
-      return {
-        ...state,
-        ...action.modal,
-      }
     case 'FOUND_SCHOOL':
       return {
         show: true,

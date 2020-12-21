@@ -6,6 +6,7 @@ const InitialState = () => ({
   roll: 0,
   spaces: BOARD_SPACES,
   players: [],
+  status: 'active',
 })
 
 const board = (
@@ -22,11 +23,26 @@ const board = (
         ...state,
         sides: parseInt(action.sides),
       }
-    case 'JOIN_GAME':
+    case 'WAIT_GAME':
       return {
         ...state,
-        sides: parseInt(action.state.board.sides),
+        sides: parseInt(action.sides),
+        status: 'wait',
       }
+    case 'START_AFTER_WAIT':
+      return {
+        ...state,
+        status: 'active',
+      }
+    case 'JOIN_GAME': {
+      const { sides, status, players } = action.state.board
+      return {
+        ...state,
+        sides,
+        status,
+        players,
+      }
+    }
     case 'UPDATE_GAME':
       return {
         ...state,

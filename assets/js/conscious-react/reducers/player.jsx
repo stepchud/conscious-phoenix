@@ -105,6 +105,12 @@ const player = (
         active: true,
         current_turn: TURNS.randomLaw,
       }
+    case 'WAIT_GAME':
+      return {
+        ...state,
+        name: action.name,
+        current_turn: TURNS.initial,
+      }
     case 'JOIN_GAME':
       return {
         ...state,

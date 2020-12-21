@@ -15,7 +15,7 @@ import { CardHand, LawHand } from './cards'
 import FoodDiagram from './food'
 import ThreeBrains from './being'
 import { GameLog, PlayerStats } from './game_stats'
-import GameModal, { IntroModal, SetupModal } from './modal'
+import GameModal, { IntroModal, SetupModal, WaitGameModal } from './modal'
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -37,6 +37,14 @@ export class ConsciousBoardgame extends React.Component {
 
   handleStartGame = (name, sides) => {
     this.props.channel.push('game:start', { name, sides })
+  }
+
+  handleStartAfterWait = () => {
+    this.props.channel.push('game:start_after_wait', {})
+  }
+
+  handleWaitGame = (name, sides) => {
+    this.props.channel.push('game:wait', { name, sides })
   }
 
   handleGameOver = () => {
@@ -93,70 +101,78 @@ export class ConsciousBoardgame extends React.Component {
     const gameOver = player.current_turn===TURNS.death &&
       (!astral || (!mental && !hasnamuss(laws.active) && player.completed_trips > 1))
 
-    switch(player.current_turn) {
-      case TURNS.setup:
-        return (
-          <SetupModal
-            step={modal.setup_step}
-            gameId={gameId}
-            name={modal.name}
-            sides={modal.sides}
-            onStart={this.handleStartGame}
-            onJoinGame={!!gameId && this.handleJoinGame}
-            onContinueGame={!!playerId && this.handleContinueGame}
-            errorMessage={modal.error_message}
-          />
-        )
-      default: {
-        return (
-          <div>
-            <ButtonRow
-              roll={board.roll}
-              cards={cards.hand}
-              laws={laws}
-              ep={ep}
-              currentTurn={player.current_turn}
-              gameOver={gameOver}
-              waiting={!player.active}
-              onRoll={this.handleRoll}
-              onObeyLaw={this.actions.handleObeyLaw}
-              onCombineSelectedParts={this.actions.onCombineSelectedParts}
-              onPlaySelected={this.actions.onPlaySelected}
-              onRandomLaw={this.actions.handleRandomLaw}
-              onEndDeath={this.actions.handleEndDeath}
-              onGameOver={this.handleGameOver}
-              onExit={this.handleGameExit}
-            />
-            <TestButtons
-              actions={this.actions}
-              cards={cards.hand}
-              laws={laws}
-              parts={ep.parts}
-            />
-            <PlayerStats name={player.name} {...ep} />
-            <Board {...board} onFifthStriving={this.handleFifthStriving} />
-            <CardHand
-              cards={cards.hand}
-              active={player.active}
-              canDupe={player.can_dupe}
-              onSelect={this.actions.onSelectCard}
-              onDuplicate={this.handleDuplicate}
-            />
-            { fd.current.alive && <LawHand
-                laws={laws}
-                byChoice={player.current_turn===TURNS.choiceLaw}
-                onSelect={this.actions.onSelectLawCard}
-                onChoice={this.actions.handleChooseLaw} />
-            }
-            <ThreeBrains {...ep} onSelect={this.actions.onSelectPart} />
-            <FoodDiagram {...fd} />
-            <GameLog board={board} expanded={this.state.expandLog} onToggle={this.toggleEventLog} entries={log} />
-            <GameModal {...modal} />
-            <ToastContainer position={toast.POSITION.BOTTOM_CENTER} autoClose={4000} />
-          </div>
-        )
-      }
+    if (player.current_turn===TURNS.setup) {
+      return <SetupModal
+        step={modal.setup_step}
+        gameId={gameId}
+        name={modal.name}
+        sides={modal.sides}
+        players={board.players}
+        onStart={this.handleStartGame}
+        onWait={this.handleWaitGame}
+        onJoinGame={!!gameId && this.handleJoinGame}
+        onContinueGame={!!playerId && this.handleContinueGame}
+        errorMessage={modal.error_message}
+      />
     }
+
+    if (board.status==='wait') {
+      return <WaitGameModal
+        gameId={gameId}
+        name={player.name}
+        sides={board.sides}
+        players={board.players}
+        onStart={this.handleStartAfterWait}
+      />
+    }
+
+    return (
+      <div>
+        <ButtonRow
+          roll={board.roll}
+          cards={cards.hand}
+          laws={laws}
+          ep={ep}
+          currentTurn={player.current_turn}
+          gameOver={gameOver}
+          waiting={!player.active}
+          onRoll={this.handleRoll}
+          onObeyLaw={this.actions.handleObeyLaw}
+          onCombineSelectedParts={this.actions.onCombineSelectedParts}
+          onPlaySelected={this.actions.onPlaySelected}
+          onRandomLaw={this.actions.handleRandomLaw}
+          onEndDeath={this.actions.handleEndDeath}
+          onGameOver={this.handleGameOver}
+          onExit={this.handleGameExit}
+        />
+        <TestButtons
+          actions={this.actions}
+          cards={cards.hand}
+          laws={laws}
+          parts={ep.parts}
+        />
+        <PlayerStats name={player.name} {...ep} />
+        <Board {...board} onFifthStriving={this.handleFifthStriving} />
+        <CardHand
+          cards={cards.hand}
+          active={player.active}
+          canDupe={player.can_dupe}
+          onSelect={this.actions.onSelectCard}
+          onDuplicate={this.handleDuplicate}
+        />
+        { fd.current.alive && <LawHand
+            laws={laws}
+            byChoice={player.current_turn===TURNS.choiceLaw}
+            onSelect={this.actions.onSelectLawCard}
+            onChoice={this.actions.handleChooseLaw} />
+        }
+        <ThreeBrains {...ep} onSelect={this.actions.onSelectPart} />
+        <FoodDiagram {...fd} />
+        <GameLog board={board} expanded={this.state.expandLog} onToggle={this.toggleEventLog} entries={log} />
+        <GameModal {...modal} />
+        <ToastContainer position={toast.POSITION.BOTTOM_CENTER} autoClose={4000} />
+      </div>
+    )
   }
 }
 

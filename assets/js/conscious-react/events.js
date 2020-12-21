@@ -673,14 +673,26 @@ export const gameActions = (channel) => {
       store.dispatch(actions.startTurn({ pid, active: true }))
       channel.push('game:save_state', { pid, game: store.getState() })
     },
+    onGameStartedAfterWait: (pid, active) => {
+      store.dispatch(actions.startAfterWait())
+      if (active) {
+        store.dispatch(actions.startTurn({ pid, active: true, initial: true }))
+      }
+    },
+    onGameWaited: (pid, name, sides) => {
+      store.dispatch(actions.waitGame(name, sides))
+      channel.push('game:save_state', { pid, game: store.getState() })
+    },
     onGameJoined: (pid, state) => {
       store.dispatch(actions.joinGame(state))
-      //channel.push('game:save_state', { pid, game: store.getState() })
+      channel.push('game:save_state', { pid, game: store.getState() })
     },
-    onPlayerJoined: (pid, game) => {
-      store.dispatch(actions.updateGame({ log: game.log }))
+    onPlayerJoined: (game) => {
+      store.dispatch(actions.updateGame({ board: game.board, log: game.log }))
     },
-    onGameContinued: (payload) => store.dispatch(actions.updateGame(payload)),
+    onGameContinued: (payload) => {
+      store.dispatch(actions.updateGame(payload))
+    },
     onTurnStarted: (payload) => store.dispatch(actions.startTurn(payload)),
     onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
     onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
