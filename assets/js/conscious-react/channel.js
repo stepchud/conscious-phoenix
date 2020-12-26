@@ -67,86 +67,81 @@ export default function Connect() {
     this.leave()
     this.gid = gid
     this.channel = this.socket.channel(`game:${gid}`, {})
+    this.actions = gameActions(this.channel)
     this.channel.join()
       .receive("ok", payload => {
         console.log('Connected to channel', payload)
         setGameId(payload.gid)
       })
       .receive("error", resp => console.log("Unable to join", resp));
-    this.subscribe()
+    return this.subscribe()
   }
 
   this.subscribe = () => {
-    const actions = gameActions(this.channel)
     this.channel.on("game:started", payload => {
       const { name, pid, sides } = payload
       setPlayerId(pid)
-      actions.onGameStarted(pid, name, sides)
+      this.actions.onGameStarted(pid, name, sides)
     })
     this.channel.on("game:started_after_wait", (payload) => {
       const pid = getPlayerId()
       const active = pid===payload.first
-      actions.onGameStartedAfterWait(pid, active)
+      this.actions.onGameStartedAfterWait(pid, active)
     })
     this.channel.on("game:waited", payload => {
       const { name, pid, sides } = payload
       setPlayerId(pid)
-      actions.onGameWaited(pid, name, sides)
+      this.actions.onGameWaited(pid, name, sides)
     })
     this.channel.on("game:update", payload => {
       console.log('game:update', payload)
       const state = localState(payload)
-      actions.onUpdateGame(state)
+      this.actions.onUpdateGame(state)
     })
     this.channel.on("game:next_turn", payload => {
       console.log(`game:next_turn ${payload.pid}`)
       const state = localState(payload)
-      actions.onUpdateGame(state)
+      this.actions.onUpdateGame(state)
       // when the game ends, stay active so they can quit when they want
       const active = payload.pid === getPlayerId() ||
         state.player.current_turn === TURNS.end
       const initial = state.player.current_turn === TURNS.initial
-      actions.onTurnStarted({ pid: payload.pid, active, initial })
+      this.actions.onTurnStarted({ pid: payload.pid, active, initial })
     })
     this.channel.on("game:joined", payload => {
       const { gid, pid } = payload
       this.join(gid)
       if (getPlayerId() !== pid) { setPlayerId(pid) }
       const state = localState(payload)
-      actions.onGameJoined(pid, state)
+      this.actions.onGameJoined(pid, state)
     })
     this.channel.on("player:joined", payload => {
       const state = localState(payload)
-      actions.onPlayerJoined(state)
+      this.actions.onPlayerJoined(state)
     })
     this.channel.on("game:continued", payload => {
       const { gid, pid } = payload
-      if (getGameId() !== gid) { this.join(gid) }
-      if (getPlayerId() === pid) {
-        const state = localState(payload)
-        actions.onGameContinued(state)
-        actions.onHideModal()
-      } else {
-        console.warn("mismatched pid for continue")
-      }
+      this.join(gid)
+      const state = localState(payload)
+      this.actions.onGameContinued(state)
     })
     this.channel.on("game:fifth_options", payload => {
       if (getPlayerId() === payload.pid) {
-        actions.onFifthOptions(payload)
+        this.actions.onFifthOptions(payload)
       }
     })
     this.channel.on("modal:error", payload => {
       const { error } = payload
-      actions.onUpdateModal({ field: "error_message", value: error.message })
-      actions.onShowModal()
+      this.actions.onUpdateModal({ field: "error_message", value: error.message })
+      this.actions.onShowModal()
     })
     this.channel.on("game:event", payload => {
-      actions.onEventLog(payload)
+      this.actions.onEventLog(payload)
     })
     this.channel.on("broadcast:message", payload => {
       if (getPlayerId() === payload.pid) { return }
       const { message, type } = payload
-      actions.onToast(message, type)
+      this.actions.onToast(message, type)
     })
   }
 

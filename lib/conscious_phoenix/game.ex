@@ -128,8 +128,10 @@ defmodule ConsciousPhoenix.Game do
   # takes the helpful card from higher who also draws three cards
   def exchange_one_fifth(game, lower, higher, card) do
     IO.inspect(card)
-    game = put_in(game.players[lower.pid].hand, [card | lower.hand])
-    game = put_in(game.players[higher.pid].hand, higher.hand -- [card])
+    lower_card = Map.put(card, "select", false)
+    higher_card = Enum.find(higher.hand, &(&1["c"] == card["c"]))
+    game = put_in(game.players[lower.pid].hand, [lower_card | lower.hand])
+    game = put_in(game.players[higher.pid].hand, higher.hand -- [higher_card])
     game
     |> draw_card(higher.pid)
     |> draw_card(higher.pid)

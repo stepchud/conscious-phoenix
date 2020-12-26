@@ -18,7 +18,6 @@ const dispatchShowModal = (props) => store.dispatch(actions.showModal(props))
 const promiseShowModal = (props) => {
   return new Promise((resolve, reject) => {
     const modalProps = Object.assign({}, props, { onResolve: resolve })
-    const show = actions.showModal(modalProps)
     dispatchShowModal(modalProps)
   })
 }
@@ -692,6 +691,7 @@ export const gameActions = (channel) => {
     },
     onGameContinued: (payload) => {
       store.dispatch(actions.updateGame(payload))
+      store.dispatch(actions.hideModal())
     },
     onTurnStarted: (payload) => store.dispatch(actions.startTurn(payload)),
     onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
