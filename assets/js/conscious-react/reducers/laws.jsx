@@ -264,14 +264,14 @@ const laws = (
       lawCard.selected = false
       let nextState = { ...state }
 
-      const actions = lawCard.c.actions
+      const actions = [ ...lawCard.c.actions ]
       if (lawCard.no_escape) {
         toast("No escape from the law!")
-        each(actions, (action) => {
-          if ('ACTIVE_LAW' == action.type) {
-            action.covered = lawCard.no_escape
-          } else if ('OBEY_WITHOUT_ESCAPE' == action.type) {
-            action.no_escape = lawCard.no_escape
+        each(actions, (lawAction) => {
+          if ('ACTIVE_LAW' == lawAction.type) {
+            lawAction.covered = lawCard.no_escape
+          } else if ('OBEY_WITHOUT_ESCAPE' == lawAction.type) {
+            lawAction.no_escape = lawCard.no_escape
           }
         })
       } else if (some(activeKings(active), (k) => sameSuit(k.card, lawCard.c.card))) {
@@ -362,7 +362,7 @@ const laws = (
       // don't discard active laws (they could be re-drawn)
       const actives = map(active, 'index')
       const to_discard = map(in_play, 'c').filter(
-        (l) => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == l.card))
+        law => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == law.card))
       )
       return {
         ...state,
