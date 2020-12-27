@@ -269,7 +269,7 @@ const laws = (
 
       const actions = [ ...lawCard.c.actions ]
       if (lawCard.no_escape) {
-        toast("No escape from the law!")
+        toast('No escape from the law!')
         each(actions, (lawAction) => {
           if ('ACTIVE_LAW' == lawAction.type) {
             lawAction.covered = lawCard.no_escape
@@ -362,15 +362,20 @@ const laws = (
       return nextState
     }
     case 'END_TURN': {
-      // don't discard active laws (they could be re-drawn)
+      // don't discard active or shared laws (they could be re-drawn)
       const actives = map(active, 'index')
+      const shared = map(in_play, 'c').filter(
+        law => law.card == 'QC' || law.card == 'XJ' || law.no_escape.includes('2S')
+      )
       const to_discard = map(in_play, 'c').filter(
-        law => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == law.card))
+        law => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == law.card)) &&
+          !shared.includes(law.card)
       )
       return {
         ...state,
         discards: [...discards, ...to_discard],
         in_play: [],
+        shared,
       }
     }
     case 'CANCEL_ALL_LAWS':

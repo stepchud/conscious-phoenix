@@ -179,7 +179,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :end_turn, :gid => gid, :pid => pid, :game => updates}, state) do
-    game = Game.save_state(state.games[gid], pid, updates)
+    game = Game.end_turn(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
     { nextPid, _ } = Player.next_pid(game.players, game.turns)
     IO.puts "next pid=#{nextPid}"

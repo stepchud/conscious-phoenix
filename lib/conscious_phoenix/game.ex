@@ -73,6 +73,12 @@ defmodule ConsciousPhoenix.Game do
     }
   end
 
+  # add `shared` laws to other players, track which players have obeyed
+  def end_turn(game, pid, updates) do
+    lawUpdate = Map.fetch!(updates, "laws")
+    save_state(game, pid, updates)
+  end
+
   def log_event(game, event) do
     %Game{ game | log: [ event | game.log ] }
   end
