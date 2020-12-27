@@ -216,8 +216,10 @@ const laws = (
     case 'OBEY_WITHOUT_ESCAPE': {
       let nextState = drawLawCard(state)
       let newLaw = nextState.hand.pop()
+      let discarded = []
       if (action.card == '2C') {
         for (let i=1; i<action.being_type; i++) {
+          discarded.push(newLaw.c)
           nextState = drawLawCard(nextState)
           newLaw = nextState.hand.pop()
         }
@@ -226,6 +228,7 @@ const laws = (
       return {
         ...nextState,
         in_play: in_play.concat({ ...newLaw, no_escape }),
+        discards: [...discards, ...discarded],
       }
     }
     case 'PLAY_SELECTED':
