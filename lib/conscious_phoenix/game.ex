@@ -73,10 +73,25 @@ defmodule ConsciousPhoenix.Game do
     }
   end
 
-  # add `shared` laws to other players, track which players have obeyed
+  # add `shared` laws to other players
+  # clear shared_laws when the player's turn is done to track which players have obeyed already
   def end_turn(game, pid, updates) do
     lawUpdate = Map.fetch!(updates, "laws")
-    save_state(game, pid, updates)
+    if Map.has_key?(lawUpdate, "shared") do
+      IO.inspect(lawUpdate)
+      players = game.players
+                |> Enum.map(fn {key, player} ->
+                    if (key===pid) do
+                      { key, put_in(player.shared_laws, [ ]) }
+                    else
+                      { key, put_in(player.shared_laws, player.shared_laws ++ lawUpdate["shared"]) }
+                    end
+                  end)
+                |> Enum.into(%{ })
+      save_state(put_in(game.players, players), pid, updates)
+    else
+      save_state(game, pid, updates)
+    end
   end
 
   def log_event(game, event) do

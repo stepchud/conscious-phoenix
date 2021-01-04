@@ -110,13 +110,22 @@ const testLawCard = (deck, law_text) => {
 
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
-  return newDeck
-  //return (
-  //  testLawCard(
-  //    newDeck,
-  //    'OLD FAMILY DISEASE'
-  //  )
-  //)
+  //return newDeck
+  return (
+    testLawCard(
+    testLawCard(
+    testLawCard(
+    testLawCard(
+      newDeck,
+      'OLD FAMILY DISEASE'
+    ),
+      'SKIP A MEAL'
+    ),
+      'IMPROPER BREATHING'
+    ),
+      'ALL THREE-BRAINED BEINGS'
+    )
+  )
 }
 
 const laws = (
@@ -137,6 +146,7 @@ const laws = (
     deck,
     discards,
   } = state
+  const in_play_not_shared = in_play.filter(lc => !lc.shared)
   switch(action.type) {
     case 'MOVE_SPACE': {
       const { position, next_position, alive, asleep } = action
@@ -179,8 +189,12 @@ const laws = (
       return drawLawCard(nextState, 3)
     }
     case 'UPDATE_GAME':
+      if (!action.laws) { return state }
+      const { shared_laws } = action.laws
+      delete(action.laws.shared_laws)
       return {
         ...state,
+        in_play: [ ...in_play, ...shared_laws ],
         ...action.laws,
       }
     case 'SELECT_LAW_CARD':
@@ -238,9 +252,9 @@ const laws = (
       return {
         ...state,
         in_play: map(in_play, (c) => ({
-            ...c,
-            selected: c.selected ? false : c.selected,
-            played: c.selected ? true : c.played,
+          ...c,
+          selected: c.selected ? false : c.selected,
+          played: c.selected ? true : c.played,
         })),
       }
     case 'DISCARD_LAW_HAND': {
@@ -334,7 +348,7 @@ const laws = (
       }
     }
     case 'END_DEATH': {
-      const discarded = map(hand.concat(in_play), 'c').concat(map(active, lawAtIndex))
+      const discarded = map(hand.concat(in_play_not_shared), 'c').concat(map(active, lawAtIndex))
       return {
         ...state,
         discards: [...discards, ...discarded],
@@ -347,7 +361,7 @@ const laws = (
     case 'REINCARNATE': {
       // discard everything but the active Joker
       const [nextActive, discardActive] = partition(active, isLawCard('JO'))
-      const discarded = map(hand.concat(in_play), 'c').concat(map(discardActive, lawAtIndex))
+      const discarded = map(hand.concat(in_play_not_shared), 'c').concat(map(discardActive, lawAtIndex))
       let nextState = {
         ...state,
         discards: [...discards, ...discarded],
@@ -362,14 +376,14 @@ const laws = (
       return nextState
     }
     case 'END_TURN': {
-      // don't discard active or shared laws (they could be re-drawn)
+      // don't discard active (they could be re-drawn)
       const actives = map(active, 'index')
-      const shared = map(in_play, 'c').filter(
-        law => law.card == 'QC' || law.card == 'XJ' || law.no_escape.includes('2S')
+      const shared = map(in_play_not_shared, 'c').filter(
+        law => law.card == 'QC' || law.card == 'XJ' || (law.no_escape && law.no_escape.includes('2S'))
       )
-      const to_discard = map(in_play, 'c').filter(
-        law => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == law.card)) &&
-          !shared.includes(law.card)
+      // NOTE: discard shared laws, in case someone can pull the XJ again for JO
+      const to_discard = map(in_play_not_shared, 'c').filter(
+        law => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == law.card))
       )
       return {
         ...state,

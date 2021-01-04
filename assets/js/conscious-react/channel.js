@@ -24,6 +24,15 @@ const localState = (payload) => {
   const pid = getPlayerId()
 
   const player = players[pid]
+  const shared_laws = payloadPid===pid
+  ? player.shared_laws.map(
+    c => ({
+      c,
+      shared: true,
+      selected: false,
+    })
+  ) : []
+  console.log("shared", shared_laws)
   const {
     hand,
     laws: { active, hand: lawHand },
@@ -38,7 +47,7 @@ const localState = (payload) => {
       players: localPlayers(players, turns),
     },
     cards: { ...cards, hand },
-    laws: { ...laws, active, hand: lawHand },
+    laws: { ...laws, active, hand: lawHand, shared_laws },
     fd,
     ep,
     log,
@@ -99,7 +108,7 @@ export default function Connect() {
       this.actions.onUpdateGame(state)
     })
     this.channel.on("game:next_turn", payload => {
-      console.log(`game:next_turn ${payload.pid}`)
+      console.log('game:next_turn', payload)
       const state = localState(payload)
       this.actions.onUpdateGame(state)
       // when the game ends, stay active so they can quit when they want

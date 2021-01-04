@@ -23,6 +23,7 @@ defmodule ConsciousPhoenix.Player do
       :alive,
       :hand,
       :laws,
+      :shared_laws,
       :status
     ]
   }
@@ -42,6 +43,7 @@ defmodule ConsciousPhoenix.Player do
     alive: true,
     hand: [ ],
     laws: %{ active: [ ], hand: [ ] },
+    shared_laws:  [ ],
     status: @statuses.present,
   ])
 
@@ -215,14 +217,11 @@ defmodule ConsciousPhoenix.Player do
 
   # level of being given the potential chips already in hand
   defp potential_level_of_being(player) do
-    current_level = level_of_being(player.ep["pieces"])
-    potential_level = level_of_being(potential_pieces(card_hand(player), player.ep["pieces"]))
-    potential_level
+    level_of_being(potential_pieces(card_hand(player), player.ep["pieces"]))
   end
 
   defp level_of_being(pieces) do
     [jd, qd, kd, jc, qc, kc, jh, qh, kh, js, qs, ks, ad, ac, ah, as, xj, jo] = pieces
-    hasAS = as > 0
     # count XJ 'aces'
     distinctAces = if xj > 1, do: 3, else: 0
     distinctAces = if xj == 1, do: 2, else: distinctAces

@@ -113,7 +113,7 @@ const ButtonRow = ({
   return (
     <div className="section actions fixed-nav">
       <Dice roll={roll} />
-      <Buttons hasLaws={hasLaws} turn={turn} waiting={waiting} laws={laws} {...props} />
+      <Buttons turn={turn} hasLaws={hasLaws} waiting={waiting} laws={laws} {...props} />
       <Message turn={turn} hasLaws={hasLaws} waiting={waiting} gameOver={props.gameOver} />
     </div>
   )
