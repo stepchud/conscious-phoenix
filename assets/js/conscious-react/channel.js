@@ -32,7 +32,6 @@ const localState = (payload) => {
       selected: false,
     })
   ) : []
-  console.log("shared", shared_laws)
   const {
     hand,
     laws: { active, hand: lawHand },

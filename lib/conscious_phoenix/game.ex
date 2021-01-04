@@ -78,7 +78,6 @@ defmodule ConsciousPhoenix.Game do
   def end_turn(game, pid, updates) do
     lawUpdate = Map.fetch!(updates, "laws")
     if Map.has_key?(lawUpdate, "shared") do
-      IO.inspect(lawUpdate)
       players = game.players
                 |> Enum.map(fn {key, player} ->
                     if (key===pid) do
