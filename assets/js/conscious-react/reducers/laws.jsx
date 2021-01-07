@@ -110,14 +110,23 @@ const testLawCard = (deck, law_text) => {
 
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
-  //return newDeck
+  return newDeck
   return (
     testLawCard(
     testLawCard(
     testLawCard(
     testLawCard(
+    testLawCard(
+    testLawCard(
+    testLawCard(
       newDeck,
-      'OLD FAMILY DISEASE'
+      'LAWS OF ACCIDENT'
+    ),
+      'GOD SENDS A MESSAGE'
+    ),
+      'PRACTICE THE CHI EXERCISE'
+    ),
+      'MUST OBEY WITHOUT ESCAPE'
     ),
       'SKIP A MEAL'
     ),
@@ -378,9 +387,9 @@ const laws = (
     case 'END_TURN': {
       // don't discard active (they could be re-drawn)
       const actives = map(active, 'index')
-      const shared = map(in_play_not_shared, 'c').filter(
-        law => law.card == 'QC' || law.card == 'XJ' || (law.no_escape && law.no_escape.includes('2S'))
-      )
+      const shared = map(in_play_not_shared.filter(
+        law => law.c.card == 'QC' || law.c.card == 'XJ' || (law.no_escape || []).includes('2S')
+      ), 'c')
       // NOTE: discard shared laws, in case someone can pull the XJ again for JO
       const to_discard = map(in_play_not_shared, 'c').filter(
         law => !actives.includes(indexOf(LAW_DECK, (ld) => ld.card == law.card))
@@ -398,22 +407,7 @@ const laws = (
         filter(active, isCovered),
         l => ({ ...l, covered: l.covered.slice(1) })
       )
-      // remove first no_escape from current in_play, mark others obeyed
-      const newInPlay = map(in_play, lc => {
-        if (lc.no_escape) {
-          if (lc.no_escape.length == 1) {
-            delete lc.no_escape
-          } else {
-            lc.no_escape.shift()
-          }
-          return lc
-        } else {
-          return  {
-            ...lc,
-            obeyed: true
-          }
-        }
-      })
+      const newInPlay = map(in_play, lc => lc.no_escape ? lc : { ...lc, obeyed: true })
       return {
         ...state,
         active: newActive,
