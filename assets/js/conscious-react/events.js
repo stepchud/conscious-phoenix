@@ -428,7 +428,6 @@ const takePiece = async (position) => {
 }
 
 const handleFifthOptions = (channel) => async ({ pid, lower_pid, options: cards }) => {
-  debugger
   const { board: { players } } = store.getState()
   const lower = getPlayerName(players, lower_pid)
   const title = 'Fifth Obligolnian Striving'
@@ -440,6 +439,23 @@ const handleFifthOptions = (channel) => async ({ pid, lower_pid, options: cards 
 
   await promiseShowModal({ title, body, options })
 }
+
+const offerAstral = (channel) => async ({ pid, astral }) => {
+  const { board: { players } } = store.getState()
+  const title = 'Astral Offered'
+  const body = renderOfferAstralBody(astral)
+  const options = [
+    { text: 'Yes', onClick: () => channel.push('game:choose_astral', { pid, replace: true }) },
+    { text: 'No', onClick: () => channel.push('game:choose_astral', { pid, replace: false }) }
+  ]
+
+  await promiseShowModal({ title, body, options })
+}
+
+const renderOfferAstralBody = (astral) =>
+  <div>
+    You found a discarded Astral body, do you want to replace yours?
+  </div>
 
 const handleDecay = async () => {
   const { fd: { current }, board: { sides } } = store.getState()
@@ -704,6 +720,7 @@ export const gameActions = (channel) => {
     onHideModal: () => store.dispatch(actions.hideModal()),
     onExchageDuplicates: () => store.dispatch(actions.exchangeDupes()),
     onFifthOptions: handleFifthOptions(channel),
+    onOfferAstral: offerAstral(channel),
     handleRollClick,
     handleEndDeath,
     handleGameOver,

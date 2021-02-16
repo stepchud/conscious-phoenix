@@ -138,6 +138,11 @@ export default function Connect() {
         this.actions.onFifthOptions(payload)
       }
     })
+    this.channel.on("game:offer_astral", payload => {
+      if (getPlayerId() === payload.pid) {
+        this.actions.onOfferAstral(payload)
+      }
+    })
     this.channel.on("modal:error", payload => {
       const { error } = payload
       this.actions.onUpdateModal({ field: "error_message", value: error.message })

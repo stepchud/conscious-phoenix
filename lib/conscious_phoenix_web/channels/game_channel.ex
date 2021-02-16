@@ -65,6 +65,11 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
+  def handle_in("game:choose_astral", %{"pid" => pid, "replace" => replace}, socket) do
+    GameServer.choose_astral(socket.assigns.gid, pid, replace)
+    {:noreply, socket}
+  end
+
   def handle_in("game:log_event", %{"pid" => pid, "event" => event}, socket) do
     GameServer.log_event(socket.assigns.gid, pid, event)
     {:noreply, socket}

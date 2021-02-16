@@ -90,7 +90,7 @@ defmodule ConsciousPhoenix.Player do
   def other_players_by_turn(players, current, turns) do
     players
     |> filter_active
-    |> filter_by_position(current.position)
+    |> filter_by_position(current.position, current.completed_trips)
     |> filter_others(current)
     |> order_by_turns(turns)
   end
@@ -139,8 +139,17 @@ defmodule ConsciousPhoenix.Player do
   end
 
   defp filter_min_position(players) do
-    position = min_position(players)
-    filter_by_position(players, position)
+    trips = players
+    |> Enum.map(fn {_, p} -> p.completed_trips end)
+    |> Enum.sort
+    |> hd
+    sort_dir = if(rem(trips, 2) == 0, do: &<=/2, else: &>=/2)
+    position = players
+    |> Enum.filter(fn {_, p} -> p.completed_trips == trips end)
+    |> Enum.map(fn {_, p} -> p.position end)
+    |> Enum.sort(sort_dir)
+    |> hd
+    filter_by_position(players, position, trips)
   end
 
   defp filter_others(players, current) do
@@ -148,9 +157,11 @@ defmodule ConsciousPhoenix.Player do
     |> Enum.filter(fn {other_pid, _} -> other_pid !== current.pid end)
   end
 
-  defp filter_by_position(players, position) do
+  defp filter_by_position(players, position, trips) do
     players
-    |> Enum.filter(fn {_, player} -> player.position === position end)
+    |> Enum.filter(fn {_, player} ->
+      player.position === position && player.completed_trips == trips
+    end)
   end
 
   defp order_by_turns(players, turns) do
@@ -160,13 +171,6 @@ defmodule ConsciousPhoenix.Player do
         Enum.find_index(turns, fn turnPid -> pid == turnPid end)
       end
     )
-  end
-
-  defp min_position(players) do
-    players
-    |> Enum.map(fn {_, p} -> p.position end)
-    |> Enum.sort
-    |> hd
   end
 
   # filter cards from higher that would help lower level up more than they can already

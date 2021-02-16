@@ -170,7 +170,7 @@ const enterNotes = ({ current, enter, extras }) => {
     } else {
       // dead
       if (current.mental) {
-        limits = current.astralDiscarded
+        limits = !!current.astralDiscarded
           ? { food: 0, air: 0, impressions: 0 }
           : { food: 8, air: 6, impressions: 4 }
       }
@@ -493,6 +493,11 @@ const foodDiagram = (
         let foodChips = current.food[8]
         let airChips = current.air[6]
         let impChips = current.impressions[4]
+        current.astralDiscarded = {
+          food: [ ...current.food ],
+          air: [ ...current.air ],
+          impressions: [ ...current.impressions ]
+        }
         current.food = new Array(9).fill(0)
         current.air = new Array(7).fill(0)
         current.impressions = new Array(5).fill(0)
@@ -517,7 +522,6 @@ const foodDiagram = (
         current.food[8] = foodChips
         current.air[6] = airChips
         current.impressions[4] = impChips
-        current.astralDiscarded = true
       }
       return state
     }

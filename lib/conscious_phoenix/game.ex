@@ -43,6 +43,7 @@ defmodule ConsciousPhoenix.Game do
     lawUpdate = Map.fetch!(updates, "laws")
     cardUpdate = Map.fetch!(updates, "cards")
     fd = Map.fetch!(updates, "fd")
+    discardedAstral = fd["current"]["astralDiscarded"]
     ep = Map.fetch!(updates, "ep")
     player = game.players[pid]
     player = %Player{
@@ -59,7 +60,10 @@ defmodule ConsciousPhoenix.Game do
       fd: fd,
       ep: ep,
     }
-    put_in(game.players[pid], player)
+    IO.puts "discarded astral:"
+    IO.inspect(discardedAstral)
+    game = put_in(game.players[pid], player)
+    handle_discard_astral(game, player, discardedAstral)
   end
 
   def save_game(game, updates) do
@@ -77,20 +81,17 @@ defmodule ConsciousPhoenix.Game do
   # clear shared_laws when the player's turn is done to track which players have obeyed already
   def end_turn(game, pid, updates) do
     lawUpdate = Map.fetch!(updates, "laws")
-    if Map.has_key?(lawUpdate, "shared") do
-      players = game.players
-                |> Enum.map(fn {key, player} ->
-                    if (key===pid) do
-                      { key, put_in(player.shared_laws, [ ]) }
-                    else
-                      { key, put_in(player.shared_laws, player.shared_laws ++ lawUpdate["shared"]) }
-                    end
-                  end)
-                |> Enum.into(%{ })
-      save_state(put_in(game.players, players), pid, updates)
+    game = if Map.has_key?(lawUpdate, "shared") do
+      put_in(game.players,
+        Enum.map(game.players, fn {key, player} ->
+          shared_laws = if(key===pid, do: [ ], else: player.shared_laws ++ lawUpdate["shared"])
+          { key, put_in(player.shared_laws, shared_laws) }
+        end)
+        |> Enum.into(%{ }))
     else
-      save_state(game, pid, updates)
+      game
     end
+    save_state(game, pid, updates)
   end
 
   def log_event(game, event) do
@@ -158,6 +159,32 @@ defmodule ConsciousPhoenix.Game do
     |> draw_card(higher.pid)
   end
 
+  # put the astral body in the player's chips
+  # remove offerAstral from all players' fd
+  def replace_astral(game, player) do
+    astral = player.fd["offerAstral"]
+    game = put_in(game.players[player.pid].fd.current,
+      Map.merge(player.fd.current, astral)
+    )
+    players = game.players
+              |> Enum.map(fn {_pid, plyr} ->
+                put_in(plyr.fd, Map.delete(plyr.fd, "offerAstral"))
+              end)
+    put_in(game.players, players)
+  end
+
+  # remove offerAstral from player,
+  def reject_astral(game, player) do
+    player = put_in(player.fd, Map.delete(player.fd, "offerAstral"))
+    put_in(game.players[player.pid], player)
+  end
+
+  def offered_players(game) do
+    Enum.filter(game.players, fn { _pid, oplyr } ->
+      Map.has_key?(oplyr.fd, "offerAstral")
+    end)
+  end
+
   defp draw_card(game, pid) do
     hand = game.players[pid].hand
     {draw, cards} = Deck.draw_card(game.cards)
@@ -165,6 +192,32 @@ defmodule ConsciousPhoenix.Game do
     game = put_in(game.players[pid].hand, [draw | hand])
     # update deck & discards
     put_in(game.cards, cards)
+  end
+
+  defp handle_discard_astral(game, player, discard) when is_map(discard) do
+    %{ pid: pid, ep: %{ "being_type" => btype } } = player
+    players = game.players
+    |> Enum.map(fn { opid, other } ->
+      %{ ep: %{ "being_type" => otype } } = other
+      IO.puts("types #{btype} <> #{otype}")
+      cond do
+        pid !== opid && btype == otype ->
+          IO.puts("offerAstral to other player")
+          { opid, put_in(other.fd["offerAstral"], discard) }
+        pid == opid ->
+          IO.puts("astralDiscarded same player")
+          { opid, put_in(other.fd["current"]["astralDiscarded"], true) }
+        true ->
+          { opid, other }
+      end
+    end)
+    |> Enum.into(%{})
+    put_in(game.players, players)
+    |> log_event(%{ pid: player.pid, entry: "#{player.name} discarded their Astral body." })
+  end
+
+  defp handle_discard_astral(game, _player, discard) when is_boolean(discard) do
+    game
   end
 end
 

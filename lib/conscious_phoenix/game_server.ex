@@ -70,6 +70,10 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :choose_fifth, gid: gid, pid: pid, lower: lower, card: card})
   end
 
+  def choose_astral(gid, pid, replace) do
+    GenServer.cast(__MODULE__, %{action: :choose_astral, gid: gid, pid: pid, replace: replace})
+  end
+
   def reset() do
     GenServer.cast(__MODULE__, %{action: :reset})
   end
@@ -181,9 +185,7 @@ defmodule ConsciousPhoenix.GameServer do
   def handle_cast(%{:action => :end_turn, :gid => gid, :pid => pid, :game => updates}, state) do
     game = Game.end_turn(state.games[gid], pid, updates)
     state = put_in(state.games[gid], game)
-    { nextPid, _ } = Player.next_pid(game.players, game.turns)
-    IO.puts "next pid=#{nextPid}"
-    Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
+    handle_offer_astral(gid, game)
     {:noreply, state}
   end
 
@@ -216,7 +218,7 @@ defmodule ConsciousPhoenix.GameServer do
     update_game(state, gid, pid, game)
   end
 
-  def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid, :game => updates }, state) do
+  def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid, :game => updates}, state) do
     game = Game.save_state(state.games[gid], pid, updates)
     case Game.fifth_striving(game, pid) do
       { :none, game } ->
@@ -233,12 +235,21 @@ defmodule ConsciousPhoenix.GameServer do
     end
   end
 
-  def handle_cast(%{:action => :choose_fifth, :gid => gid, :pid => pid, :lower => lower, :card => card }, state) do
+  def handle_cast(%{:action => :choose_fifth, :gid => gid, :pid => pid, :lower => lower, :card => card}, state) do
     game = state.games[gid]
     higher = game.players[pid]
     lower = game.players[lower]
     IO.puts("one fifth_striving")
     update_game(state, gid, pid, Game.exchange_one_fifth(game, lower, higher, card))
+  end
+
+  def handle_cast(%{:action => :choose_astral, :gid => gid, :pid => pid, :replace => replace}, state) do
+    game = state.games[gid]
+    player = game.players[pid]
+    game = if(replace, do: Game.replace_astral(game, player), else: Game.reject_astral(game, player))
+    state = put_in(state.games[gid], game)
+    handle_offer_astral(gid, game)
+    {:noreply, state}
   end
 
   # def handle_cast(%{:action => :reset, :gid => gid}, state) do
@@ -278,6 +289,17 @@ defmodule ConsciousPhoenix.GameServer do
         IO.puts "existing player continued:#{pid}"
         Endpoint.broadcast!( "game:#{current_gid}", "game:continued", %{ gid: new_gid, pid: pid, game: game })
         game
+    end
+  end
+
+  defp handle_offer_astral(gid, game) do
+    offered = Game.offered_players(game)
+    if length(offered) > 0 do
+      { opid, oplyr } = hd(offered)
+      Endpoint.broadcast!("game:#{gid}", "game:offer_astral", %{ pid: opid, astral: oplyr.fd["offerAstral"], game: game })
+    else
+      { nextPid, _ } = Player.next_pid(game.players, game.turns)
+      Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
     end
   end
 end
