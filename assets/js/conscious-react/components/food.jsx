@@ -1,8 +1,6 @@
 import React from 'react'
 import { times } from 'lodash'
 
-import { spaces, s2, s3 } from './utils'
-
 const Note = ({
   type,
   chips=0,

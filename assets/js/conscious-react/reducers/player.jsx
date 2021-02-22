@@ -45,7 +45,7 @@ const player = (
         ? next_position == LAST_SPACE
         : next_position == 0
       const completed_trips = state.completed_trips + (just_completed ? 1 : 0)
-      const laws_passed = asleep || !alive ? 0 : lawsPassed(position, next_position)
+      const laws_passed = lawsPassed(position, next_position, asleep, alive)
       let current_turn
       if (direction > 0 && next_position >= death_space) {
         current_turn = TURNS.death

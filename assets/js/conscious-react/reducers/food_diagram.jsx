@@ -106,11 +106,6 @@ export const allNotes = (notes) => {
     : _.every(notes.food.slice(0,-1).concat(notes.air.slice(0,-1)).concat(notes.impressions.slice(0,-1)))
 }
 
-const removeExtra = (extras, e) => {
-  const idx = extras.indexOf(e)
-  return extras.slice(0,idx).concat(extras.slice(idx + 1))
-}
-
 // entering notes move one step of harnel-miaznel
 const enterNotes = ({ current, enter, extras }) => {
   // place empty notes, order doesn't matter here
@@ -222,7 +217,7 @@ const enterNotes = ({ current, enter, extras }) => {
     if (has6(current)) {
       enter.food[6]=enter.food[5]
     } else {
-      extras.push("LA-24")
+      extras.push('LA-24')
     }
     enter.food[5]=0
   }
@@ -230,7 +225,7 @@ const enterNotes = ({ current, enter, extras }) => {
     if (has6(current)) {
       enter.impressions[2]=enter.impressions[1]
     } else {
-      extras.push("RE-24")
+      extras.push('RE-24')
     }
     enter.impressions[1]=0
   }
@@ -244,24 +239,24 @@ const enterNotes = ({ current, enter, extras }) => {
     if (has12(current)) {
       enter.food[5]=enter.food[4]
     } else {
-      extras.push("SO-48")
+      extras.push('SO-48')
     }
     enter.food[4]=0
   }
   while (enter.air[2]) {
     enter.air[2]--
-    extras.push("MI-48")
+    extras.push('MI-48')
   }
   while (enter.impressions[0]) {
     enter.impressions[0]--
-    extras.push("DO-48")
+    extras.push('DO-48')
   }
   // C-96
   if (enter.air[1]) {
     if (has24(current)) {
       enter.air[2]=enter.air[1]
     } else {
-      extras.push("RE-96")
+      extras.push('RE-96')
     }
     enter.air[1]=0;
   }
@@ -269,21 +264,21 @@ const enterNotes = ({ current, enter, extras }) => {
     if (has24(current)) {
       enter.food[4]++
     } else {
-      extras.push("FA-96")
+      extras.push('FA-96')
     }
     enter.food[3]--
   }
   // C-192
   while (enter.food[2]) {
     enter.food[2]--
-    extras.push("MI-192")
+    extras.push('MI-192')
   }
   while (enter.air[0]) {
     if (has48(current)) {
       enter.air[1]++
-      extras.push("SHOCKS-FOOD")
+      extras.push('SHOCKS-FOOD')
     } else {
-      extras.push("DO-192");
+      extras.push('DO-192');
     }
     enter.air[0]--
   }
@@ -292,7 +287,7 @@ const enterNotes = ({ current, enter, extras }) => {
     if (has96(current)) {
       enter.food[2]=enter.food[1];
     } else {
-      extras.push("RE-384")
+      extras.push('RE-384')
     }
     enter.food[1]=0;
   }
@@ -301,7 +296,7 @@ const enterNotes = ({ current, enter, extras }) => {
     if (has192(current)) {
       enter.food[1]=enter.food[0];
     } else {
-      extras.push("DO-768")
+      extras.push('DO-768')
     }
     enter.food[0]=0;
   }
@@ -327,14 +322,19 @@ const foodDiagram = (
     case "ADVANCE_FOOD_DIAGRAM":
       return enterNotes({ current, enter, extras })
     case "EAT_FOOD":
-      enter.food[0]+=1
+      enter.food[0] += (action.double ? 2 : 1)
       return enterNotes({ current, enter, extras })
     case "BREATHE_AIR":
-      enter.air[0]+=1
+      enter.air[0] += (action.double ? 2 : 1)
       return enterNotes({ current, enter, extras })
     case "TAKE_IMPRESSION":
-      enter.impressions[0]+=1
+      enter.impressions[0] += (action.double ? 2 : 1)
       return enterNotes({ current, enter, extras })
+    case "CONSUME_EXTRA":
+      return {
+        ...state,
+        extras: extras.slice(1)
+      }
     case "SHOCKS_FOOD":
       if (current.food[2]) {
         enter.food[3]++
@@ -343,14 +343,14 @@ const foodDiagram = (
       return {
         current,
         enter,
-        extras: removeExtra(extras, 'SHOCKS-FOOD')
+        extras
       }
     case "SHOCKS_AIR":
       if (current.air[2]) {
         enter.air[3]++
         current.air[2]--
       }
-      return { current, enter, extras: removeExtra(extras, 'SHOCKS-AIR') }
+      return { current, enter, extras }
     case "BREATHE_WHEN_YOU_EAT": {
       return {
         current,
@@ -362,7 +362,7 @@ const foodDiagram = (
             ...enter.food.slice(4)
           ],
         },
-        extras: removeExtra(extras, 'MI-192')
+        extras
       }
     }
     case "EAT_WHEN_YOU_BREATHE": {
@@ -376,7 +376,7 @@ const foodDiagram = (
             ...enter.air.slice(4)
           ],
         },
-        extras: removeExtra(extras, 'MI-48')
+        extras
       }
     }
     case "CARBON_12": {
@@ -385,11 +385,11 @@ const foodDiagram = (
         enter.air[3]++
         current.air[2]--
       }
-        return {
-          current,
-          enter,
-          extras: removeExtra(extras, 'DO-48')
-        }
+      return {
+        current,
+        enter,
+        extras
+      }
     }
     case "SELF_REMEMBER":
       if (current.impressions[0]>0) {
@@ -485,8 +485,6 @@ const foodDiagram = (
         enter.food[2] += 1
       }
       return { current, enter, extras }
-    case 'CLEAR_EXTRAS':
-      return { current, enter, extras: [] }
     case 'END_TURN': {
       if (!current.alive && current.mental && !current.astralDiscarded) {
         // exchange astral body for mental
@@ -494,9 +492,9 @@ const foodDiagram = (
         let airChips = current.air[6]
         let impChips = current.impressions[4]
         current.astralDiscarded = {
-          food: [ ...current.food ],
-          air: [ ...current.air ],
-          impressions: [ ...current.impressions ]
+          food: current.food.slice(0, current.food.length - 1),
+          air: current.air.slice(0, current.air.length - 1),
+          impressions: current.impressions.slice(0, current.impressions.length - 1)
         }
         current.food = new Array(9).fill(0)
         current.air = new Array(7).fill(0)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { times, findIndex, partial } from 'lodash'
 
-import { spaces, s2, s3, clickOrReturn } from './utils'
+import { clickOrReturn } from './utils'
 import { Card } from './cards'
 
 const cardComponent = (parts, onSelect, c, i) => {
@@ -12,7 +12,7 @@ const cardComponent = (parts, onSelect, c, i) => {
 
 const mapPiece = (n, i) =>
   <div key={i} className="holder">
-    {times(n, (j) => <div key={i*j} className="piece" />)}
+    {times(n, (j) => <div key={`p-${i}-${j}`} className="piece" />)}
   </div>
 
 const ThreeBrains = ({

@@ -3,12 +3,15 @@ import { useDoubleClick } from '../hooks/useDoubleClick'
 
 const classMap = {
   '*': 'wild',
-  'F': 'food',
-  'A': 'air',
-  'I': 'impression',
-  'C': 'card',
-  'L': 'law',
-  'D': 'decay',
+  'f': 'food',
+  'a': 'air',
+  'i': 'impression',
+  'c': 'card',
+  'l': 'law',
+  'd': 'decay',
+  'F': 'double food',
+  'A': 'double air',
+  'I': 'double impression',
 }
 
 const PlayerSpace = ({

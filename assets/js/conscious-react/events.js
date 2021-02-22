@@ -12,6 +12,7 @@ import {
   cantChooseLaw,
 } from './reducers/laws'
 import { entering, deathEvent, allNotes } from './reducers/food_diagram'
+import { OfferAstralBody } from './components/custom_modal'
 import { BOARD_SPACES, LAST_SPACE, Dice, getPlayerName, noop } from './constants'
 
 const dispatchShowModal = (props) => store.dispatch(actions.showModal(props))
@@ -144,6 +145,7 @@ const presentExtra = async (extra) => {
     default:
       console.warn(`present unknown extra: ${extra}`)
   }
+
   console.log("[END] presentExtra "+extra)
 }
 
@@ -302,8 +304,12 @@ const startCausalDeath = () => {
 }
 
 const handleExtras = async () => {
-  await Promise.all(store.getState().fd.extras.map(presentExtra))
-  store.dispatch({ type: 'CLEAR_EXTRAS' })
+  let extra = store.getState().fd.extras[0]
+  while(extra) {
+    store.dispatch({ type: 'CONSUME_EXTRA' })
+    await presentExtra(extra)
+    extra = store.getState().fd.extras[0]
+  }
   if (entering(store.getState().fd.enter)) {
     await advanceFood()
   }
@@ -316,19 +322,19 @@ const dispatchWithExtras = (action) => async () => {
 
 const advanceFood = dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' })
 
-const rollOptionLaws = async (roll, active) => {
+const rollOptionLaws = async (roll, active, rollSpace, oppositeSpace) => {
   if (!queenHearts(active) && !tenSpades(active)) {
     return
   }
 
-  const title = `You rolled ${roll}.`
+  const title = `You rolled a ${roll} (${rollSpace})`
   let body = []
   let options = []
 
   if (queenHearts(active)) {
     body.push('Use your Queen of Hearts law to take the opposite?')
     options.push({
-      text: 'Take opposite',
+      text: `Take opposite (${oppositeSpace})`,
       onClick: () => {
         store.dispatch({ type: 'TAKE_OPPOSITE' })
         store.dispatch({ type: 'REMOVE_ACTIVE', card: 'QH' })
@@ -386,24 +392,37 @@ const takePiece = async (position) => {
   // no stuff while asleep
   if (jackDiamonds(active)) { return }
 
-  switch(BOARD_SPACES[position]) {
-    case 'F':
+  const space = BOARD_SPACES[position]
+  switch(space) {
+    case 'f':
       await dispatchWithExtras({ type: 'EAT_FOOD' })()
       break;
-    case 'A':
+    case 'F':
+      await dispatchWithExtras({ type: 'EAT_FOOD', double: true })()
+      store.dispatch({ type: 'REMOVE_DOUBLE_FOOD', position })
+      break;
+    case 'a':
       await dispatchWithExtras({ type: 'BREATHE_AIR' })()
       break;
-    case 'I':
+    case 'A':
+      await dispatchWithExtras({ type: 'BREATHE_AIR', double: true })()
+      store.dispatch({ type: 'REMOVE_DOUBLE_FOOD', position })
+      break;
+    case 'i':
       await dispatchWithExtras({ type: 'TAKE_IMPRESSION' })()
       break;
-    case 'C':
+    case 'I':
+      await dispatchWithExtras({ type: 'TAKE_IMPRESSION', double: true })()
+      store.dispatch({ type: 'REMOVE_DOUBLE_FOOD', position })
+      break;
+    case 'c':
       if (alive) {
         store.dispatch({ type: 'DRAW_CARD' })
       } else {
         await handleDecay()
       }
       break;
-    case 'L':
+    case 'l':
       if (alive) {
         store.dispatch({ type: 'DRAW_LAW_CARD' })
         store.dispatch({ type: 'MAGNETIC_CENTER_MOMENT' })
@@ -443,7 +462,7 @@ const handleFifthOptions = (channel) => async ({ pid, lower_pid, options: cards 
 const offerAstral = (channel) => async ({ pid, astral }) => {
   const { board: { players } } = store.getState()
   const title = 'Astral Offered'
-  const body = renderOfferAstralBody(astral)
+  const body = OfferAstralBody(astral)
   const options = [
     { text: 'Yes', onClick: () => channel.push('game:choose_astral', { pid, replace: true }) },
     { text: 'No', onClick: () => channel.push('game:choose_astral', { pid, replace: false }) }
@@ -452,33 +471,22 @@ const offerAstral = (channel) => async ({ pid, astral }) => {
   await promiseShowModal({ title, body, options })
 }
 
-const renderOfferAstralBody = (astral) =>
-  <div>
-    You found a discarded Astral body, do you want to replace yours?
-  </div>
-
 const handleDecay = async () => {
-  const { fd: { current }, board: { sides } } = store.getState()
+  const {
+    fd: { current: { food, air, impressions } },
+    board: { sides }
+  } = store.getState()
   const roll = Dice(sides).roll()
 
   const rollDiv3 = roll % 3
-  const decay = roll === 0 ? 'nothing' :
-    rollDiv3 === 0 ? 'food' :
-    rollDiv3 === 1 ? 'air' :
-    'impression'
-  switch(decay) {
-    case 'nothing':
-      toast.success("Decayed nothing!")
-      return
-    case 'food':
-      await decayFood(current.food)
-      return
-    case 'air':
-      await decayAir(current.air)
-      return
-    case 'impression':
-      await decayImpression(current.impressions)
-      return
+  if (roll === 0) {
+    toast.success("Rolled a zero, decay nothing!")
+  } else if (rollDiv3 === 0) {
+    await decayImpression(impressions)
+  } else if (rollDiv3 === 1) {
+    await decayFood(food)
+  } else {
+    await decayAir(air)
   }
 }
 
@@ -491,28 +499,28 @@ const decayFood = async (notes) => {
   const body = 'Choose which food to decay:'
   let options = []
   if (notes[0]) {
-    options.push({ text: 'DO-768', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'DO-768' }) })
+    options.push(decayNoteOption('food', 'DO-768'))
   }
   if (notes[1]) {
-    options.push({ text: 'RE-384', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'RE-384' }) })
+    options.push(decayNoteOption('food', 'RE-384'))
   }
   if (notes[2]) {
-    options.push({ text: 'MI-192', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'MI-192' }) })
+    options.push(decayNoteOption('food', 'MI-192'))
   }
   if (notes[3]) {
-    options.push({ text: 'FA-96', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'FA-96' }) })
+    options.push(decayNoteOption('food', 'FA-96'))
   }
   if (notes[4]) {
-    options.push({ text: 'SO-48', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'SO-48' }) })
+    options.push(decayNoteOption('food', 'SO-48'))
   }
   if (notes[5]) {
-    options.push({ text: 'LA-24', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'LA-24' }) })
+    options.push(decayNoteOption('food', 'LA-24'))
   }
   if (notes[6]) {
-    options.push({ text: 'TI-12', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'TI-12' }) })
+    options.push(decayNoteOption('food', 'TI-12'))
   }
   if (notes[7]) {
-    options.push({ text: 'DO-6', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'DO-6' }) })
+    options.push(decayNoteOption('food', 'DO-6'))
   }
   await promiseShowModal({ title, body, options })
 }
@@ -526,22 +534,22 @@ const decayAir = async (notes) => {
   const body = 'Choose which air to decay:'
   let options = []
   if (notes[0]) {
-    options.push({ text: 'DO-192', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'DO-192' }) })
+    options.push(decayNoteOption('air', 'DO-192'))
   }
   if (notes[1]) {
-    options.push({ text: 'RE-96', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'RE-96' }) })
+    options.push(decayNoteOption('air', 'RE-96'))
   }
   if (notes[2]) {
-    options.push({ text: 'MI-48', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'MI-48' }) })
+    options.push(decayNoteOption('air', 'MI-48'))
   }
   if (notes[3]) {
-    options.push({ text: 'FA-24', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'FA-24' }) })
+    options.push(decayNoteOption('air', 'FA-24'))
   }
   if (notes[4]) {
-    options.push({ text: 'SO-12', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'SO-12' }) })
+    options.push(decayNoteOption('air', 'SO-12'))
   }
   if (notes[5]) {
-    options.push({ text: 'LA-6', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'LA-6' }) })
+    options.push(decayNoteOption('air', 'LA-6'))
   }
   await promiseShowModal({ title, body, options })
 }
@@ -555,18 +563,36 @@ const decayImpression = async (notes) => {
   const body = 'Choose which impression to decay:'
   let options = []
   if (notes[0]) {
-    options.push({ text: 'DO-48', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'DO-48' }) })
+    options.push(decayNoteOption('impression', 'DO-48'))
   }
   if (notes[1]) {
-    options.push({ text: 'RE-24', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'RE-24' }) })
+    options.push(decayNoteOption('impression', 'RE-24'))
   }
   if (notes[2]) {
-    options.push({ text: 'MI-12', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'MI-12' }) })
+    options.push(decayNoteOption('impression', 'MI-12'))
   }
   if (notes[3]) {
-    options.push({ text: 'FA-6', onClick: () => store.dispatch({ type: 'DECAY_NOTE', note: 'FA-6' }) })
+    options.push(decayNoteOption('impression', 'FA-6'))
   }
   await promiseShowModal({ title, body, options })
+}
+
+const decayNoteOption = (octave, note) => {
+  const {
+    fd: { current: { mental } },
+    player: { position, direction },
+  }  = store.getState()
+  return {
+    text: note,
+    onClick: () => store.dispatch({
+      type: 'DECAY_NOTE',
+      octave,
+      note,
+      mental,
+      position,
+      direction,
+    })
+  }
 }
 
 const handleChooseLaw = (card) => {
@@ -601,8 +627,22 @@ const handleRollClick = async () => {
     player: { position, direction, alive },
     ep: { num_brains, level_of_being },
     laws: { active },
+    board: { spaces, sides },
   } = store.getState()
   let roll = store.getState().board.roll
+  let rollSpace, oppositeSpace
+  const opposite = Dice(sides).opposite(roll)
+  if (direction > 0) {
+    rollSpace = (position + roll) > LAST_SPACE
+      ? '*' : spaces.charAt(position + roll)
+    oppositeSpace = (position + opposite) > LAST_SPACE
+      ? '*' : spaces.charAt(position + opposite)
+  } else {
+    rollSpace = (position - roll) < 0
+      ? '*' : spaces.charAt(position - roll)
+    oppositeSpace = (position - opposite) < 0
+      ? '*' : spaces.charAt(position - opposite)
+  }
 
   const asleep = jackDiamonds(active)
   // HASNAMUSS: no roll-options
@@ -613,7 +653,7 @@ const handleRollClick = async () => {
     switch(lob) {
       case  'MASTER':
         options.push({
-          text: 'Take opposite',
+          text: `Take opposite (${oppositeSpace})`,
           onClick: () => {
             store.dispatch({ type: 'TAKE_OPPOSITE' })
           }
@@ -629,13 +669,13 @@ const handleRollClick = async () => {
     }
 
     if (options.length) {
-      options.push({ text: 'Take the roll', onClick: () => {} })
+      options.push({ text: `Take the roll (${rollSpace})`, onClick: () => {} })
       await promiseShowModal({
         title,
         options
       })
     }
-    await rollOptionLaws(roll, active)
+    await rollOptionLaws(roll, active, rollSpace, oppositeSpace)
   }
 
   roll = store.getState().board.roll

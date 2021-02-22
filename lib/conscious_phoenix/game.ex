@@ -62,14 +62,17 @@ defmodule ConsciousPhoenix.Game do
     }
     IO.puts "discarded astral:"
     IO.inspect(discardedAstral)
-    game = put_in(game.players[pid], player)
-    handle_discard_astral(game, player, discardedAstral)
+    put_in(game.players[pid], player)
+    |> handle_discard_astral(player, discardedAstral)
   end
 
   def save_game(game, updates) do
     cardUpdate = Map.fetch!(updates, "cards")
     lawUpdate = Map.fetch!(updates, "laws")
-    board = Map.merge(game.board, %{ "roll" => updates["board"]["roll"] })
+    board = Map.merge(game.board, %{
+      "roll" => updates["board"]["roll"],
+      "spaces" => updates["board"]["spaces"]
+    })
     %Game{ game |
       cards: %{ deck: cardUpdate["deck"], discards: cardUpdate["discards"] },
       laws: %{ deck: lawUpdate["deck"], discards: lawUpdate["discards"] },
@@ -162,14 +165,25 @@ defmodule ConsciousPhoenix.Game do
   # put the astral body in the player's chips
   # remove offerAstral from all players' fd
   def replace_astral(game, player) do
-    astral = player.fd["offerAstral"]
-    game = put_in(game.players[player.pid].fd.current,
-      Map.merge(player.fd.current, astral)
-    )
+    %{"offerAstral" => %{
+        "food" => offer_food,
+        "air" => offer_air,
+        "impressions" => offer_imp },
+      "current" => %{
+        "food" => curr_food,
+        "air" => curr_air,
+        "impressions" => curr_imp } } = player.fd
+    new_current = Map.merge(player.fd["current"], %{
+      "food" => Enum.concat(offer_food, Enum.slice(curr_food, 8, 8)),
+      "air" => Enum.concat(offer_air, Enum.slice(curr_air, 6, 6)),
+      "impressions" => Enum.concat(offer_imp, Enum.slice(curr_imp, 4, 4))
+    })
+    game = put_in(game.players[player.pid].fd["current"], new_current)
     players = game.players
-              |> Enum.map(fn {_pid, plyr} ->
-                put_in(plyr.fd, Map.delete(plyr.fd, "offerAstral"))
+              |> Enum.map(fn {pid, plyr} ->
+                { pid, put_in(plyr.fd, Map.delete(plyr.fd, "offerAstral")) }
               end)
+              |> Enum.into(%{})
     put_in(game.players, players)
   end
 
@@ -198,14 +212,16 @@ defmodule ConsciousPhoenix.Game do
     %{ pid: pid, ep: %{ "being_type" => btype } } = player
     players = game.players
     |> Enum.map(fn { opid, other } ->
-      %{ ep: %{ "being_type" => otype } } = other
+      %{
+        ep: %{ "being_type" => otype },
+        fd: %{ "current" => %{ "mental" => omental, "alive" => oalive } }
+      } = other
       IO.puts("types #{btype} <> #{otype}")
       cond do
-        pid !== opid && btype == otype ->
-          IO.puts("offerAstral to other player")
+        pid !== opid && btype == otype && !oalive && !omental ->
+          IO.puts("offerAstral to #{opid}")
           { opid, put_in(other.fd["offerAstral"], discard) }
         pid == opid ->
-          IO.puts("astralDiscarded same player")
           { opid, put_in(other.fd["current"]["astralDiscarded"], true) }
         true ->
           { opid, other }

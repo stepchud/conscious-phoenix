@@ -4,19 +4,21 @@ import { findIndex } from 'lodash/array'
 export const noop = () => {}
 
 export const BOARD_SPACES =
-  '*AFAIFCACFFCIAACFFICAFACCFICFAAFCCLAFICCFAFICAFCC' +
-  'IAACFFICAICAFFICCAAIFCLLCFFIAAICCFIACIFACIAFICAIL' +
-  'FCAACICCFAICFFACICAIFCCFICACFALLCCFACCCFICFCAICCI' +
-  'AFFICAALCCIFACCCIFICAACCICFFCCIAFCCALLCCCAFFACIAF' +
-  'CCIACFACILCAFFCCAIAFCCIACFFICCCAICCFCALLCCAAFCIC*'
+  '*afaifcacffciaacfficafaccficfaafcclaficcfaficafcc' +
+  'iaacfficaicafficcaaifcllcffiaaiccfiacifaciaficail' +
+  'fcaaciccfaicffacicaifccficacfallccfacccficfcaicci' +
+  'afficaalccifacccificaaccicffcciafccallcccaffaciaf' +
+  'cciacfacilcaffccaiafcciacfficccaiccfcallccaafcic*'
 export const LAST_SPACE = BOARD_SPACES.length - 1
 
-export const lawsPassed = (position, next_position) => {
+export const lawsPassed = (position, next_position, asleep, alive) => {
+  if (asleep || !alive) { return 0 }
+
   let laws
   if (position > next_position) {
-    laws = BOARD_SPACES.substring(position+1, next_position).match(/L/g)
+    laws = BOARD_SPACES.substring(position+1, next_position).match(/l/g)
   } else {
-    laws = BOARD_SPACES.substring(position+1, next_position).match(/L/g)
+    laws = BOARD_SPACES.substring(position+1, next_position).match(/l/g)
   }
   return laws ? laws.length : 0
 }

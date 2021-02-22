@@ -159,7 +159,7 @@ const laws = (
   switch(action.type) {
     case 'MOVE_SPACE': {
       const { position, next_position, alive, asleep } = action
-      const laws_passed = asleep || !alive ? 0 : lawsPassed(position, next_position)
+      const laws_passed = lawsPassed(position, next_position, asleep, alive)
       const nextState = drawLawCard({ ...state }, laws_passed)
       const nextActive = []
       active.forEach(lc => {
