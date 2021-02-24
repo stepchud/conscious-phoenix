@@ -1,3 +1,7 @@
+import { toast } from 'react-toastify'
+
+const toastLogEntry = (e) => e.toast && toast(e.entry)
+
 const log = (
   state = [],
   action
@@ -8,6 +12,8 @@ const log = (
     case 'JOIN_GAME':
       return [ ...action.state.log ]
     case 'UPDATE_GAME':
+      const new_entries = action.log.slice(state.length)
+      new_entries.forEach(toastLogEntry)
       return [ ...action.log ]
     default: return state
   }

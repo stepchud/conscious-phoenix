@@ -67,15 +67,15 @@ defmodule ConsciousPhoenix.Player do
     p2_dupes = dupes(p2)
     case { p1_dupes, p2_dupes } do
       { [], _ } ->
-        { :noop, p1, p2 }
+        { :noop }
       { _, [] } ->
-        { :noop, p1, p2 }
+        { :noop }
       { _, _ } ->
         rand1 = Enum.take_random(p1_dupes, 1)
         rand2 = Enum.take_random(p2_dupes, 1)
         p1 = put_in(p1.hand, (p1.hand -- rand1) ++ rand2)
         p2 = put_in(p2.hand, (p2.hand -- rand2) ++ rand1)
-        { :swap, p1, p2 }
+        { :swap, p1, rand1, p2, rand2 }
     end
   end
 

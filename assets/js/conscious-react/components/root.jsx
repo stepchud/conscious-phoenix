@@ -68,7 +68,7 @@ export class ConsciousBoardgame extends React.Component {
 
   handleDuplicate = (elem) => {
     const pid = getPlayerId()
-    this.actions.onExchageDuplicates()
+    this.actions.onExchangeDuplicates()
     this.props.channel.push('game:exchange_dupes', { pid })
   }
 

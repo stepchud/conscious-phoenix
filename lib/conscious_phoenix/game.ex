@@ -111,18 +111,20 @@ defmodule ConsciousPhoenix.Game do
     # active players with dupes at same position, ordered by turn
     other_players = Player.other_players_by_turn(game.players, offerer, game.turns)
 
-    { status, game } = Enum.reduce(other_players, { :noop, game }, fn { _, offeree }, { status, acc_game } ->
+    { game, entries } = Enum.reduce(other_players, { game, [] }, fn { _, offeree }, { acc_game, acc_entries } ->
       case Player.swap_dupes(offerer, offeree) do
-        { :noop, _, _ } ->
-          { status, acc_game }
-        { :swap, p1, p2 } ->
+        { :noop } ->
+          { acc_game, acc_entries }
+        { :swap, p1, c1, p2, c2 } ->
           acc_game = put_in(acc_game.players[p1.pid], p1)
           acc_game = put_in(acc_game.players[p2.pid], p2)
-          { :swap, acc_game }
+          acc_entries = [ "Dupes! Exchanged #{c1["c"]} with #{c2["c"]} from #{p2.name}" | acc_entries ]
+          { acc_game, acc_entries }
       end
     end)
-    entry = if (status == :noop), do: "No dupes to exchange", else: "Dupes exchanged"
-    log_event(game, %{ pid: pid, entry: entry })
+    Enum.reduce(entries, game, fn { entry }, { acc_game } ->
+      log_event(acc_game, %{ pid: pid, entry: entry, toast: true })
+    end)
   end
 
   # find the first player on the same spot as pid that:
@@ -141,7 +143,7 @@ defmodule ConsciousPhoenix.Game do
         card = hd(helpful_cards)
         entry = "#{current.name} fulfills the fifth striving for #{eligible_player.name}"
         game = exchange_one_fifth(game, eligible_player, current, card)
-               |> log_event(%{ pid: pid, entry: entry })
+               |> log_event(%{ pid: pid, entry: entry, toast: true })
         { :one, game }
       cards_count > 1 ->
         { :multi, { helpful_cards, eligible_player, current } }
@@ -229,7 +231,7 @@ defmodule ConsciousPhoenix.Game do
     end)
     |> Enum.into(%{})
     put_in(game.players, players)
-    |> log_event(%{ pid: player.pid, entry: "#{player.name} discarded their Astral body." })
+    |> log_event(%{ pid: player.pid, entry: "#{player.name} discarded their Astral body.", toast: true })
   end
 
   defp handle_discard_astral(game, _player, discard) when is_boolean(discard) do

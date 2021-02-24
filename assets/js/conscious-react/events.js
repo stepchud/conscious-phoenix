@@ -758,7 +758,7 @@ export const gameActions = (channel) => {
       dispatchShowModal(modalProps)
     },
     onHideModal: () => store.dispatch(actions.hideModal()),
-    onExchageDuplicates: () => store.dispatch(actions.exchangeDupes()),
+    onExchangeDuplicates: () => store.dispatch(actions.exchangeDupes()),
     onFifthOptions: handleFifthOptions(channel),
     onOfferAstral: offerAstral(channel),
     handleRollClick,
