@@ -4,7 +4,7 @@ import ReactModal from 'react-modal'
 import { ToastContainer, toast } from 'react-toastify'
 
 import { TURNS, getPlayerId, resetGameId, noop } from '../constants'
-import Store from '../redux_store'
+import Store from '../reducers/store'
 import { gameActions } from '../events'
 import { hasnamuss } from '../reducers/laws'
 

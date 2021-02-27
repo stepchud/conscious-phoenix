@@ -1,14 +1,14 @@
 import { combineReducers, createStore} from 'redux'
 
 // reducers
-import player from './reducers/player'
-import board from './reducers/board'
-import cards from './reducers/cards'
-import laws from './reducers/laws'
-import fd from './reducers/food_diagram'
-import ep from './reducers/being'
-import modal from './reducers/modal'
-import log from './reducers/log'
+import player from './player'
+import board from './board'
+import cards from './cards'
+import laws from './laws'
+import fd from './food_diagram'
+import ep from './being'
+import modal from './modal'
+import log from './log'
 
 const appReducer = combineReducers({ player, board, cards, laws, fd, ep, modal, log })
 

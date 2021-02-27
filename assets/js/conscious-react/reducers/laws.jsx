@@ -111,30 +111,15 @@ const testLawCard = (deck, law_text) => {
 const generateLawDeck = () => {
   const newDeck = shuffle(LAW_DECK.slice(0))
   return newDeck
-  return (
-    testLawCard(
-    testLawCard(
-    testLawCard(
-    testLawCard(
-    testLawCard(
-    testLawCard(
-    testLawCard(
-      newDeck,
-      'LAWS OF ACCIDENT'
-    ),
-      'GOD SENDS A MESSAGE'
-    ),
-      'PRACTICE THE CHI EXERCISE'
-    ),
-      'MUST OBEY WITHOUT ESCAPE'
-    ),
-      'SKIP A MEAL'
-    ),
-      'IMPROPER BREATHING'
-    ),
-      'ALL THREE-BRAINED BEINGS'
-    )
-  )
+  //return (
+  //  testLawCard(
+  //    testLawCard(
+  //      newDeck,
+  //      'MASTER EXERCISES'
+  //    ),
+  //    'TWO ENDS'
+  //  )
+  //)
 }
 
 const laws = (

@@ -17,8 +17,8 @@ export const lawsPassed = (position, next_position, asleep, alive) => {
   let laws
   if (position > next_position) {
     laws = BOARD_SPACES.substring(position+1, next_position).match(/l/g)
-  } else {
-    laws = BOARD_SPACES.substring(position+1, next_position).match(/l/g)
+  } else if (next_position < position) {
+    laws = BOARD_SPACES.substring(next_position+1, position).match(/l/g)
   }
   return laws ? laws.length : 0
 }

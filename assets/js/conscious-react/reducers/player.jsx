@@ -6,7 +6,6 @@ const InitialState = {
   position: 0,
   direction: 1,
   active: false,
-  alive: true,
   can_dupe: true,
   current_turn: TURNS.setup,
   laws_passed: 2,
@@ -19,7 +18,6 @@ const stateAfterDeath = (state, reincarnate) =>
   ?
     {
       ...state,
-      alive: true,
       current_turn: TURNS.randomLaw,
       laws_passed: 2,
       death_space: state.direction > 0 ? LAST_SPACE : 0
@@ -27,7 +25,6 @@ const stateAfterDeath = (state, reincarnate) =>
   :
     {
       ...state,
-      alive: false,
       current_turn: TURNS.normal,
       laws_passed: 0,
       death_space: state.direction > 0 ? LAST_SPACE : 0
@@ -39,8 +36,8 @@ const player = (
 ) => {
   switch(action.type) {
     case 'MOVE_SPACE': {
-      const { alive, death_space, direction } = state
-      const { position, next_position, asleep } = action
+      const { death_space, direction } = state
+      const { position, next_position, alive, asleep } = action
       const just_completed = direction > 0
         ? next_position == LAST_SPACE
         : next_position == 0

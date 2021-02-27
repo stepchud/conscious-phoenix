@@ -100,10 +100,10 @@ export const deathEvent = (mental, hasnamuss) => {
 export const entering = (enter) =>
   _.some([...enter.food, ...enter.air, ...enter.impressions])
 
-export const allNotes = (notes) => {
-  return notes.alive
-    ? notes.food[8]==16 && notes.air[6]==12 && notes.impressions[4]==8
-    : _.every(notes.food.slice(0,-1).concat(notes.air.slice(0,-1)).concat(notes.impressions.slice(0,-1)))
+export const allNotes = ({ alive, food, air, impressions }) => {
+  return alive
+    ? food[8]==16 && air[6]==12 && impressions[4]==8
+    : _.every(food.slice(0,-1).concat(air.slice(0,-1)).concat(impressions.slice(0,-1)))
 }
 
 // entering notes move one step of harnel-miaznel

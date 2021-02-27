@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify'
 
-import store from './redux_store'
+import store from './reducers/store'
 import actions from './actions'
 import { makeFaceCard } from './reducers/cards'
 import {
@@ -385,14 +385,15 @@ const handlePieces = async (action) => {
 
 const takePiece = async (position) => {
   const {
+    board: { spaces },
+    fd: { current: { alive } },
     laws: { active },
-    player: { alive },
   } = store.getState()
 
   // no stuff while asleep
   if (jackDiamonds(active)) { return }
 
-  const space = BOARD_SPACES[position]
+  const space = spaces[position]
   switch(space) {
     case 'f':
       await dispatchWithExtras({ type: 'EAT_FOOD' })()
@@ -624,7 +625,8 @@ const handleRollClick = async () => {
   store.dispatch({ type: 'ROLL_DICE' })
 
   const {
-    player: { position, direction, alive },
+    player: { position, direction },
+    fd: { current: { alive } },
     ep: { num_brains, level_of_being },
     laws: { active },
     board: { spaces, sides },

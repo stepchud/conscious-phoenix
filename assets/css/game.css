@@ -88,6 +88,10 @@ blockquote .board {
   left: 0px;
 }
 
+.board .food.double {
+  background-color: #C49208;
+}
+
 .board .air {
   background-color: #95DEE3;
   position: absolute;
@@ -95,11 +99,19 @@ blockquote .board {
   left: 0px;
 }
 
+.board .air.double {
+  background-color: #30ACB5;
+}
+
 .board .impression {
   background-color: #FA9A85;
   position: absolute;
   top: 0px;
   left: 0px;
+}
+
+.board .impression.double {
+  background-color: #F64923;
 }
 
 .board .card {

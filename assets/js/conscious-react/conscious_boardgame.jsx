@@ -1,7 +1,7 @@
 import React from 'react'
 
 import Channel from './channel'
-import Store from './redux_store'
+import Store from './reducers/store'
 import { renderRoot, ConsciousBoardgame } from './components/root'
 import { getGameId, generateGameId, getPlayerId } from './constants'
 

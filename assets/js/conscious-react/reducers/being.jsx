@@ -6,7 +6,7 @@ const InitialState = {
   num_brains: 3,
   being_type: Dice().roll(),
   parts: PARTS.map((c) => ({ c, selected: false })),
-  pieces: [0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
+  pieces: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   shocks: [],
   card_plays: 2,
   transforms: 0,

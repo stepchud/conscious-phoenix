@@ -20,8 +20,9 @@ const leaveFoodPiece = (spaces, { octave, position, direction }) => {
     : spaces.lastIndexOf(upper, position - 1)
 
   if (nextNote > 0 &&
-      ((direction > 0 && nextNote < nextDouble) ||
-       (direction < 0 && nextNote > nextDouble))) {
+       ((nextDouble == -1) ||
+        (direction > 0 && nextNote < nextDouble) ||
+        (direction < 0 && nextNote > nextDouble))) {
     return (
       spaces.substring(0, nextNote) +
       spaces.charAt(nextNote).toUpperCase() +
