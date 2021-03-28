@@ -2,10 +2,11 @@ import { Socket } from 'phoenix'
 
 import { gameActions } from './events'
 import { TURNS, getGameId, setGameId, getPlayerId, setPlayerId } from './constants'
+import { hasnamuss } from './reducers/laws'
 
 const localPlayers = (players, turns) => turns.map(plyrId => {
-  const { name, position } = players[plyrId]
-  return { pid: plyrId, name, position }
+  const { name, position, laws: { active }, ep: { level_of_being = "MULTIPLICITY" } } = players[plyrId]
+  return { pid: plyrId, hasnamuss: hasnamuss(active), name, position, level_of_being }
 }).reverse()
 
 // maps the server game state to local state
@@ -24,7 +25,7 @@ const localState = (payload) => {
   const pid = getPlayerId()
 
   const player = players[pid]
-  const shared_laws = payloadPid===pid
+  const shared_laws = payloadPid===pid && player.shared_laws
   ? player.shared_laws.map(
     c => ({
       c,
@@ -141,6 +142,12 @@ export default function Connect() {
     this.channel.on("game:offer_astral", payload => {
       if (getPlayerId() === payload.pid) {
         this.actions.onOfferAstral(payload)
+      }
+    })
+    this.channel.on("game:hasnamuss_take_card", payload => {
+      const state = localState(payload)
+      if (getPlayerId() === payload.pid) {
+        this.actions.onOfferTakeCard(state)
       }
     })
     this.channel.on("modal:error", payload => {

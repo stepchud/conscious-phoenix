@@ -184,7 +184,7 @@ const laws = (
     }
     case 'UPDATE_GAME':
       if (!action.laws) { return state }
-      const { shared_laws } = action.laws
+      const { shared_laws = [ ] } = action.laws
       delete(action.laws.shared_laws)
       return {
         ...state,

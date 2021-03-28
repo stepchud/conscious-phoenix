@@ -37,16 +37,15 @@ const player = (
   switch(action.type) {
     case 'MOVE_SPACE': {
       const { death_space, direction } = state
-      const { position, next_position, alive, asleep } = action
-      const just_completed = direction > 0
-        ? next_position == LAST_SPACE
-        : next_position == 0
+      const { position, next_position, alive, asleep, same_level_hasnamuss } = action
+      const just_completed = (direction > 0) ? (next_position == LAST_SPACE) : (next_position == 0)
+      const reached_death_space = (direction > 0 && next_position >= death_space) ||
+        (direction < 0 && next_position <= death_space)
+
       const completed_trips = state.completed_trips + (just_completed ? 1 : 0)
       const laws_passed = lawsPassed(position, next_position, asleep, alive)
       let current_turn
-      if (direction > 0 && next_position >= death_space) {
-        current_turn = TURNS.death
-      } else if (direction < 0 && next_position <= death_space) {
+      if (reached_death_space || same_level_hasnamuss) {
         current_turn = TURNS.death
       } else if (laws_passed > 0) {
         current_turn = TURNS.randomLaw

@@ -1,5 +1,5 @@
 defmodule ConsciousPhoenix.Player do
-  # alias __MODULE__
+  alias __MODULE__
 
   @levels_of_being ["MULTIPLICITY": 0, "DEPUTY-STEWARD": 1, "STEWARD": 2, "MASTER": 3]
 
@@ -16,6 +16,7 @@ defmodule ConsciousPhoenix.Player do
       :laws_passed,
       :fd,
       :ep,
+      :take_cards,
       :age,
       :position,
       :direction,
@@ -32,16 +33,17 @@ defmodule ConsciousPhoenix.Player do
     :name,
     :death_space,
     :laws_passed,
-    :fd,
-    :ep,
+    :shared_laws,
+    :take_cards,
     age: 0,
     position: 0,
     direction: 1,
     current_turn: "initial",
     completed_trips: 0,
+    fd: %{ },
+    ep: %{ },
     hand: [ ],
     laws: %{ active: [ ], hand: [ ] },
-    shared_laws:  [ ],
     status: @statuses.present,
   ])
 
@@ -61,16 +63,16 @@ defmodule ConsciousPhoenix.Player do
   # find a random one to exchange from both players,
   # exchanged dupe will be last card in hands
   def swap_dupes(p1, p2) do
-    p1_dupes = dupes(p1)
-    p2_dupes = dupes(p2)
-    case { p1_dupes, p2_dupes } do
-      { [], _ } ->
+    case { can_interact?(p1, p2), dupes(p1), dupes(p2) } do
+      { false, _, _ } ->
         { :noop }
-      { _, [] } ->
+      { true, [], _ } ->
         { :noop }
-      { _, _ } ->
-        rand1 = Enum.take_random(p1_dupes, 1)
-        rand2 = Enum.take_random(p2_dupes, 1)
+      { true, _, [] } ->
+        { :noop }
+      { true, dupes1, dupes2 } ->
+        rand1 = Enum.take_random(dupes1, 1)
+        rand2 = Enum.take_random(dupes2, 1)
         p1 = put_in(p1.hand, (p1.hand -- rand1) ++ rand2)
         p2 = put_in(p2.hand, (p2.hand -- rand2) ++ rand1)
         { :swap, p1, rand1, p2, rand2 }
@@ -95,7 +97,8 @@ defmodule ConsciousPhoenix.Player do
 
   # find the first player in same position who can offer/recv help
   def fifth_striving_eligible(players, current, turns) do
-    other_players = other_players_by_turn(players, current, turns)
+    other_players = players
+                    |> other_players_by_turn(current, turns)
     Enum.reduce(other_players, { :none, [] }, fn { _other_pid, other }, { eligible_player, cards_help } ->
       if eligible_player === :none do
         exchange_fifth(current, other)
@@ -103,6 +106,27 @@ defmodule ConsciousPhoenix.Player do
         { eligible_player, cards_help }
       end
     end)
+  end
+
+  def alive?(player) do
+    !!player.fd["current"]["alive"]
+  end
+
+  def hasnamuss?(player) do
+    IO.inspect(player.laws.active)
+    Enum.any?(player.laws.active, fn law -> law["index"] == 84 end)
+  end
+
+  defp dead_or_alive?(player, player2) do
+    alive1 = player |> Player.alive?
+    alive2 = player2 |> Player.alive?
+    (alive1 && alive2) || (!alive1 && !alive2)
+  end
+
+  # two non-hasnamuss who are both alive or both dead
+  defp can_interact?(player, player2) do
+    dead_or_alive?(player, player2) &&
+      !hasnamuss?(player) && !hasnamuss?(player2)
   end
 
   defp compare_levels(p1, p2) do
@@ -120,7 +144,8 @@ defmodule ConsciousPhoenix.Player do
   end
 
   defp exchange_fifth(player, other) do
-    with :higher_level <- compare_levels(player, other),
+    with true <- can_interact?(player, other),
+         :higher_level <- compare_levels(player, other),
          cards <- cards_to_level_up(other, player),
          true <- Enum.count(cards) > 0 do
       { other, cards }

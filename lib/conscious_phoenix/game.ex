@@ -31,6 +31,7 @@ defmodule ConsciousPhoenix.Game do
     |> save_game(updates)
     |> save_player(pid, updates)
     |> save_turn(pid)
+    |> handle_hasnamuss_lands_on(pid)
   end
 
   def save_turn(game, pid) do
@@ -60,8 +61,7 @@ defmodule ConsciousPhoenix.Game do
       fd: fd,
       ep: ep,
     }
-    IO.puts "discarded astral:"
-    IO.inspect(discardedAstral)
+    # IO.inspect(discardedAstral)
     put_in(game.players[pid], player)
     |> handle_discard_astral(player, discardedAstral)
   end
@@ -84,17 +84,20 @@ defmodule ConsciousPhoenix.Game do
   # clear shared_laws when the player's turn is done to track which players have obeyed already
   def end_turn(game, pid, updates) do
     lawUpdate = Map.fetch!(updates, "laws")
-    game = if Map.has_key?(lawUpdate, "shared") do
-      put_in(game.players,
-        Enum.map(game.players, fn {key, player} ->
-          shared_laws = if(key===pid, do: [ ], else: player.shared_laws ++ lawUpdate["shared"])
-          { key, put_in(player.shared_laws, shared_laws) }
-        end)
-        |> Enum.into(%{ }))
-    else
-      game
+    game = game
+           |> handle_shared_laws(pid, lawUpdate)
+           |> save_state(pid, updates)
+    offered = Game.offered_players(game)
+    take_cards = game.players[pid].take_cards
+    cond do
+      take_cards && length(take_cards) > 0 ->
+        IO.puts "take_cards!"
+        { :take_cards, game }
+      length(offered) > 0 ->
+        { :offer_astral, game }
+      true ->
+        { :next_turn, game }
     end
-    save_state(game, pid, updates)
   end
 
   def log_event(game, event) do
@@ -118,7 +121,7 @@ defmodule ConsciousPhoenix.Game do
         { :swap, p1, c1, p2, c2 } ->
           acc_game = put_in(acc_game.players[p1.pid], p1)
           acc_game = put_in(acc_game.players[p2.pid], p2)
-          acc_entries = [ "Dupes! Exchanged #{c1["c"]} with #{c2["c"]} from #{p2.name}" | acc_entries ]
+          acc_entries = [ "Dupes! Exchanged the #{c1["c"]} for #{c2["c"]} with #{p2.name}" | acc_entries ]
           { acc_game, acc_entries }
       end
     end)
@@ -189,6 +192,24 @@ defmodule ConsciousPhoenix.Game do
     put_in(game.players, players)
   end
 
+  def try_to_take_card(game, pid, ask) do
+    taker = game.players[pid]
+    [ giverId, rest ] = taker.take_cards
+    rest = if(length(rest)==0, do: nil, else: rest)
+    game = put_in(game.players[pid].take_cards, rest)
+    giver = game.players[giverId]
+    cardIndex = Enum.find_index(giver.hand, fn card -> card["c"] == ask end)
+    if is_nil(cardIndex) do
+      game
+      |> log_event(%{ pid: pid, entry: "#{taker.name} go fish!", toast: true })
+    else
+      { card, giverHand } = List.pop_at(giver.hand, cardIndex)
+      game = put_in(game.players[giverId].hand, giverHand)
+      put_in(game.players[pid].hand, [ %{ card | "selected" => false } | taker.hand ])
+      |> log_event(%{ pid: pid, entry: "#{taker.name} takes #{ask} from #{giver.name}.", toast: true })
+    end
+  end
+
   # remove offerAstral from player,
   def reject_astral(game, player) do
     player = put_in(player.fd, Map.delete(player.fd, "offerAstral"))
@@ -236,6 +257,35 @@ defmodule ConsciousPhoenix.Game do
 
   defp handle_discard_astral(game, _player, discard) when is_boolean(discard) do
     game
+  end
+
+  defp handle_shared_laws(game, pid, lawUpdate) do
+    if Map.has_key?(lawUpdate, "shared") do
+      players_shared = game.players
+                       |> Enum.map(fn {key, player} ->
+                         shared_laws = cond do
+                           key===pid || !Player.alive?(player) -> [ ]
+                           is_nil(player.shared_laws) -> lawUpdate["shared"]
+                           true -> player.shared_laws ++ lawUpdate["shared"]
+                         end
+                         { key, put_in(player.shared_laws, shared_laws) }
+                       end)
+                       |> Enum.into(%{ })
+      put_in(game.players, players_shared)
+    else game
+    end
+  end
+
+  defp handle_hasnamuss_lands_on(game, pid) do
+    p = game.players[pid]
+    with true <- Player.hasnamuss?(p),
+         others <- Player.other_players_by_turn(game.players, p, game.turns),
+         otherPids <- Enum.map(others, fn p -> p.pid end),
+         true <- length(otherPids) > 0 do
+      put_in(game.players[pid].take_cards, otherPids)
+    else
+      _ -> game
+    end
   end
 end
 

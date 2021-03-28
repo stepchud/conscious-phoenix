@@ -12,8 +12,16 @@ import {
   cantChooseLaw,
 } from './reducers/laws'
 import { entering, deathEvent, allNotes } from './reducers/food_diagram'
-import { OfferAstralBody } from './components/custom_modal'
-import { BOARD_SPACES, LAST_SPACE, Dice, getPlayerName, noop } from './constants'
+import { OfferAstralBody, OfferTakeCard } from './components/custom_modal'
+import {
+  BOARD_SPACES,
+  LAST_SPACE,
+  Dice,
+  getPlayerId,
+  getPlayerName,
+  getOtherPlayers,
+  noop
+} from './constants'
 
 const dispatchShowModal = (props) => store.dispatch(actions.showModal(props))
 const promiseShowModal = (props) => {
@@ -254,9 +262,10 @@ const startCausalDeath = () => {
   const six = Dice()
   const roll1 = six.roll()
   const roll2 = six.roll()
-  let planet = 'ETERNAL-RETRIBUTION'
+  let planet
   if (roll1 == 6) {
     if (roll1 == roll2) {
+      planet = 'ETERNAL-RETRIBUTION'
       dispatchShowModal({
         title: 'Eternal retribution!',
         body: "There is no escape from this loathesome place. You are out of the game backwards.",
@@ -273,7 +282,7 @@ const startCausalDeath = () => {
         return
       }
       dispatchShowModal({
-        title: 'Lucky Dog',
+        title: 'Lucky DOG',
         body: `You're automatically cleansed by rolling double ${roll1}! `+
           `You can continue playing until you complete yourself.`,
         onClick: () => {
@@ -385,13 +394,9 @@ const handlePieces = async (action) => {
 
 const takePiece = async (position) => {
   const {
-    board: { spaces },
+    board: { players, spaces },
     fd: { current: { alive } },
-    laws: { active },
   } = store.getState()
-
-  // no stuff while asleep
-  if (jackDiamonds(active)) { return }
 
   const space = spaces[position]
   switch(space) {
@@ -460,8 +465,7 @@ const handleFifthOptions = (channel) => async ({ pid, lower_pid, options: cards 
   await promiseShowModal({ title, body, options })
 }
 
-const offerAstral = (channel) => async ({ pid, astral }) => {
-  const { board: { players } } = store.getState()
+const handleOfferAstral = (channel) => async ({ pid, astral }) => {
   const title = 'Astral Offered'
   const body = OfferAstralBody(astral)
   const options = [
@@ -470,6 +474,17 @@ const offerAstral = (channel) => async ({ pid, astral }) => {
   ]
 
   await promiseShowModal({ title, body, options })
+}
+
+const handleOfferTakeCard = (channel) => async ({ player, board: { players } }) => {
+  const { pid, take_cards } = player
+  const opid = take_cards[0]
+  const victim = getPlayerName(players, opid)
+  const clickHandler = () => {
+    const optionElem = document.getElementById('take-cards-select')
+    channel.push('game:try_to_take_card', { pid, card: optionElem.value })
+  }
+  await promiseShowModal(OfferTakeCard(pid, victim, clickHandler))
 }
 
 const handleDecay = async () => {
@@ -646,13 +661,12 @@ const handleRollClick = async () => {
       ? '*' : spaces.charAt(position - opposite)
   }
 
-  const asleep = jackDiamonds(active)
+  let asleep = jackDiamonds(active)
   // HASNAMUSS: no roll-options
   if (!asleep && !hasnamuss(active)) {
-    let lob = store.getState().ep.level_of_being
     const title = `You rolled ${roll}`
     let options = []
-    switch(lob) {
+    switch(level_of_being) {
       case  'MASTER':
         options.push({
           text: `Take opposite (${oppositeSpace})`,
@@ -680,14 +694,19 @@ const handleRollClick = async () => {
     await rollOptionLaws(roll, active, rollSpace, oppositeSpace)
   }
 
-  roll = store.getState().board.roll
+  const { board: { roll: rollAfterOptions, players } } = store.getState()
   const roll_multiplier = 4 - num_brains
-  let next_position = (roll_multiplier * roll) * direction + position
+  let next_position = (roll_multiplier * rollAfterOptions) * direction + position
   if (next_position < 0) { next_position = 0 }
   if (next_position > LAST_SPACE) { next_position = LAST_SPACE }
-  store.dispatch({ type: 'MOVE_SPACE', position, next_position, alive, asleep })
-
-  await takePiece(next_position)
+  const other_hasnamuss = getOtherPlayers(players).filter(p => p.position===next_position && p.hasnamuss)
+  const same_level_hasnamuss = other_hasnamuss.filter(p => p.level_of_being===level_of_being).length > 0
+  store.dispatch({ type: 'MOVE_SPACE', position, next_position, alive, asleep, same_level_hasnamuss })
+  // no stuff while asleep or landed on a hasnamuss
+  asleep = jackDiamonds(store.getState().laws.active)
+  if (!other_hasnamuss.length && !asleep) {
+    await takePiece(next_position)
+  }
   await handleStartOver()
   store.dispatch({ type: "WAIT_FOR_TURN" })
 }
@@ -762,7 +781,8 @@ export const gameActions = (channel) => {
     onHideModal: () => store.dispatch(actions.hideModal()),
     onExchangeDuplicates: () => store.dispatch(actions.exchangeDupes()),
     onFifthOptions: handleFifthOptions(channel),
-    onOfferAstral: offerAstral(channel),
+    onOfferAstral: handleOfferAstral(channel),
+    onOfferTakeCard: handleOfferTakeCard(channel),
     handleRollClick,
     handleEndDeath,
     handleGameOver,

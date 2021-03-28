@@ -70,6 +70,10 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
+  def handle_in("game:try_to_take_card", %{"pid" => pid, "card" => card}, socket) do
+    GameServer.try_to_take_card(socket.assigns.gid, pid, card)
+  end
+
   def handle_in("game:log_event", %{"pid" => pid, "event" => event}, socket) do
     GameServer.log_event(socket.assigns.gid, pid, event)
     {:noreply, socket}

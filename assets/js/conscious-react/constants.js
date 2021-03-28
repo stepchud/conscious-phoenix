@@ -42,6 +42,7 @@ export const resetGameId = () => {
 export const getPlayerId = () => localStorage.getItem(PLAYER_ID)
 export const setPlayerId = (pid) => localStorage.setItem(PLAYER_ID, pid)
 export const getPlayer = (players) => players.find(p => p.pid === getPlayerId())
+export const getOtherPlayers = (players) => players.filter(p => p.pid !== getPlayerId())
 export const getPlayerIndex = (players) => players.findIndex(p => p.pid === getPlayerId())
 export const getPlayerName = (players, pid) => {
   const player = players.find(p => p.pid === pid)
