@@ -410,6 +410,30 @@ const foodDiagram = (
         enter.food[7]++
       }
       return { current, enter, extras }
+    case 'ALL_SHOCKS':
+      // Transform
+      if (current.impressions[2]>0) {
+        current.impressions[2]--
+        enter.impressions[3]++
+      }
+      if (current.food[6]>0) {
+        current.food[6]--
+        enter.food[7]++
+      }
+      // Self-remember
+      if (current.impressions[0]>0) {
+        current.impressions[0]--
+        enter.impressions[1]++
+        extras.push('SHOCKS-AIR')
+      } else {
+        extras.push("NOTHING-TO-REMEMBER")
+      }
+      // Shocks-food
+      if (current.food[2]) {
+        enter.food[3]++
+        current.food[2]--
+      }
+      return { current, enter, extras }
     case "LEAVE_MI_48":
       if (current.air[2]==3) {
         toast('Hyperventilate! Too much Mi-48 causes dizziness.')

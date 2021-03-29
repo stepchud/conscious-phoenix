@@ -136,7 +136,6 @@ const ep = (
   const {
     parts,
     pieces,
-    shocks,
     level_of_being,
     card_plays,
   } = state
@@ -156,7 +155,6 @@ const ep = (
       return {
         ...state,
         card_plays: card_plays - action.cards.length,
-        shocks,
       }
     case 'EAT_WHEN_YOU_BREATHE':
       return {
@@ -181,17 +179,17 @@ const ep = (
         ...state,
         parts
       }
-    case 'MAKE_PIECES':
+    case 'MAKE_PIECES': {
       const [ newPiece, count ] = action.pieces
-      let { school_type } = state
+      let { school_type, shocks } = state
       let i = PARTS.indexOf(newPiece)
       pieces[i] += count
-      shocks.push(shock(i))
+      shocks = [ ...shocks, shock(i)]
       while (pieces[i]>2 && i<PARTS.indexOf('JO')) {
         pieces[i] -= 2 // one goes up, one comes off
         i++
         pieces[i] += 1
-        shocks.push(shock(i))
+        shocks = [ ...shocks, shock(i)]
       }
       const [ new_lob, new_school ] = levelOfBeing(pieces)
       school_type = school_type || new_school
@@ -204,6 +202,7 @@ const ep = (
         level_of_being: new_lob,
         school_type,
       }
+    }
     case 'COMBINE_PARTS':
       const newPart = makeNewPart(action.selected)
       const combine = combinable(action.selected)

@@ -170,36 +170,6 @@ const presentEvent = (event) => {
     case 'MASTER':
       store.dispatch({ type: 'ATTAIN_MASTER' })
       break
-    case 'SELF-REMEMBER':
-      store.dispatch({type: 'SELF_REMEMBER'})
-      break
-    case 'TRANSFORM-EMOTIONS':
-      store.dispatch({type: 'TRANSFORM_EMOTIONS'})
-      break
-    case 'WILD-SHOCK':
-      dispatchShowModal({
-        title: 'Wild Shock',
-        body: 'A wild shock appears! Which will it be?',
-        options: [
-          { text: 'Transform Emotions', onClick: dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}) },
-          { text: 'Self Remember',      onClick: dispatchWithExtras({type: 'SELF_REMEMBER'}) },
-          { text: 'Shock Food',         onClick: dispatchWithExtras({type: 'SHOCKS_FOOD'}) },
-        ]
-      })
-      break
-    case 'ALL-SHOCKS':
-      dispatchShowModal({
-        title: 'All Shocks',
-        body: 'All shocks are felt in your being.',
-        onClick: () => {
-          Promise.all(
-            dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}),
-            dispatchWithExtras({type: 'SELF_REMEMBER'}),
-            dispatchWithExtras({type: 'SHOCKS_FOOD'})
-          )
-        }
-      })
-      break
     case 'CANT-CHOOSE-DEATH':
       dispatchShowModal({
         title: "Can't choose death",
@@ -255,6 +225,37 @@ const presentEvent = (event) => {
       break
     default:
       console.warn(`present unknown event: ${event}`)
+  }
+}
+
+const presentShock = async (shock) => {
+  switch(shock) {
+    case 'SELF-REMEMBER':
+      store.dispatch({type: 'SELF_REMEMBER'})
+      break
+    case 'TRANSFORM-EMOTIONS':
+      store.dispatch({type: 'TRANSFORM_EMOTIONS'})
+      break
+    case 'WILD-SHOCK':
+      await promiseShowModal({
+        title: 'Wild Shock',
+        body: 'A wild shock appears! Which will it be?',
+        options: [
+          { text: 'Transform Emotions', onClick: dispatchWithExtras({type: 'TRANSFORM_EMOTIONS'}) },
+          { text: 'Self Remember',      onClick: dispatchWithExtras({type: 'SELF_REMEMBER'}) },
+          { text: 'Shock Food',         onClick: dispatchWithExtras({type: 'SHOCKS_FOOD'}) },
+        ]
+      })
+      break
+    case 'ALL-SHOCKS':
+      await promiseShowModal({
+        title: 'All Shocks',
+        body: 'All shocks are felt in your being.',
+        options: [
+          { text: 'OK', onClick: dispatchWithExtras({type: 'ALL_SHOCKS'}) },
+        ]
+      })
+      break
   }
 }
 
@@ -360,7 +361,7 @@ const rollOptionLaws = async (roll, active, rollSpace, oppositeSpace) => {
       }
     })
   }
-  options.push({ text: 'Not this time', onClick: () => {} })
+  options.push({ text: 'Not this time', onClick: noop })
 
   await promiseShowModal({
     title,
@@ -378,7 +379,9 @@ const handlePieces = async (action) => {
   store.dispatch({ type: 'MAKE_PIECES', pieces })
   store.dispatch({ type: 'CLEAR_PIECES' })
   // handle shocks
-  store.getState().ep.shocks.forEach(shock => presentEvent(shock))
+  for (let shock of store.getState().ep.shocks) {
+    await presentShock(shock)
+  }
   store.dispatch({ type: 'CLEAR_SHOCKS' })
   // harnel-miaznel
   await advanceFood()
@@ -685,7 +688,7 @@ const handleRollClick = async () => {
     }
 
     if (options.length) {
-      options.push({ text: `Take the roll (${rollSpace})`, onClick: () => {} })
+      options.push({ text: `Take the roll (${rollSpace})`, onClick: noop })
       await promiseShowModal({
         title,
         options
