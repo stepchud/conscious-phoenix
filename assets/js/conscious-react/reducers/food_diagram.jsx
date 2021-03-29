@@ -587,6 +587,9 @@ const foodDiagram = (
       return { current, enter, extras }
     case 'REINCARNATE': {
       const next = InitialState()
+      next.current.food[8] = current.food[8]
+      next.current.air[6] = current.air[6]
+      next.current.impressions[4] = current.impressions[4]
       next.current.astral = current.astral
       next.current.mental = current.mental
       next.current.astralDiscarded = current.astralDiscarded

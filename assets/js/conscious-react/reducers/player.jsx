@@ -11,24 +11,30 @@ const InitialState = {
   laws_passed: 2,
   completed_trips: 0,
   death_space: LAST_SPACE,
+  reached_death_space: false,
 }
 
-const stateAfterDeath = (state, reincarnate) =>
-  reincarnate
-  ?
+const stateAfterDeath = (state, reincarnate) => {
+  return reincarnate ?
     {
       ...state,
       current_turn: TURNS.randomLaw,
       laws_passed: 2,
-      death_space: state.direction > 0 ? LAST_SPACE : 0
-    }
-  :
-    {
+      death_space: state.direction > 0 ? LAST_SPACE : 0,
+      reached_death_space: false
+    } : {
       ...state,
       current_turn: TURNS.normal,
       laws_passed: 0,
-      death_space: state.direction > 0 ? LAST_SPACE : 0
+      death_space: state.direction > 0 ? LAST_SPACE : 0,
+      reached_death_space: false
     }
+}
+
+const reachedDeathSpace = (direction, position, death_space) =>
+  (direction > 0 && position >= death_space) ||
+  (direction < 0 && position <= death_space)
+
 
 const player = (
   state = InitialState,
@@ -39,15 +45,13 @@ const player = (
       const { death_space, direction } = state
       const { position, next_position, alive, asleep, same_level_hasnamuss } = action
       const just_completed = (direction > 0) ? (next_position == LAST_SPACE) : (next_position == 0)
-      const reached_death_space = (direction > 0 && next_position >= death_space) ||
-        (direction < 0 && next_position <= death_space)
+      const reached_death_space = same_level_hasnamuss ||
+        reachedDeathSpace(direction, next_position, death_space)
 
       const completed_trips = state.completed_trips + (just_completed ? 1 : 0)
       const laws_passed = lawsPassed(position, next_position, asleep, alive)
       let current_turn
-      if (reached_death_space || same_level_hasnamuss) {
-        current_turn = TURNS.death
-      } else if (laws_passed > 0) {
+      if (laws_passed > 0) {
         current_turn = TURNS.randomLaw
       } else {
         current_turn = state.current_turn
@@ -59,6 +63,7 @@ const player = (
         current_turn,
         position: next_position,
         direction: just_completed ? -direction : direction,
+        reached_death_space: reachedDeathSpace(direction, next_position, death_space)
       }
     }
     case 'ONE_BY_RANDOM': {
@@ -144,7 +149,7 @@ const player = (
       return {
         ...state,
         death_space: state.position,
-        current_turn: TURNS.death,
+        reached_death_space: true,
       }
     case 'DEATH_SPACE':
       return {

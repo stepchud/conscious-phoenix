@@ -15,7 +15,7 @@ export const lawsPassed = (position, next_position, asleep, alive) => {
   if (asleep || !alive) { return 0 }
 
   let laws
-  if (position > next_position) {
+  if (position < next_position) {
     laws = BOARD_SPACES.substring(position+1, next_position).match(/l/g)
   } else if (next_position < position) {
     laws = BOARD_SPACES.substring(next_position+1, position).match(/l/g)
@@ -55,7 +55,6 @@ export const TURNS = {
   normal: 'normal',
   randomLaw: 'random',
   choiceLaw: 'choice',
-  death: 'death',
   end: 'end',
 }
 

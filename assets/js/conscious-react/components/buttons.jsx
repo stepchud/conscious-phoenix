@@ -14,7 +14,7 @@ import { TURNS } from '../constants'
 
 const Dice = ({ roll }) => <span className="dice">{roll}</span>
 
-const Message = ({ turn, hasLaws, waiting, gameOver }) => {
+const Message = ({ turn, hasLaws, waiting, deathTurn, gameOver }) => {
   let message = ''
   if (waiting) {
     message = "Waiting for your turn..."
@@ -24,7 +24,7 @@ const Message = ({ turn, hasLaws, waiting, gameOver }) => {
     message = 'You simply must obey all of the laws in play'
   } else if (gameOver) {
     message = '💀 Last chance to survive the shock of death 💀 '
-  } else if (turn===TURNS.death) {
+  } else if (deathTurn) {
     message = '* Before dying, select 7 cards to keep after death'
   }
 
@@ -40,6 +40,7 @@ const Buttons = ({
   ep,
   onRoll,
   gameOver,
+  deathTurn,
   onObeyLaw,
   onCombineSelectedParts,
   onPlaySelected,
@@ -68,7 +69,7 @@ const Buttons = ({
       return [<button key={'end'} onClick={onExit}>Exit Game</button>]
     default:
       const buttons = []
-      if (turn===TURNS.death) {
+      if (deathTurn) {
         const deathButton = gameOver
           ? <button key={buttons.length} onClick={onGameOver}>End Game</button>
           : <button key={buttons.length} onClick={onEndDeath}>End Death</button>
@@ -106,6 +107,7 @@ const ButtonRow = ({
   laws,
   roll,
   waiting,
+  deathTurn,
   ...props
 }) => {
   const hasLaws = !!unobeyedLaws(laws.in_play).length
@@ -113,8 +115,8 @@ const ButtonRow = ({
   return (
     <div className="section actions fixed-nav">
       <Dice roll={roll} />
-      <Buttons turn={turn} hasLaws={hasLaws} waiting={waiting} laws={laws} {...props} />
-      <Message turn={turn} hasLaws={hasLaws} waiting={waiting} gameOver={props.gameOver} />
+      <Buttons turn={turn} hasLaws={hasLaws} waiting={waiting} deathTurn={deathTurn} laws={laws} {...props} />
+      <Message turn={turn} hasLaws={hasLaws} waiting={waiting} deathTurn={deathTurn} gameOver={props.gameOver} />
     </div>
   )
 }

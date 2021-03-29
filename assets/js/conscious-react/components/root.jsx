@@ -98,7 +98,7 @@ export class ConsciousBoardgame extends React.Component {
     const { current: { astral, mental } } = fd
     const gameId = modal.gameId || this.props.channel.gid || ''
     const playerId = getPlayerId()
-    const gameOver = player.current_turn===TURNS.death &&
+    const gameOver = player.reached_death_space &&
       (!astral || (!mental && !hasnamuss(laws.active) && player.completed_trips > 1))
 
     if (player.current_turn===TURNS.setup) {
@@ -136,6 +136,7 @@ export class ConsciousBoardgame extends React.Component {
           currentTurn={player.current_turn}
           gameOver={gameOver}
           waiting={!player.active}
+          deathTurn={player.reached_death_space}
           onRoll={this.handleRoll}
           onObeyLaw={this.actions.handleObeyLaw}
           onCombineSelectedParts={this.actions.onCombineSelectedParts}

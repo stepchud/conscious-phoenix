@@ -694,8 +694,8 @@ const handleRollClick = async () => {
         options
       })
     }
-    await rollOptionLaws(roll, active, rollSpace, oppositeSpace)
   }
+  await rollOptionLaws(roll, active, rollSpace, oppositeSpace)
 
   const { board: { roll: rollAfterOptions, players } } = store.getState()
   const roll_multiplier = 4 - num_brains
