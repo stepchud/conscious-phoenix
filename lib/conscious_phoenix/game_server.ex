@@ -267,10 +267,8 @@ defmodule ConsciousPhoenix.GameServer do
            |> Game.try_to_take_card(pid, card)
     take_cards = game.players[pid].take_cards
     cond do
-      is_nil(take_cards) ->
-        broadcast_next_turn(game, gid)
-      length(take_cards) > 0 ->
-        broadcast_hasnamuss_take_card(game, gid, pid)
+      is_nil(take_cards) -> broadcast_next_turn(game, gid)
+      length(take_cards) > 0 -> broadcast_hasnamuss_take_card(game, gid, pid)
     end
 
     put_state_no_reply(state, game, gid)

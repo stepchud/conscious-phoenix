@@ -76,6 +76,14 @@ const modal = (
         body: 'I have crystallized the body Kesdjan',
         onClick: noop,
       }
+    case 'HASNAMUSS':
+      return {
+        show: true,
+        title: "Hasnamuss!",
+        body: 'Shame on you',
+        onClick: noop,
+      }
+
     default:
       return state
   }

@@ -125,7 +125,7 @@ defmodule ConsciousPhoenix.Game do
           { acc_game, acc_entries }
       end
     end)
-    Enum.reduce(entries, game, fn { entry }, { acc_game } ->
+    Enum.reduce(entries, game, fn entry, acc_game ->
       log_event(acc_game, %{ pid: pid, entry: entry, toast: true })
     end)
   end
@@ -156,7 +156,6 @@ defmodule ConsciousPhoenix.Game do
   # adds the helpful card to lower player
   # takes the helpful card from higher who also draws three cards
   def exchange_one_fifth(game, lower, higher, card) do
-    IO.inspect(card)
     lower_card = Map.put(card, "select", false)
     higher_card = Enum.find(higher.hand, &(&1["c"] == card["c"]))
     game = put_in(game.players[lower.pid].hand, [lower_card | lower.hand])
@@ -194,7 +193,7 @@ defmodule ConsciousPhoenix.Game do
 
   def try_to_take_card(game, pid, ask) do
     taker = game.players[pid]
-    [ giverId, rest ] = taker.take_cards
+    [ giverId | rest ] = taker.take_cards
     rest = if(length(rest)==0, do: nil, else: rest)
     game = put_in(game.players[pid].take_cards, rest)
     giver = game.players[giverId]
@@ -280,7 +279,7 @@ defmodule ConsciousPhoenix.Game do
     p = game.players[pid]
     with true <- Player.hasnamuss?(p),
          others <- Player.other_players_by_turn(game.players, p, game.turns),
-         otherPids <- Enum.map(others, fn p -> p.pid end),
+         otherPids <- Enum.map(others, fn {pid, _} -> pid end),
          true <- length(otherPids) > 0 do
       put_in(game.players[pid].take_cards, otherPids)
     else

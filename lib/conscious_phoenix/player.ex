@@ -75,7 +75,7 @@ defmodule ConsciousPhoenix.Player do
         rand2 = Enum.take_random(dupes2, 1)
         p1 = put_in(p1.hand, (p1.hand -- rand1) ++ rand2)
         p2 = put_in(p2.hand, (p2.hand -- rand2) ++ rand1)
-        { :swap, p1, rand1, p2, rand2 }
+        { :swap, p1, hd(rand1), p2, hd(rand2) }
     end
   end
 
