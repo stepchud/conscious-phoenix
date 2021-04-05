@@ -10,9 +10,8 @@ import {
   unobeyedLaws,
 } from '../reducers/laws'
 import { selectedParts } from '../reducers/being'
+import Dice from './dice'
 import { TURNS } from '../constants'
-
-const Dice = ({ roll }) => <span className="dice">{roll}</span>
 
 const Message = ({ turn, hasLaws, waiting, deathTurn, gameOver }) => {
   let message = ''
@@ -31,7 +30,7 @@ const Message = ({ turn, hasLaws, waiting, deathTurn, gameOver }) => {
   return <span className="turn-message">{message}</span>
 }
 
-const Buttons = ({
+const ButtonItems = ({
   turn,
   waiting,
   laws,
@@ -51,6 +50,7 @@ const Buttons = ({
 }) => {
   if (waiting) { return [] }
 
+  const buttons = []
   const asleep = jackDiamonds(laws.active)
   const nopowers = jackHearts(laws.active)
   const selLaws = selectedLaws(laws.in_play)
@@ -64,11 +64,12 @@ const Buttons = ({
 
   switch(turn) {
     case TURNS.randomLaw:
-      return [<button key={'rand'} onClick={onRandomLaw}>One by random...</button>]
+      buttons.push(<button key={'rand'} onClick={onRandomLaw}>One by random...</button>)
+      break;
     case TURNS.end:
-      return [<button key={'end'} onClick={onExit}>Exit Game</button>]
+      buttons.push(<button key={'end'} onClick={onExit}>Exit Game</button>)
+      break;
     default:
-      const buttons = []
       if (deathTurn) {
         const deathButton = gameOver
           ? <button key={buttons.length} onClick={onGameOver}>End Game</button>
@@ -98,26 +99,34 @@ const Buttons = ({
       if (selLaws.length===1 && !selLaws[0].obeyed) {
         buttons.push(<button key={buttons.length} onClick={onObeyLaw}>Obey Law</button>)
       }
-      return buttons
+      break;
   }
+
+  return (
+    <div className="buttons-container">
+      {buttons}
+      <Message turn={turn} hasLaws={hasLaws} waiting={waiting} deathTurn={deathTurn} gameOver={gameOver} />
+    </div>
+  )
 }
 
-const ButtonRow = ({
+const GameMenu = ({
   currentTurn: turn,
   laws,
   roll,
-  waiting,
-  deathTurn,
+  animateRoll,
   ...props
 }) => {
   const hasLaws = !!unobeyedLaws(laws.in_play).length
 
-  return (
-    <div className="section actions fixed-nav">
-      <Dice roll={roll} />
-      <Buttons turn={turn} hasLaws={hasLaws} waiting={waiting} deathTurn={deathTurn} laws={laws} {...props} />
-      <Message turn={turn} hasLaws={hasLaws} waiting={waiting} deathTurn={deathTurn} gameOver={props.gameOver} />
-    </div>
-  )
+  return <div className="section actions fixed-nav">
+    <Dice roll={roll} animateRoll={animateRoll} />
+    <ButtonItems
+      turn={turn}
+      laws={laws}
+      hasLaws={hasLaws}
+      {...props} />
+    <GameInfo gid={gid} pid={pid} {...rest} />
+  </div>
 }
-export default ButtonRow
+export default GameMenu
