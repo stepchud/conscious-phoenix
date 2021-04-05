@@ -3,7 +3,7 @@ import { BOARD_SPACES, LAST_SPACE, Dice } from '../constants'
 
 const InitialState = () => ({
   sides: 6,
-  roll: 0,
+  roll: 6,
   spaces: BOARD_SPACES,
   players: [],
   status: 'active',

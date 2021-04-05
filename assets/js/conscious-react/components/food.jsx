@@ -3,80 +3,115 @@ import { times } from 'lodash'
 
 const Note = ({
   type,
+  noteId,
   chips=0,
   astral=false,
   mental=false,
 }) => (
-  <div className={`mental ${mental ? 'piece' : ''}`}>
+  <div id={noteId} className={`note ${type}`}>
     <div className={`astral ${astral ? 'piece' : ''}`}>
-      <div className={`note ${type}`}>
+      <div className={`mental ${mental ? 'piece' : ''}`}>
         { times(chips, (i) => <span key={i} className="chip"></span>) }
       </div>
     </div>
   </div>
 )
 
-const FoodDiagram = ({
-  current,
-  enter
+const FoodOctave = ({
+  food,
+  astral,
+  mental,
 }) => {
-  let bodyType
-  const foodChips = current.food[8]
-  const airChips = current.air[6]
-  const impChips = current.impressions[4]
-  if (current.mental) {
-    bodyType = <h3>MENTAL</h3>
-  } else if (current.astral) {
-    bodyType = <h3>ASTRAL</h3>
-  } else {
-  }
+  const foodChips = food[8]
   return (
-    <div className="section fd">
-      <h3>Food</h3>
-      {bodyType}
-      { current.food.slice(0,-1).map((note, i) =>
-          <Note key={i}
+    <>
+      { food.slice(0,-1).map((note, i) =>
+          <Note key={`food-${i}`}
             type="food"
+            noteId={`food-note-${i}`}
             chips={note}
-            astral={current.astral && (foodChips > i)}
-            mental={current.mental && (foodChips > 8 + i)} />
+            astral={astral && (foodChips > i)}
+            mental={mental && (foodChips > 8 + i)} />
       ) }
-      { !current.astral && (foodChips > 0) && times(foodChips, (i) =>
-        <Note key={i} type="spacer" astral={true} />
+      { !astral && (foodChips > 0) && times(foodChips, (i) =>
+        <Note key={i} noteId={`food-chip-${i}`} type="spacer" astral={true} />
       ) }
-      { !current.mental && (foodChips > 8) && times((foodChips - 8), (i) =>
-        <Note key={i} type="spacer" mental={true} />
+      { !mental && (foodChips > 8) && times((foodChips - 8), (i) =>
+        <Note key={i} noteId={`food-chip-${i}`} type="spacer" mental={true} />
       ) }
-      <br />
-      { times(2, (i) => <Note key={i} type="spacer" />) }
-      { current.air.slice(0,-1).map((note, i) =>
+    </>
+  )
+}
+
+const AirOctave = ({
+  air,
+  astral,
+  mental,
+}) => {
+  const airChips = air[6]
+  return (
+    <>
+      { air.slice(0,-1).map((note, i) =>
           <Note key={i}
             type="air"
+            noteId={`air-note-${i}`}
             chips={note}
-            astral={current.astral && (airChips > i)}
-            mental={current.mental && (airChips > 6 + i)} />
+            astral={astral && (airChips > i)}
+            mental={mental && (airChips > 6 + i)} />
       ) }
-      { !current.astral && (airChips > 0) && times(airChips, (i) =>
-        <Note key={i} type="spacer" astral={true} />
+      { !astral && (airChips > 0) && times(airChips, (i) =>
+        <Note key={i} noteId={`air-chip-${i}`} type="spacer" astral={true} />
       ) }
-      { !current.mental && (airChips > 6) && times((airChips - 6), (i) =>
-        <Note key={i} type="spacer" mental={true} />
+      { !mental && (airChips > 6) && times((airChips - 6), (i) =>
+        <Note key={i} noteId={`air-chip-${i}`} type="spacer" mental={true} />
       ) }
-      <br />
-      { times(4, (i) => <Note key={i} type="spacer" />) }
-      { current.impressions.slice(0,-1).map((note, i) =>
+    </>
+  )
+}
+
+const ImpressionOctave = ({
+  impressions,
+  astral,
+  mental,
+}) => {
+  const impChips = impressions[4]
+  return (
+    <>
+      { impressions.slice(0,-1).map((note, i) =>
           <Note key={i}
             type="impression"
+            noteId={`imp-note-${i}`}
             chips={note}
-            astral={current.astral && (impChips > i)}
-            mental={current.mental && (impChips > 4 + i)} />
+            astral={astral && (impChips > i)}
+            mental={mental && (impChips > 4 + i)} />
       ) }
-      { !current.astral && (impChips > 0) && times(impChips, (i) =>
-        <Note key={i} type="spacer" astral={true} />
+      { !astral && (impChips > 0) && times(impChips, (i) =>
+        <Note key={i} noteId={`imp-chip-${i}`} type="spacer" astral={true} />
       ) }
-      { !current.mental && (impChips > 4) && times((impChips - 4), (i) =>
-        <Note key={i} type="spacer" mental={true} />
+      { !mental && (impChips > 4) && times((impChips - 4), (i) =>
+        <Note key={i} noteId={`imp-chip-${i}`} type="spacer" mental={true} />
       ) }
+    </>
+  )
+}
+
+const FoodDiagram = ({
+  current,
+}) => {
+  const { food, air, impressions, astral, mental } = current
+  let bodyLabel
+  if (mental) {
+    bodyLabel = ' - Mental Body'
+  } else if (astral) {
+    bodyLabel = ' - Astral Body'
+  }
+
+  return (
+    <div className="section fd">
+      <h3>Food{bodyLabel}</h3>
+      <FoodOctave food={food} astral={astral} mental={mental} />
+      <AirOctave air={air} astral={astral} mental={mental} />
+      <ImpressionOctave impressions={impressions} astral={astral} mental={mental} />
     </div>
   )
 }

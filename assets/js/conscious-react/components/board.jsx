@@ -31,10 +31,14 @@ const Space = ({
   onFifthStriving,
 }) => {
   const playersAtIndex = players.filter(p => p.position===index)
+  let innerDot
+  if (space=='c' || space=='l') {
+    innerDot = <span key={`dot-${index}`} className='dot'></span>
+  }
 
   return (
     <span key={`space-wrap-${index}`} className="space-wrap">
-      <span key={`space-${index}`} className={`${classMap[space]}`}></span>
+      <span key={`space-${index}`} className={`${classMap[space]}`}>{innerDot}</span>
       { playersAtIndex.map((player, pIdx) =>
         <PlayerSpace
           key={`player-${index}-${pIdx}`}
