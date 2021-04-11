@@ -8,10 +8,16 @@ import React, { useState } from 'react'
  *   The JavaScript is a random number generator that applies CSS classes to dice to display results",
  * "license": "MIT"
  */
-const Dice = ({ roll, animateRoll }) => {
+const Dice = ({ roll, canRoll, onRoll }) => {
+  const [ animateRoll, setAnimateRoll ] = useState('odd-roll')
+  const onClick = () => {
+    if (canRoll) { setAnimateRoll(animateRoll==='odd-roll' ? 'even-roll' : 'odd-roll') }
+    onRoll()
+  }
+
   return (
     <div className="dice-container">
-      <div className="dice">
+      <div className="dice" onClick={onClick}>
         <ol className={`die-list ${animateRoll}`} data-roll={roll}>
           <li className="die-item" data-side="1">
             <span className="dot"></span>

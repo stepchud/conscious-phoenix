@@ -29,7 +29,6 @@ export class ConsciousBoardgame extends React.Component {
 
   state = {
     expandLog: false,
-    animateRoll: 'odd-roll',
   }
 
   handleJoinGame = (gid, name, icon) => {
@@ -67,7 +66,6 @@ export class ConsciousBoardgame extends React.Component {
   }
 
   handleRoll = async () => {
-    this.setState({ animateRoll: this.state.animateRoll==='odd-roll' ? 'even-roll' : 'odd-roll' })
     await this.actions.handleRollClick()
     const game = Store.getState()
     const pid = getPlayerId()
@@ -110,6 +108,7 @@ export class ConsciousBoardgame extends React.Component {
     const hasLaws = !!unobeyedLaws(laws.in_play).length
     const gameOver = player.reached_death_space &&
       (!astral || (!mental && !hasnamuss(laws.active) && player.completed_trips > 1))
+    const canRoll = ![TURNS.choiceLaw, TURNS.randomLaw, TURNS.end].includes(player.current_turn) && !hasLaws && !player.reached_death_space
 
     if (player.current_turn===TURNS.setup) {
       return <SetupModal
@@ -137,12 +136,23 @@ export class ConsciousBoardgame extends React.Component {
       />
     }
 
+    const TurnMsg = <TurnMessage
+      turn={player.current_turn}
+      hasLaws={hasLaws}
+      waiting={!playerActive}
+      deathTurn={player.reached_death_space}
+      gameOver={gameOver}
+    />
+
+    const onRoll = canRoll ? this.handleRoll : () => toast.warn(TurnMsg)
+
     return (
       <div>
         <GameMenu>
           <Dice
             roll={board.roll}
-            animateRoll={this.state.animateRoll}
+            canRoll={canRoll}
+            onRoll={onRoll}
           />
           <Buttons
             turn={player.current_turn}
@@ -153,7 +163,7 @@ export class ConsciousBoardgame extends React.Component {
             ep={ep}
             gameOver={gameOver}
             deathTurn={player.reached_death_space}
-            onRoll={this.handleRoll}
+            onRoll={onRoll}
             onObeyLaw={this.actions.handleObeyLaw}
             onCombineSelectedParts={this.actions.onCombineSelectedParts}
             onPlaySelected={this.actions.onPlaySelected}
@@ -162,13 +172,7 @@ export class ConsciousBoardgame extends React.Component {
             onGameOver={this.handleGameOver}
             onExit={this.handleGameExit}
           />
-          <TurnMessage
-            turn={player.current_turn}
-            hasLaws={hasLaws}
-            waiting={!playerActive}
-            deathTurn={player.reached_death_space}
-            gameOver={gameOver}
-          />
+          {TurnMsg}
         </GameMenu>
         <TestButtons
           actions={this.actions}

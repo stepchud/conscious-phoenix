@@ -17,8 +17,10 @@ export const TurnMessage = ({ turn, hasLaws, waiting, deathTurn, gameOver }) => 
   let message = ''
   if (waiting) {
     message = "Waiting for your turn..."
+  } else if (turn===TURNS.randomLaw) {
+    message = 'Draw a random law card from your hand'
   } else if (turn===TURNS.choiceLaw) {
-    message = 'One by Choice: pick a law card from your pile'
+    message = 'Click to choose a law card from your hand'
   } else if (hasLaws) {
     message = 'You simply must obey all of the laws in play'
   } else if (gameOver) {
@@ -75,9 +77,8 @@ export const Buttons = ({
           ? <button key={buttons.length} onClick={onGameOver}>End Game</button>
           : <button key={buttons.length} onClick={onEndDeath}>End Death</button>
         buttons.push(deathButton)
-      } else if (turn!==TURNS.choiceLaw && !hasLaws) {
-        buttons.push(<button key={buttons.length} onClick={onRoll}>Roll Dice</button>)
       }
+
       if (!asleep && !nopowers && ep[combinable(selParts)]) {
         buttons.push(
           <button

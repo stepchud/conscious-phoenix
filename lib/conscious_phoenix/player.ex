@@ -50,9 +50,18 @@ defmodule ConsciousPhoenix.Player do
   ])
 
   # unique player ids
-  # NOTE: translate light colors 'FxFxFx' to 'AxAxAx'
+  # NOTE: avoids colors 'ExExEx' and lighter by generating lower randoms
+  # to avoid colors too light
   def generate_pid() do
-    String.slice(UUID.uuid4(), 0, 6)
+    light_color = ~r/[EF].[EF].[EF]./i
+    uuid6 = String.slice(UUID.uuid4(), 0, 6)
+    if Regex.match?(light_color, uuid6) do
+      random_color = random_hex()
+      IO.puts("replacing light color #{uuid6} with #{random_color}")
+      random_color
+    else
+      uuid6
+    end
   end
 
   # select out the duplicates from a players hand
@@ -443,5 +452,11 @@ defmodule ConsciousPhoenix.Player do
 
   defp card_hand(player) do
     Enum.map(player.hand, fn card -> card["c"] end)
+  end
+
+  # return a hex representation of int in the range [0,224]
+  defp random_hex() do
+    three_randoms = [Integer.to_string(:rand.uniform(224), 16), Integer.to_string(:rand.uniform(224), 16), Integer.to_string(:rand.uniform(224), 16)]
+    three_randoms |> Enum.join |> String.downcase
   end
 end
