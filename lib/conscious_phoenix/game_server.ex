@@ -22,8 +22,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.call(__MODULE__, %{action: :get_game, gid: gid})
   end
 
-  def start_game(gid, name, sides) do
-    GenServer.cast(__MODULE__, %{action: :start_game, gid: gid, name: name, sides: sides})
+  def start_game(gid, name, icon, sides) do
+    GenServer.cast(__MODULE__, %{action: :start_game, gid: gid, name: name, icon: icon, sides: sides})
   end
 
   def start_after_wait(gid) do
@@ -94,10 +94,10 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{
     action: :start_game,
-    gid: gid, name: name, sides: sides
+    gid: gid, name: name, icon: icon,  sides: sides
   }, state) do
     IO.puts "start_game<#{gid}> (#{name}, #{sides})"
-    player = %Player{ name: name, pid: Player.generate_pid() }
+    player = %Player{ name: name, icon: icon, pid: Player.generate_pid() }
     game = %Game{ players: %{ player.pid => player }, board: %{ sides: sides, roll: sides } }
                |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
 

@@ -1,6 +1,7 @@
 import React from 'react'
 import Modal from 'react-modal'
 import { gameActions } from '../events'
+import PlayerIcons from './player'
 
 const actions = gameActions()
 const ButtonTag = (text, onClick, key=1) => <button key={key} onClick={onClick}>{text}</button>
@@ -15,6 +16,7 @@ const clickAndResolve = (onClick, onResolve) => async () => {
 const onUpdateModal = (field, value) => actions.onUpdateModal({ field, value })
 const onNameChange = (event) => onUpdateModal('name', event.target.value)
 const onDiceChange = (event) => onUpdateModal('sides', event.target.value)
+const onIconChange = (value) => onUpdateModal('icon', value)
 const onGameChange = (event) => onUpdateModal('gameId', event.target.value)
 
 const PickGameModal = () => {
@@ -34,6 +36,7 @@ const PickGameModal = () => {
 const JoinGameModal = ({
   gameId,
   name,
+  icon,
   onJoinGame,
   onContinueGame,
   errorMessage,
@@ -67,24 +70,41 @@ const JoinGameModal = ({
 
 const NewGameModal = ({
   name,
+  icon,
   sides,
   onStart,
   onWait,
 }) => {
+  const icons = []
+  for (const key of Object.keys(PlayerIcons)) {
+    const IconComponent = PlayerIcons[key]
+    const checked = key==icon ? 'selected' : ''
+    icons.push(
+      <li key={key} onClick={() => onIconChange(key)} className={`icon-button ${checked}`}>
+        <div className="player">
+          <IconComponent className="player-svg" />
+        </div>
+      </li>
+    )
+  }
   const body =
     <div>
       <label name="name">
-        Your name:
+        Name:
         <input type="text" name="name" value={name} onChange={onNameChange} />
       </label>
-      <label name="dice">
+      <label name="dice" style={{"display": "none"}}>
         Sided-Dice:
         <input type="radio" group="dice" value="6" checked={sides==6} onChange={onDiceChange} /><span>6</span>
         <input type="radio" group="dice" value="10" checked={sides==10} onChange={onDiceChange} /><span>10</span>
       </label>
+      <label name="player-piece">
+        Pick your piece:
+        <ul className="player-icons">{icons}</ul>
+      </label>
     </div>
   const options =  [
-    { text: 'Start now', onClick: () => onStart(name, sides) },
+    { text: 'Start now', onClick: () => onStart(name, icon, sides) },
     { text: 'Wait for players', onClick: () => onWait(name, sides) }
   ]
   const props = {
@@ -100,6 +120,7 @@ const NewGameModal = ({
 export const WaitGameModal = ({
   gameId,
   name,
+  icon,
   sides,
   players,
   onStart,
@@ -132,6 +153,7 @@ export const WaitGameModal = ({
 export const SetupModal = ({
   step,
   name='',
+  icon='',
   sides=6,
   onStart,
   onWait,
@@ -154,6 +176,7 @@ export const SetupModal = ({
   case 'name':
     return <NewGameModal
       name={name}
+      icon={icon}
       sides={sides}
       onStart={onStart}
       onWait={onWait}

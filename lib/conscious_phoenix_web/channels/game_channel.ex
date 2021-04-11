@@ -10,8 +10,8 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:ok, state, socket}
   end
 
-  def handle_in("game:start", %{"name" => name, "sides" => sides}, socket) do
-    GameServer.start_game(socket.assigns.gid, name, sides)
+  def handle_in("game:start", %{"name" => name, "icon" => icon, "sides" => sides}, socket) do
+    GameServer.start_game(socket.assigns.gid, name, icon, sides)
     {:noreply, socket}
   end
 

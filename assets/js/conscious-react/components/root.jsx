@@ -32,9 +32,9 @@ export class ConsciousBoardgame extends React.Component {
     animateRoll: 'odd-roll',
   }
 
-  handleJoinGame = (gid, name) => {
+  handleJoinGame = (gid, name, icon) => {
     const pid = getPlayerId()
-    this.props.channel.push('game:join', { gid, pid, name })
+    this.props.channel.push('game:join', { gid, pid, name, icon })
   }
 
   handleContinueGame = (gid) => {
@@ -42,8 +42,8 @@ export class ConsciousBoardgame extends React.Component {
     this.props.channel.push('game:continue', { gid, pid })
   }
 
-  handleStartGame = (name, sides) => {
-    this.props.channel.push('game:start', { name, sides })
+  handleStartGame = (name, icon, sides) => {
+    this.props.channel.push('game:start', { name, icon, sides })
   }
 
   handleStartAfterWait = () => {
@@ -116,6 +116,7 @@ export class ConsciousBoardgame extends React.Component {
         step={modal.setup_step}
         gameId={gameId}
         name={modal.name}
+        icon={modal.icon}
         sides={modal.sides}
         players={board.players}
         onStart={this.handleStartGame}

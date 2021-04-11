@@ -1,5 +1,8 @@
 import React from 'react'
+
 import { useDoubleClick } from '../hooks/useDoubleClick'
+import PlayerIcons from './player'
+
 
 const classMap = {
   '*': 'wild',
@@ -14,40 +17,55 @@ const classMap = {
   'I': 'double impression',
 }
 
-const PlayerSpace = ({
+const PlayerPiece = ({
   pid,
-  pIdx,
+  playerIndex,
+  icon,
+  moveSpaces,
   onFifthStriving,
 }) => {
   const [ callbackRef, _ ] = useDoubleClick(onFifthStriving)
-  const style = { top: `${-3 * (pIdx+1)}px`, "backgroundColor": `#${pid}` }
-  return <span ref={callbackRef} className="player" style={style} ></span>
+  const IconComponent = PlayerIcons[icon]
+  const styleContainer = {
+    'top': `${-50 - 24*playerIndex - 15*playerIndex}px`,
+    //'left': `${-3*playerIndex}px`,
+  }
+
+  return (
+    <div ref={callbackRef} className={`player-container bounce bounce--${moveSpaces}`} style={styleContainer} data-pid={pid} >
+      <div className={`player move move--${moveSpaces}`}>
+        <IconComponent style={{ "fill": `#${pid}` }} />
+      </div>
+    </div>
+  )
 }
 
 const Space = ({
   space,
-  index,
+  position,
   players,
   onFifthStriving,
 }) => {
-  const playersAtIndex = players.filter(p => p.position===index)
+  const playersAtIndex = players.filter(p => p.position===position)
   let innerDot
   if (space=='c' || space=='l') {
-    innerDot = <span key={`dot-${index}`} className='dot'></span>
+    innerDot = <div key={`dot-${position}`} className='dot'></div>
   }
 
   return (
-    <span key={`space-wrap-${index}`} className="space-wrap">
-      <span key={`space-${index}`} className={`${classMap[space]}`}>{innerDot}</span>
+    <li key={`space-${position}`}>
+      <div className={`space ${classMap[space]}`}>{innerDot}</div>
       { playersAtIndex.map((player, pIdx) =>
-        <PlayerSpace
-          key={`player-${index}-${pIdx}`}
+        <PlayerPiece
+          key={`player-${pIdx}`}
           pid={player.pid}
-          pIdx={pIdx}
+          icon={player.icon}
+          playerIndex={pIdx}
+          moveSpaces={player.moveSpaces}
           onFifthStriving={onFifthStriving}
         />)
       }
-    </span>
+    </li>
   )
 }
 
@@ -56,13 +74,14 @@ const Board = ({
   players,
   onFifthStriving,
 }) => {
-  const spacesElements = spaces.split('').map(
-    (space, index) => <Space key={index} space={space} index={index} players={players} onFifthStriving={onFifthStriving} />
-  )
   return (
     <div className="section board">
       <h3>Board</h3>
-      {spacesElements}
+      <ol className="board-spaces">
+        {spaces.split('').map(
+          (space, index) => <Space key={index} space={space} position={index} players={players} onFifthStriving={onFifthStriving} />
+        )}
+      </ol>
     </div>
   )
 }

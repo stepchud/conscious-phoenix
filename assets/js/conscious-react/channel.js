@@ -5,8 +5,8 @@ import { TURNS, getGameId, setGameId, getPlayerId, setPlayerId } from './constan
 import { hasnamuss } from './reducers/laws'
 
 const localPlayers = (players, turns) => turns.map(plyrId => {
-  const { name, position, laws: { active }, ep: { level_of_being = "MULTIPLICITY" } } = players[plyrId]
-  return { pid: plyrId, hasnamuss: hasnamuss(active), name, position, level_of_being }
+  const { name, icon, position, laws: { active }, ep: { level_of_being = "MULTIPLICITY" } } = players[plyrId]
+  return { pid: plyrId, hasnamuss: hasnamuss(active), name, icon, position, level_of_being }
 }).reverse()
 
 // maps the server game state to local state

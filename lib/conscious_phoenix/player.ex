@@ -11,6 +11,7 @@ defmodule ConsciousPhoenix.Player do
     only: [
       :pid,
       :name,
+      :icon,
       :current_turn,
       :death_space,
       :laws_passed,
@@ -31,6 +32,7 @@ defmodule ConsciousPhoenix.Player do
   defstruct([
     :pid,
     :name,
+    :icon,
     :death_space,
     :laws_passed,
     :shared_laws,
@@ -48,6 +50,7 @@ defmodule ConsciousPhoenix.Player do
   ])
 
   # unique player ids
+  # NOTE: translate light colors 'FxFxFx' to 'AxAxAx'
   def generate_pid() do
     String.slice(UUID.uuid4(), 0, 6)
   end

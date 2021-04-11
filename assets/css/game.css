@@ -42,13 +42,13 @@
   margin: 0 8px 0 0;
 }
 
-.game-info {
+ul.game-info {
   display: flex;
   width: 100%;
   list-style-type: none;
 }
 
-.game-info li {
+ul.game-info li {
   margin: 0;
   padding-right: 8px;
 }
@@ -69,106 +69,185 @@ blockquote .board {
   top: -40px;
 }
 
-.board .space-wrap {
-  position: relative;
+ol.board-spaces {
+  display: flex;
+  width: 100%;
+  list-style-type: none;
+  overflow-x: scroll;
+  margin: 1em 0 0 0;
+  padding-bottom: 0.5em;
 }
 
-.board span {
-  height: 16px;
-  width: 16px;
+ol.board-spaces li {
+  margin: 0;
+  transform: rotateX(60deg);
+}
+
+.board-spaces .space {
+  height: 1.5em;
+  width: 1.5em;
   border-radius: 50%;
   display: inline-block;
-  margin: 1px;
+  margin: 0;
 }
 
 .board .description {
-  position: absolute;
+  position: relative;
   top: 0px;
   left: 20px;
 }
 
-.board .wild {
+.space.wild {
   background-color: #BB3EDA;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: relative;
 }
 
-.board .food {
+.space.food {
   background-color: #F6D155;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: relative;
 }
 
-.board .food.double {
+.space.food.double {
   background-color: #C49208;
 }
 
-.board .air {
+.space.air {
   background-color: #95DEE3;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: relative;
 }
 
-.board .air.double {
+.space.air.double {
   background-color: #30ACB5;
 }
 
-.board .impression {
+.space.impression {
   background-color: #FA9A85;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: relative;
 }
 
-.board .impression.double {
+.space.impression.double {
   background-color: #F64923;
 }
 
-.board .card {
+.space.card {
   background-color: #CBCBCB;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: relative;
 }
 
-.card .dot {
-  background-color: black;
-  position: absolute;
-  height: 6px;
-  width: 6px;
-  top: 4px;
-  left: 4px;
-}
-
-.board .law {
+.space.law {
   background-color: #65B384;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: relative;
 }
 
-.law .dot {
+.space .dot {
+  position: absolute;
+  border-radius: 50%;
+  height: 12px;
+  width: 12px;
+  top: 6px;
+  left: 6px;
+}
+
+.space.card .dot {
+  background-color: black;
+}
+
+.space.law .dot {
   background-color: red;
-  position: absolute;
-  height: 6px;
-  width: 6px;
-  top: 4px;
-  left: 4px;
 }
 
-.board .decay {
+.space.decay {
   background-color: grey;
-  position: absolute;
-  top: 0px;
+  position: relative;
+}
+
+.player-icons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.player-icons .icon-button {
+  background-color: aliceblue;
+  height: 6em;
+  margin: 0.5em;
+  border-radius: 1em;
+}
+
+.player-icons .icon-button.selected {
+  background-color: lightgreen;
+}
+
+.player-icons .player {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-icons .player-svg {
+  height: 4em;
+  width: 4em;
+}
+
+.board .player-container {
+  position: relative;
   left: 0px;
 }
 
-.board .player {
-  position: absolute;
-  left: 0px;
+.player-container.bounce {
+  animation: bouncePlayer 0.25s cubic-bezier(.25,0.75,0.75,.75) alternate;
+}
+
+.player-container.bounce--1 {
+  animation-iteration-count: 2;
+}
+
+.player-container.bounce--2 {
+  animation-iteration-count: 4;
+}
+
+.player-container.bounce--3 {
+  animation-iteration-count: 6;
+}
+
+.player-container.bounce--4 {
+  animation-iteration-count: 8;
+}
+
+.player-container.bounce--5 {
+  animation-iteration-count: 10;
+}
+
+.player-container.bounce--6 {
+  animation-iteration-count: 12;
+}
+
+.player.move--1 {
+  animation: move1 0.5s linear 1 normal both;
+}
+
+.player.move--2 {
+  animation: move2 1s linear 1 normal both;
+}
+
+.player.move--3 {
+  animation: move3 1.5s linear 1 normal both;
+}
+
+.player.move--4 {
+  animation: move4 2s linear 1 normal both;
+}
+
+.player.move--5 {
+  animation: move5 2.5s linear 1 normal both;
+}
+
+.player.move--6 {
+  animation: move6 3s linear 1 normal both;
 }
 
 .cards .card {
@@ -478,4 +557,74 @@ span.laws {
 
 .game-log.collapse .game-events {
   display: none;
+}
+
+@keyframes bouncePlayer {
+  from {
+    transform: translateY(0px);
+  }
+
+  to {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes move1 {
+  from {
+    transform: translateX(-24px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes move2 {
+  from {
+    transform: translateX(-48px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes move3 {
+  from {
+    transform: translateX(-72px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes move4 {
+  from {
+    transform: translateX(-96px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes move5 {
+  from {
+    transform: translateX(-120px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes move6 {
+  from {
+    transform: translateX(-144px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
