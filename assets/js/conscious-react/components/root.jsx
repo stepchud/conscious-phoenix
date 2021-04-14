@@ -186,7 +186,7 @@ export class ConsciousBoardgame extends React.Component {
           name={player.name}
           {...ep}
         />
-        <Board {...board} onFifthStriving={this.handleFifthStriving} />
+        <Board player={player} onFifthStriving={this.handleFifthStriving} {...board} />
         <CardHand
           cards={cards.hand}
           active={playerActive}

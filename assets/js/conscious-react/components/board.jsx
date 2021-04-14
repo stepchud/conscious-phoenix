@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
+import { BOARD_SPACES, LAST_SPACE } from '../constants'
 import { useDoubleClick } from '../hooks/useDoubleClick'
+
 import PlayerIcons from './player'
 
 
@@ -17,6 +19,9 @@ const classMap = {
   'I': 'double impression',
 }
 
+const SPACE_SIZE = 32
+const MAX_SCROLL = (BOARD_SPACES.length - 30) * SPACE_SIZE
+
 const PlayerPiece = ({
   pid,
   playerIndex,
@@ -27,8 +32,7 @@ const PlayerPiece = ({
   const [ callbackRef, _ ] = useDoubleClick(onFifthStriving)
   const IconComponent = PlayerIcons[icon]
   const styleContainer = {
-    'top': `${-50 - 24*playerIndex - 15*playerIndex}px`,
-    //'left': `${-3*playerIndex}px`,
+    'top': `${-60 - SPACE_SIZE*playerIndex - 15*playerIndex}px`,
   }
 
   return (
@@ -69,21 +73,87 @@ const Space = ({
   )
 }
 
-const Board = ({
-  spaces,
+const BoardSpaces = ({
+  player: { direction },
   players,
+  spaces,
   onFifthStriving,
 }) => {
+  const scrollRef = useRef()
+  const timeoutRef = useRef()
+
+  let [ lowestPos, furthestPos ] = [ LAST_SPACE, 0 ]
+  if (!!players.length) {
+    lowestPos = players.reduce((acc, player) =>  player.position < acc ? player.position : acc, LAST_SPACE)
+    furthestPos = players.reduce((acc, player) =>  player.position > acc ? player.position : acc, 0)
+  }
+
+  // Scroll Right when:
+  // player is moving right
+  // & lowest is right of scrollPosition + 3 spaces
+  // & there is room to scroll right
+  // Scroll Left when:
+  // player is moving left
+  // & furthestPos is left of scrollPosition + 27 spaces
+  // & there is room to scroll left
+  const slowScroll = (scrollPosition) => {
+    if (scrollPosition < 0 || scrollPosition > MAX_SCROLL) { return }
+
+    const diff = scrollPosition - scrollRef.current.scrollLeft
+    const absDiff = Math.abs(diff)
+    let step = 0
+    if (absDiff < 2) {
+      step = diff
+    } else if (diff > 0) {
+      step = Math.log2(absDiff)
+    } else if (diff < 0) {
+      step = -1 * Math.log2(absDiff)
+    }
+
+    if (step != 0) {
+      scrollRef.current.scrollLeft += step
+      timeoutRef.current = setTimeout(slowScroll, 10, scrollPosition)
+    }
+  }
+
+  useEffect(() => {
+    let scrollTo = 0
+    if (direction > 0 && lowestPos > 3) {
+      if (lowestPos < LAST_SPACE - 27) {
+        scrollTo = (lowestPos - 3) * SPACE_SIZE
+      } else {
+        scrollTo = MAX_SCROLL
+      }
+    } else if (direction < 0 && furthestPos < LAST_SPACE - 3) {
+      if (furthestPos > 27) {
+        scrollTo = (furthestPos - 27) * SPACE_SIZE
+      } else {
+        scrollTo = 0
+      }
+    } else if (direction < 0) {
+      scrollTo = MAX_SCROLL
+    }
+    //console.log(`${direction}, ${lowestPos}, ${furthestPos}, ${scrollTo}`)
+    timeoutRef.current = !!players && setTimeout(slowScroll, 10, scrollTo)
+    return () => { clearTimeout(timeoutRef.current) }
+  }, [direction, lowestPos, furthestPos])
+
   return (
-    <div className="section board">
-      <h3>Board</h3>
-      <ol className="board-spaces">
-        {spaces.split('').map(
-          (space, index) => <Space key={index} space={space} position={index} players={players} onFifthStriving={onFifthStriving} />
-        )}
-      </ol>
-    </div>
+    <ol ref={scrollRef} className="board-spaces">
+      {spaces.split('').map(
+        (space, index) => <Space key={index} space={space} position={index} players={players} onFifthStriving={onFifthStriving} />
+      )}
+    </ol>
   )
 }
+
+const Board = ({
+  ...props
+}) => (
+  <div className="section board">
+    <h3>Board</h3>
+    <BoardSpaces {...props} />
+  </div>
+)
 
 export default Board

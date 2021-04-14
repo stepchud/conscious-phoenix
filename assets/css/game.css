@@ -84,8 +84,8 @@ ol.board-spaces li {
 }
 
 .board-spaces .space {
-  height: 1.5em;
-  width: 1.5em;
+  height: 32px;
+  width: 32px;
   border-radius: 50%;
   display: inline-block;
   margin: 0;
@@ -142,10 +142,10 @@ ol.board-spaces li {
 .space .dot {
   position: absolute;
   border-radius: 50%;
-  height: 12px;
-  width: 12px;
-  top: 6px;
-  left: 6px;
+  height: 14px;
+  width: 14px;
+  top: 8px;
+  left: 8px;
 }
 
 .space.card .dot {
