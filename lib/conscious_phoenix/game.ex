@@ -1,10 +1,13 @@
 defmodule ConsciousPhoenix.Game do
   alias __MODULE__
-  alias ConsciousPhoenix.Player
   alias ConsciousPhoenix.Deck
+  alias ConsciousPhoenix.Player
+  alias ConsciousPhoenix.Repo
 
-  # use Ecto.Schema
-  # import Ecto.Changeset
+  use Ecto.Schema
+  import Ecto.Changeset
+  #  Ecto.Query.from/2
+  import Ecto.Query, only: [from: 2]
 
   @derive {Jason.Encoder,
     only: [
@@ -17,14 +20,59 @@ defmodule ConsciousPhoenix.Game do
     ]
   }
 
-  defstruct(
-    players: %{ },
-    board: %{ },
-    cards: %Deck{},
-    laws:  %{ },
-    log: [ ],
-    turns: [ ]
-  )
+
+  schema "games" do
+    field :gid,     :string
+    field :board,   :map
+    field :players, :map
+    field :cards,   :map
+    field :laws,    :map
+    field :log,     {:array, :map}
+    field :turns,   {:array, :string}
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(game, attrs) do
+    game
+    |> cast(attrs, [:gid, :board, :players, :cards, :laws, :log, :turns])
+    |> validate_required([:gid, :board, :players, :cards, :laws, :log, :turns])
+  end
+
+  def insert_or_update(game) do
+    query = from g in Game, where: g.gid == ^game.gid
+    if Repo.exists?(query) do
+      attrs = %{
+        board: game.board,
+        players: game.players,
+        cards: game.cards,
+        laws: game.laws,
+        log: game.log,
+        turns: game.turns
+      }
+      changeset = Repo.one(query)
+                  |> Game.changeset(attrs)
+      case Repo.update(changeset) do
+        {:ok, saved_game} -> IO.puts("update successful: #{saved_game.gid}")
+        {:error, cs} -> IO.inspect(cs.errors, label: "update failed #{game.gid}:")
+      end
+    else
+      case Repo.insert(game) do
+        {:ok, struct} -> IO.inspect(struct, label: "Inserted new game #{struct.gid}")
+        {:error, changeset} -> IO.inspect(changeset, label: "Error on insert:")
+      end
+    end
+  end
+
+  # defstruct(
+  #   players: %{ },
+  #   board: %{ },
+  #   cards: %Deck{},
+  #   laws:  %{ },
+  #   log: [ ],
+  #   turns: [ ]
+  # )
 
   def save_state(game, pid, updates) do
     game
@@ -287,23 +335,3 @@ defmodule ConsciousPhoenix.Game do
     end
   end
 end
-
-#   schema "games" do
-#     field :board, :string
-#     field :cards, :string
-#     field :ep, :string
-#     field :fd, :string
-#     field :gid, :string
-#     field :laws, :string
-#     field :modal, :string
-#
-#     timestamps()
-#   end
-#
-#   @doc false
-#   def changeset(game, attrs) do
-#     game
-#     |> cast(attrs, [:gid, :board, :cards, :laws, :fd, :ep, :modal])
-#     |> validate_required([:gid, :board, :cards, :laws, :fd, :ep, :modal])
-#   end
-# end

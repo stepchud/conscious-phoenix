@@ -10,6 +10,13 @@ use Mix.Config
 config :conscious_phoenix,
   ecto_repos: [ConsciousPhoenix.Repo]
 
+config :conscious_phoenix, ConsciousPhoenix.Scheduler,
+  overlap: false, # NOTE: defaults all jobs not to overlap
+  jobs: [
+    # {"* * * * *", {ConsciousPhoenix.SyncGamesJob, :sync, []}} # Every minute
+    {{:extended, "*/10"}, {ConsciousPhoenix.SyncGamesJob, :sync, []}} # Every 10 seconds
+  ]
+
 # Configures the endpoint
 config :conscious_phoenix, ConsciousPhoenixWeb.Endpoint,
   url: [host: "localhost"],

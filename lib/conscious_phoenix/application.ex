@@ -11,6 +11,8 @@ defmodule ConsciousPhoenix.Application do
     children = [
       # Start the Ecto repository
       ConsciousPhoenix.Repo,
+      # Start the Quantum chron scheduler
+      ConsciousPhoenix.Scheduler,
       # Start the endpoint when the application starts
       ConsciousPhoenixWeb.Endpoint,
       # Starts a worker by calling: ConsciousPhoenix.Worker.start_link(arg)

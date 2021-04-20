@@ -1,5 +1,5 @@
 defmodule ConsciousPhoenix.Deck do
-  alias __MODULE__
+  # alias __MODULE__
 
   @derive {Jason.Encoder,
     only: [

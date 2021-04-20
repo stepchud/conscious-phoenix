@@ -1,14 +1,15 @@
 defmodule ConsciousPhoenix.GameServer do
   use GenServer
 
+  alias ConsciousPhoenix.Deck
   alias ConsciousPhoenix.Game
   alias ConsciousPhoenix.Player
   alias ConsciousPhoenixWeb.Endpoint
 
-
   defmodule WorldState do
     defstruct(
-      games: %{ }
+      games: %{ },
+      updated_games: MapSet.new()
     )
   end
 
@@ -20,6 +21,10 @@ defmodule ConsciousPhoenix.GameServer do
 
   def get_game(gid) do
     GenServer.call(__MODULE__, %{action: :get_game, gid: gid})
+  end
+
+  def save_updated_games() do
+    GenServer.cast(__MODULE__, %{action: :save_updated_games})
   end
 
   def start_game(gid, name, icon, sides) do
@@ -92,14 +97,36 @@ defmodule ConsciousPhoenix.GameServer do
     {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
   end
 
+  def handle_cast(%{action: :save_updated_games}, state) do
+    # Enum.map(state.updated_games, fn gid -> state.games[gid] end)
+    IO.inspect(state.updated_games, label: "Updated games:")
+    Enum.each(state.updated_games, fn gid ->
+      game = Map.get(state.games, gid)
+      IO.inspect(game.turns, label: "Updated game turns:")
+      # save to DB
+      IO.puts("saving #{gid} to db")
+      Game.insert_or_update(game)
+    end)
+    state = put_in(state.updated_games, MapSet.new())
+    {:noreply, state}
+  end
+
   def handle_cast(%{
     action: :start_game,
     gid: gid, name: name, icon: icon,  sides: sides
   }, state) do
     IO.puts "start_game<#{gid}> (#{name}, #{sides})"
     player = %Player{ name: name, icon: icon, pid: Player.generate_pid() }
-    game = %Game{ players: %{ player.pid => player }, board: %{ sides: sides, roll: sides } }
-               |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
+    game = %Game{
+      gid: gid,
+      players: %{ player.pid => player },
+      board: %{ sides: sides, roll: sides },
+      cards: %Deck{},
+      laws:  %{ },
+      log: [ ],
+      turns: [ ]
+    }
+    |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
 
     Endpoint.broadcast!("game:#{gid}", "game:started", %{name: name, pid: player.pid, sides: sides})
     put_state_no_reply(state, game, gid)
@@ -125,9 +152,17 @@ defmodule ConsciousPhoenix.GameServer do
   }, state) do
     IO.puts "wait_game<#{gid}> (#{name}, #{sides})"
     player = %Player{ name: name, pid: Player.generate_pid() }
-    game = %Game{ players: %{ player.pid => player }, board: %{ sides: sides, roll: sides, status: "wait" } }
-               |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
-               |> Game.log_event(%{ pid: player.pid, entry: "Waiting for players to join." })
+    game = %Game{
+      gid: gid,
+      players: %{ player.pid => player },
+      board: %{ sides: sides, roll: sides, status: "wait" },
+      cards: %Deck{},
+      laws:  %{ },
+      log: [ ],
+      turns: [ ]
+    }
+    |> Game.log_event(%{ pid: player.pid, entry: "#{name} started the game as the dealer with #{sides}-sided dice." })
+    |> Game.log_event(%{ pid: player.pid, entry: "Waiting for players to join." })
 
     Endpoint.broadcast!("game:#{gid}", "game:waited", %{name: name, pid: player.pid, sides: sides})
     put_state_no_reply(state, game, gid)
@@ -286,6 +321,12 @@ defmodule ConsciousPhoenix.GameServer do
     put_state_no_reply(state, game, gid)
   end
 
+  defp put_state_no_reply(state, game, gid) do
+    state = put_in(state.updated_games, MapSet.put(state.updated_games, gid))
+    state = put_in(state.games[gid], game)
+    {:noreply, state}
+  end
+
   defp join_player(current_gid, new_gid, game, pid, name) do
     case { pid, game.players[pid] } do
       { nil, _ } ->
@@ -328,10 +369,5 @@ defmodule ConsciousPhoenix.GameServer do
 
   defp broadcast_hasnamuss_take_card(game, gid, pid) do
     Endpoint.broadcast!("game:#{gid}", "game:hasnamuss_take_card", %{ pid: pid, game: game })
-  end
-
-  defp put_state_no_reply(state, game, gid) do
-    state = put_in(state.games[gid], game)
-    {:noreply, state}
   end
 end
