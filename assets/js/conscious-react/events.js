@@ -769,10 +769,6 @@ export const gameActions = (channel) => {
     onPlayerJoined: (game) => {
       store.dispatch(actions.updateGame({ board: game.board, log: game.log }))
     },
-    onGameContinued: (payload) => {
-      store.dispatch(actions.updateGame(payload))
-      store.dispatch(actions.hideModal())
-    },
     onTurnStarted: (payload) => store.dispatch(actions.startTurn(payload)),
     onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
     onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),

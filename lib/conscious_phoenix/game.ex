@@ -6,8 +6,7 @@ defmodule ConsciousPhoenix.Game do
 
   use Ecto.Schema
   import Ecto.Changeset
-  #  Ecto.Query.from/2
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [from: 2] # Ecto.Query.from/2
 
   @derive {Jason.Encoder,
     only: [
@@ -20,7 +19,14 @@ defmodule ConsciousPhoenix.Game do
     ]
   }
 
-
+  # defstruct(
+  #   players: %{ },
+  #   board: %{ },
+  #   cards: %Deck{},
+  #   laws:  %{ },
+  #   log: [ ],
+  #   turns: [ ]
+  # )
   schema "games" do
     field :gid,     :string
     field :board,   :map
@@ -59,20 +65,19 @@ defmodule ConsciousPhoenix.Game do
       end
     else
       case Repo.insert(game) do
-        {:ok, struct} -> IO.inspect(struct, label: "Inserted new game #{struct.gid}")
+        {:ok, struct} -> IO.puts("Inserted new game #{struct.gid}")
         {:error, changeset} -> IO.inspect(changeset, label: "Error on insert:")
       end
     end
   end
 
-  # defstruct(
-  #   players: %{ },
-  #   board: %{ },
-  #   cards: %Deck{},
-  #   laws:  %{ },
-  #   log: [ ],
-  #   turns: [ ]
-  # )
+  def fetch(state, gid) do
+    if Map.has_key?(state.games, gid) do
+      state.games[gid]
+    else
+      Repo.get_by(Game, gid: gid)
+    end
+  end
 
   def save_state(game, pid, updates) do
     game

@@ -73,6 +73,7 @@ export default function Connect() {
   }
 
   this.join = (gid) => {
+    if (this.gid === gid) { return }
     this.leave()
     this.gid = gid
     this.channel = this.socket.channel(`game:${gid}`, {})
@@ -132,7 +133,7 @@ export default function Connect() {
       const { gid, pid } = payload
       this.join(gid)
       const state = localState(payload)
-      this.actions.onGameContinued(state)
+      this.actions.onUpdateGame(state)
     })
     this.channel.on("game:fifth_options", payload => {
       if (getPlayerId() === payload.pid) {

@@ -118,6 +118,11 @@ const player = (
         name: action.state.player.name,
         current_turn: TURNS.initial,
       }
+    case 'UPDATE_GAME':
+      return {
+        ...state,
+        ...action.player,
+      }
     case 'WAIT_FOR_TURN':
       return {
         ...state,

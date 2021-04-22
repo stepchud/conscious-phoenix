@@ -58,7 +58,7 @@ const JoinGameModal = ({
   }
   const props = {
     show: true,
-    title: `Welcome back!`,
+    title: `Which Game?`,
     body,
     options,
     errorMessage,

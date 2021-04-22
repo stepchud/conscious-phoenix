@@ -93,18 +93,16 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_call(%{action: :get_game, gid: gid}, _, state) do
-    IO.puts "Games (#{map_size(state.games)}): [#{Enum.join(Map.keys(state.games), ", ")}]"
-    {:reply, %{"gid" => gid, "game" => state.games[gid]}, state}
+    game = Game.fetch(state, gid)
+    {:reply, %{"gid" => gid, "game" => game}, state}
   end
 
   def handle_cast(%{action: :save_updated_games}, state) do
-    # Enum.map(state.updated_games, fn gid -> state.games[gid] end)
+    IO.inspect(Map.keys(state.games), label: "Current games:")
     IO.inspect(state.updated_games, label: "Updated games:")
     Enum.each(state.updated_games, fn gid ->
       game = Map.get(state.games, gid)
-      IO.inspect(game.turns, label: "Updated game turns:")
       # save to DB
-      IO.puts("saving #{gid} to db")
       Game.insert_or_update(game)
     end)
     state = put_in(state.updated_games, MapSet.new())
@@ -134,7 +132,7 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{ action: :start_after_wait, gid: gid }, state) do
     IO.puts "start_after_wait<#{gid}>"
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
     game = put_in(game.board.status, "active")
     first = if (Enum.count(game.turns) > 1) do
       Enum.at(game.turns, -2)
@@ -172,7 +170,7 @@ defmodule ConsciousPhoenix.GameServer do
     :action => :continue_game,
     :current_gid => current_gid, :gid => gid, :pid => pid
   }, state) do
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
     if (is_nil(game)) do
       Endpoint.broadcast!("game:#{current_gid}",
         "modal:error", %{ error: %{ message: "Game not found!" } })
@@ -194,6 +192,7 @@ defmodule ConsciousPhoenix.GameServer do
           )
           {:noreply, state}
         { _, _ } ->
+          IO.puts "existing player continued:#{pid}"
           Endpoint.broadcast!(
             "game:#{current_gid}",
             "game:continued",
@@ -208,20 +207,20 @@ defmodule ConsciousPhoenix.GameServer do
     :action => :join_game,
     :current_gid => current_gid, :gid => gid, :pid => pid, name: name
   }, state) do
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
     if (is_nil(game)) do
       IO.puts "game not found! #{gid}"
       Endpoint.broadcast!("game:#{current_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
       game = join_player(current_gid, gid, game, pid, name)
-      IO.inspect Map.keys(state.games[gid].players), label: "player joined"
       put_state_no_reply(state, game, gid)
     end
   end
 
   def handle_cast(%{:action => :end_turn, :gid => gid, :pid => pid, :game => updates}, state) do
-    { action, game } = Game.end_turn(state.games[gid], pid, updates)
+    game = Game.fetch(state, gid)
+    { action, game } = Game.end_turn(game, pid, updates)
 
     case action do
       :next_turn -> broadcast_next_turn(game, gid)
@@ -233,19 +232,19 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :save_state, :gid => gid, :pid => pid, :game => updates}, state) do
-    game = Game.save_state(state.games[gid], pid, updates)
+    game = Game.save_state(Game.fetch(state, gid), pid, updates)
     update_game(state, gid, pid, game)
   end
 
   def handle_cast(%{:action => :log_event, :gid => gid, :pid => pid, :event => event}, state) do
-    game = Game.log_event(state.games[gid], %{ pid: pid, entry: event })
+    game = Game.log_event(Game.fetch(state, gid), %{ pid: pid, entry: event })
 
     Endpoint.broadcast!("game:#{gid}", "game:event", %{ event: event })
     put_state_no_reply(state, game, gid)
   end
 
   def handle_cast(%{:action => :game_over, :gid => gid, :pid => pid}, state) do
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
     entry = "#{game.players[pid].name}'s game is over."
     game = game
       |> Game.update_player_status(pid, Player.statuses.done)
@@ -256,12 +255,12 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :exchange_dupes, :gid => gid, :pid => pid}, state) do
-    game = Game.exchange_dupes(state.games[gid], pid)
+    game = Game.exchange_dupes(Game.fetch(state, gid), pid)
     update_game(state, gid, pid, game)
   end
 
   def handle_cast(%{:action => :fifth_striving, :gid => gid, :pid => pid, :game => updates}, state) do
-    game = Game.save_state(state.games[gid], pid, updates)
+    game = Game.save_state(Game.fetch(state, gid), pid, updates)
     case Game.fifth_striving(game, pid) do
       { :none, game } ->
         IO.puts("none fifth_striving")
@@ -277,7 +276,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :choose_fifth, :gid => gid, :pid => pid, :lower => lower, :card => card}, state) do
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
     higher = game.players[pid]
     lower = game.players[lower]
     IO.puts("one fifth_striving")
@@ -285,7 +284,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :choose_astral, :gid => gid, :pid => pid, :replace => replace}, state) do
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
     player = game.players[pid]
     game = if(replace, do: Game.replace_astral(game, player), else: Game.reject_astral(game, player))
     if Enum.empty?(Game.offered_players(game)) do
@@ -298,7 +297,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{:action => :try_to_take_card, :gid => gid, :pid => pid, :card => card}, state) do
-    game = state.games[gid]
+    game = Game.fetch(state, gid)
            |> Game.try_to_take_card(pid, card)
     take_cards = game.players[pid].take_cards
     cond do
@@ -308,13 +307,6 @@ defmodule ConsciousPhoenix.GameServer do
 
     put_state_no_reply(state, game, gid)
   end
-
-  # def handle_cast(%{:action => :reset, :gid => gid}, state) do
-  #   state = put_in(state.games[gid], %{})
-  #   game = state.games[gid]
-  #   Endpoint.broadcast!("game:#{gid}", "game:update", %{game: game})
-  #   {:noreply, state}
-  # end
 
   defp update_game(state, gid, pid, game) do
     Endpoint.broadcast!("game:#{gid}", "game:update", %{ pid: pid, game: game })
