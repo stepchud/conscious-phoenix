@@ -25,7 +25,8 @@ const localState = (payload) => {
   const pid = getPlayerId()
 
   const player = players[pid]
-  const shared_laws = payloadPid===pid && player.shared_laws
+  player.active = payloadPid===pid
+  const shared_laws = player.active && player.shared_laws
   ? player.shared_laws.map(
     c => ({
       c,

@@ -26,6 +26,20 @@ export const lawsPassed = (position, next_position, asleep, alive) => {
 const GAME_ID = 'game_id'
 const PLAYER_ID = 'player_id'
 
+export const getGameFromParams = () => {
+  const queryString = window.location.search
+  const urlParams = new URLSearchParams(queryString)
+  const pid = urlParams.get('player_id')
+  const gid =  urlParams.get('game_id')
+  if (gid || pid) {
+    gid && setGameId(gid)
+    pid && setPlayerId(pid)
+    location.replace(location.href.replace(location.search, ''))
+    return true
+  }
+  return false
+}
+
 export const getGameId = () => localStorage.getItem(GAME_ID)
 export const generateGameId = () => {
   // auto-generate a gid locally
