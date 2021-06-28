@@ -73,9 +73,21 @@ defmodule ConsciousPhoenix.Game do
 
   def fetch(state, gid) do
     if Map.has_key?(state.games, gid) do
-      state.games[gid]
+      { state.games[gid], state }
     else
-      Repo.get_by(Game, gid: gid)
+      game = Repo.get_by(Game, gid: gid)
+      if game do
+        # re-hydrate players
+        players = Enum.reduce(game.players, %{}, fn { pid, playerMap }, acc ->
+          player = Map.merge(%Player{}, playerMap)
+          put_in(acc[pid], player)
+        end)
+        game = put_in(game.players, players)
+        state = put_in(state.games[gid], game)
+        { game, state }
+      else
+        { nil, state }
+      end
     end
   end
 
