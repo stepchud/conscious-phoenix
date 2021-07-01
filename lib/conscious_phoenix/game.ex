@@ -7,6 +7,7 @@ defmodule ConsciousPhoenix.Game do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2] # Ecto.Query.from/2
+  import ConsciousPhoenix.StructFromMap, only: [convert_with_indifferent_access: 2]
 
   @derive {Jason.Encoder,
     only: [
@@ -79,7 +80,7 @@ defmodule ConsciousPhoenix.Game do
       if game do
         # re-hydrate players
         players = Enum.reduce(game.players, %{}, fn { pid, playerMap }, acc ->
-          player = Map.merge(%Player{}, playerMap)
+          player = convert_with_indifferent_access(playerMap, as: %Player{})
           put_in(acc[pid], player)
         end)
         game = put_in(game.players, players)

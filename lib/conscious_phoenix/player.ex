@@ -3,7 +3,7 @@ defmodule ConsciousPhoenix.Player do
 
   @levels_of_being ["MULTIPLICITY": 0, "DEPUTY-STEWARD": 1, "STEWARD": 2, "MASTER": 3]
 
-  @statuses %{ present: :present, away: :away, done: :done, quit: :quit }
+  @statuses %{ present: "present", away: "away", done: "done", quit: "quit" }
 
   def statuses, do: @statuses
 
