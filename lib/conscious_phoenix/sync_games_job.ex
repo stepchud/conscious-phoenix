@@ -1,8 +1,9 @@
 defmodule ConsciousPhoenix.SyncGamesJob do
+  require Logger
   alias ConsciousPhoenix.GameServer
 
   def sync() do
-    IO.puts("RUNNING SyncGamesJob")
+    Logger.debug("RUNNING SyncGamesJob")
     GameServer.save_updated_games()
   end
 end

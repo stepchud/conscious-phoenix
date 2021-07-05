@@ -1,4 +1,5 @@
 defmodule ConsciousPhoenix.GameServer do
+  require Logger
   use GenServer
 
   alias ConsciousPhoenix.Deck
@@ -98,8 +99,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{action: :save_updated_games}, state) do
-    IO.inspect(Map.keys(state.games), label: "Current games:")
-    IO.inspect(state.updated_games, label: "Updated games:")
+    Logger.debug("Current / Updated games: #{inspect(Map.keys(state.games))} / #{inspect(state.updated_games)}")
     Enum.each(state.updated_games, fn gid ->
       game = Map.get(state.games, gid)
       # save to DB
