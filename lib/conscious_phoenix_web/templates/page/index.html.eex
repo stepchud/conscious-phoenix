@@ -76,11 +76,11 @@ the way you play it is free will.
           <span class="description"> - Impression space</span>
         </div>
         <div class="board-spaces">
-          <span class="space card"></span>
+          <span class="space card"><span class="dot"></span></span>
           <span class="description"> - Card space, draw a card into your <a href="#cards">card hand</a></span>
         </div>
         <div class="board-spaces">
-          <span class="space law"></span>
+          <span class="space law"><span class="dot"></span></span>
           <span class="description"> - Law spaces, draw a law card into your <a href="#lawcards">law hand</a></span>
         </div>
         <!-- <div class="board">
