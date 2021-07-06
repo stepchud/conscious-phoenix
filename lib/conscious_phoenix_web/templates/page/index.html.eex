@@ -58,30 +58,30 @@ the way you play it is free will.
       The rows of colored dots are board spaces. There are 245 total spaces.
       There are the three types of being food and landing on them creates a piece of
       stuff on the corresponding part of the player&#8217;s <a href="#fd">Food Diagram</a>.
-      <blockquote>
+      <blockquote class="white-space-normal">
         <div class="board-spaces">
-            <span class="space wild"></span>
-            <span class="description"> - Wild space (player's choice)</span>
+          <span class="space wild"></span>
+          <span class="description"> Wild space (player's choice)</span>
         </div>
         <div class="board-spaces">
           <span class="space food"></span>
-          <span class="description"> - Food space</span>
+          <span class="description"> Food space</span>
         </div>
         <div class="board-spaces">
           <span class="space air"></span>
-          <span class="description"> - Air space</span>
+          <span class="description"> Air space</span>
         </div>
         <div class="board-spaces">
           <span class="space impression"></span>
-          <span class="description"> - Impression space</span>
+          <span class="description"> Impression space</span>
         </div>
         <div class="board-spaces">
           <span class="space card"><span class="dot"></span></span>
-          <span class="description"> - Card space, draw a card into your <a href="#cards">card hand</a></span>
+          <span class="description"> Card space, draw a card into your <a href="#cards">card hand</a></span>
         </div>
         <div class="board-spaces">
           <span class="space law"><span class="dot"></span></span>
-          <span class="description"> - Law spaces, draw a law card into your <a href="#lawcards">law hand</a></span>
+          <span class="description"> Law spaces, draw a law card into your <a href="#lawcards">law hand</a></span>
         </div>
         <!-- <div class="board">
           <span class="space-wrap">

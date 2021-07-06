@@ -69,6 +69,10 @@ blockquote .board {
   top: -40px;
 }
 
+blockquote .board-spaces .space {
+  margin-right: 16px;
+}
+
 .white-space-normal {
   white-space: normal;
 }
