@@ -69,7 +69,11 @@ blockquote .board {
   top: -40px;
 }
 
-ol.board-spaces {
+.white-space-normal {
+  white-space: normal;
+}
+
+.board-spaces {
   display: flex;
   width: 100%;
   list-style-type: none;
@@ -78,7 +82,7 @@ ol.board-spaces {
   padding-bottom: 0.5em;
 }
 
-ol.board-spaces li {
+.board-spaces li {
   margin: 0;
   transform: rotateX(60deg);
 }

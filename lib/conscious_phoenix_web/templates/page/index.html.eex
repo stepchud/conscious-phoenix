@@ -59,50 +59,38 @@ the way you play it is free will.
       There are the three types of being food and landing on them creates a piece of
       stuff on the corresponding part of the player&#8217;s <a href="#fd">Food Diagram</a>.
       <blockquote>
-        <div class="board">
-          <span class="space-wrap">
-            <span class="wild"></span>
+        <div class="board-spaces">
+            <span class="space wild"></span>
             <span class="description"> - Wild space (player's choice)</span>
-          </span>
         </div>
-        <div class="board">
-          <span class="space-wrap">
-            <span class="food"></span>
-            <span class="description"> - Food space</span>
-          </span>
+        <div class="board-spaces">
+          <span class="space food"></span>
+          <span class="description"> - Food space</span>
         </div>
-        <div class="board">
-          <span class="space-wrap">
-            <span class="air"></span>
-            <span class="description"> - Air space</span>
-          </span>
+        <div class="board-spaces">
+          <span class="space air"></span>
+          <span class="description"> - Air space</span>
         </div>
-        <div class="board">
-          <span class="space-wrap">
-            <span class="impression"></span>
-            <span class="description"> - Impression space</span>
-          </span>
+        <div class="board-spaces">
+          <span class="space impression"></span>
+          <span class="description"> - Impression space</span>
         </div>
-        <div class="board">
-          <span class="space-wrap">
-            <span class="card"></span>
-            <span class="description"> - Card space, draw a card into your <a href="#cards">card hand</a></span>
-          </span>
+        <div class="board-spaces">
+          <span class="space card"></span>
+          <span class="description"> - Card space, draw a card into your <a href="#cards">card hand</a></span>
         </div>
-        <div class="board">
-          <span class="space-wrap">
-            <span class="law"></span>
-            <span class="description"> - Law spaces, draw a law card into your <a href="#lawcards">law hand</a></span>
-          </span>
+        <div class="board-spaces">
+          <span class="space law"></span>
+          <span class="description"> - Law spaces, draw a law card into your <a href="#lawcards">law hand</a></span>
         </div>
-        <div class="board">
+        <!-- <div class="board">
           <span class="space-wrap">
-            <span class="card"></span>
-            <span class="player" style="top: -2px; background-color: #B0126C;"></span>
-            <span class="player" style="top: -4px; background-color: #73AD21;"></span>
+            <span class="space card"></span>
+            <span class="player-container" style="top: -60px;"></span>
+            <span class="player-container" style="top: -80px;"></span>
             <span class="description"> - Two players landed on a card space</span>
           </span>
-        </div>
+        </div> -->
       </blockquote>
 
       Landing on a law space causes a &#8220;magnetic center moment&#8221;, one additional game card may be played from the card hand.
@@ -178,7 +166,7 @@ the way you play it is free will.
 <section class="row pb-md">
   <article class="column">
       Higher Emotional Center<br>
-      <img class="card-img" src="/images/AD.gif"></img>
+      <img class="card-img" src="/images/ADiamonds.gif"></img>
       <img class="card-img" src="/images/AC.gif"></img>
       <img class="card-img" src="/images/AH.gif"></img>
   </article>
