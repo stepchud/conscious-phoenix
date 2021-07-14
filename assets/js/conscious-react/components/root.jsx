@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import ReactModal from 'react-modal'
 import { ToastContainer, toast } from 'react-toastify'
 
-import { TURNS, getPlayerId, resetGameId, noop } from '../constants'
+import { TURNS, getGameId, getPlayerId, resetGameId, noop } from '../constants'
 import Store from '../reducers/store'
 import { gameActions } from '../events'
 import { hasnamuss, unobeyedLaws } from '../reducers/laws'
@@ -62,7 +62,23 @@ export class ConsciousBoardgame extends React.Component {
   handleGameExit = () => {
     const gid = resetGameId()
     this.props.channel.join(gid)
-    Store.dispatch({ type: 'RESET_GAME' })
+    this.actions.onResetGame()
+  }
+
+  handleSaveGame = () => {
+    const gid = getGameId()
+    const pid = getPlayerId()
+    const gameLink = `${document.location.href}?game_id=${gid}&player_id=${pid}`
+    const title = "Save / Share Game"
+    const body = <div>
+      To continue this game as the same player,
+      simply open this link from any browser:
+        <blockquote className="white-space-normal"><a href={gameLink}>{gameLink}</a></blockquote>
+      To invite a friend, ask them to join the Game ID:
+        <blockquote>{gid}</blockquote>
+    </div>
+    const saveModal = { title, body, onClick: noop }
+    this.actions.onSaveGame(pid, saveModal)
   }
 
   handleRoll = async () => {
@@ -171,6 +187,7 @@ export class ConsciousBoardgame extends React.Component {
             onEndDeath={this.actions.handleEndDeath}
             onGameOver={this.handleGameOver}
             onExit={this.handleGameExit}
+            onSaveShareGame={this.handleSaveGame}
           />
           {TurnMsg}
         </GameMenu>

@@ -45,6 +45,7 @@ export const Buttons = ({
   onObeyLaw,
   onCombineSelectedParts,
   onPlaySelected,
+  onSaveShareGame,
   onGameOver,
   onRandomLaw,
   onEndDeath,
@@ -100,6 +101,7 @@ export const Buttons = ({
       if (selLaws.length===1 && !selLaws[0].obeyed) {
         buttons.push(<button key={buttons.length} onClick={onObeyLaw}>Obey Law</button>)
       }
+      buttons.push(<button key={buttons.length} onClick={onSaveShareGame}>Save / Share Game</button>)
       break;
   }
 

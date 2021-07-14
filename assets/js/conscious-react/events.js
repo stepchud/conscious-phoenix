@@ -770,7 +770,12 @@ export const gameActions = (channel) => {
       store.dispatch(actions.updateGame({ board: game.board, log: game.log }))
     },
     onTurnStarted: (payload) => store.dispatch(actions.startTurn(payload)),
+    onSaveGame: (pid, modalProps) => {
+      dispatchShowModal(modalProps)
+      channel.push('game:save_state', { pid, game: store.getState() })
+    },
     onUpdateGame: (payload) => store.dispatch(actions.updateGame(payload)),
+    onResetGame: () => store.dispatch(actions.resetGame()),
     onUpdateModal: (props) => store.dispatch(actions.updateModal(props)),
     onEventLog: (event) => store.dispatch(actions.logEvent(event)),
     onShowModal: () => {
