@@ -523,18 +523,21 @@ span.laws {
   position: relative;
   background-color: #fefefe;
   margin: auto;
-  width: 65%;
   max-width: 480px;
-  top: 40px;
-  bottom: 40px;
-  left: 40px;
-  right: 40px;
+  top: 45px;
+  bottom: 45px;
   border: 1px solid rgb(204, 204, 204);
   background: rgb(255, 255, 255);
   overflow: auto;
   border-radius: 4px;
   outline: none;
   padding: 20px;
+}
+
+@media (min-width: 40.0rem /* 640px */) {
+  .ReactModal__Content {
+    width: 65%;
+  }
 }
 
 .modal-container {
