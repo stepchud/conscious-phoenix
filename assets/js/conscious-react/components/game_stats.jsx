@@ -112,31 +112,34 @@ export const Buttons = ({
   )
 }
 
-export const GameMenu = ({
-  children
-}) =>
-  <div className="section actions fixed-nav">
-    {children}
-  </div>
-
 export const GameInfo = ({
   gid,
   name,
+  navRef,
   level_of_being,
   card_plays,
   transforms,
   wild_shock,
   all_shocks,
-}) =>
-  <ul className="section game-info">
-    <li>Game: {gid}</li>
-    <li>Name: {name}</li>
-    <li>Level: {level_of_being}</li>
-    <li>Card Plays: {card_plays}</li>
-    <li>Transform: {transforms}</li>
-    <li>Wild: {wild_shock}</li>
-    <li>All: {all_shocks}</li>
-  </ul>
+}) => {
+  let ulStyle = { paddingTop: "110px" }
+  if (navRef && navRef.current) {
+    const { height } = navRef.current.getBoundingClientRect()
+    ulStyle.paddingTop = (height + 5) + "px"
+    console.log("ulStyle:", ulStyle)
+  }
+  return (
+    <ul style={ulStyle} className="section game-info">
+      <li>Game: {gid}</li>
+      <li>Name: {name}</li>
+      <li>Level: {level_of_being}</li>
+      <li>Card Plays: {card_plays}</li>
+      <li>Transform: {transforms}</li>
+      <li>Wild: {wild_shock}</li>
+      <li>All: {all_shocks}</li>
+    </ul>
+  )
+}
 
 
 const LogEntry = ({
@@ -172,7 +175,6 @@ export const GameLog = ({
 
 export default {
   Buttons,
-  GameMenu,
   GameInfo,
   GameLog,
   TurnMessage,

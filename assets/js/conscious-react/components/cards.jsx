@@ -32,7 +32,7 @@ const ActiveLawCard = ({
 }) => {
   return (
     <div title={card.text} className='card law'>
-      <span className="card-state">
+      <span className="law-card-state">
         {!!covered.length && `(${covered.join(',')})`}
       </span>
       <CardImage card={card.card} />
@@ -49,11 +49,12 @@ const LawCard = ({
   if (card.obeyed) { cardState.push('O') }
   if (card.played) { cardState.push('P') }
   return (
-    <div title={card.c.text} className={classes} onClick={onClick} tabIndex='0'>
-      <span className="card-state">
+    <div className={classes} onClick={onClick} tabIndex='0'>
+      <span className="law-card-state">
         {cardState.join(',')}
       </span>
       <CardImage card={card.c.card} />
+      <div className="law-card-text">{card.c.text}</div>
     </div>
   )
 }

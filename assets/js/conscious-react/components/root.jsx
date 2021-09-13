@@ -12,7 +12,6 @@ import Dice from './dice'
 import {
   Buttons,
   GameInfo,
-  GameMenu,
   GameLog,
   TurnMessage,
 } from './game_stats'
@@ -109,6 +108,7 @@ export class ConsciousBoardgame extends React.Component {
 
   componentDidMount () {
     this.actions = gameActions(this.props.channel)
+    this.navRef = React.createRef()
   }
 
   componentWillUnmount () {
@@ -164,7 +164,7 @@ export class ConsciousBoardgame extends React.Component {
 
     return (
       <div>
-        <GameMenu>
+        <div ref={this.navRef} className="section actions fixed-nav">
           <Dice
             roll={board.roll}
             canRoll={canRoll}
@@ -190,7 +190,7 @@ export class ConsciousBoardgame extends React.Component {
             onSaveShareGame={this.handleSaveGame}
           />
           {TurnMsg}
-        </GameMenu>
+        </div>
         <TestButtons
           actions={this.actions}
           cards={cards.hand}
@@ -201,6 +201,7 @@ export class ConsciousBoardgame extends React.Component {
           gid={gameId}
           pid={playerId}
           name={player.name}
+          navRef={this.navRef}
           {...ep}
         />
         <Board player={player} onFifthStriving={this.handleFifthStriving} {...board} />

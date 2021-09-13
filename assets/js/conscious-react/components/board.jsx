@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { BOARD_SPACES, LAST_SPACE } from '../constants'
 import { useDoubleClick } from '../hooks/useDoubleClick'
