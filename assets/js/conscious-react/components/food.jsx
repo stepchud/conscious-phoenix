@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { times } from 'lodash'
 
 const Note = ({
@@ -113,6 +113,12 @@ const ImpressionOctave = ({
 const FoodDiagram = ({
   current,
 }) => {
+  // collapsible
+  const [ expanded, setExpanded ] = useState(false)
+  const onToggle = () => setExpanded(!expanded)
+  const cnBtn = expanded ? 'collapsible btn active' : 'collapsible btn'
+  const cnContent = expanded ? 'collapsible content active' : 'collapsible content'
+
   const { astral, mental } = current
   let bodyLabel
   if (mental) {
@@ -122,11 +128,13 @@ const FoodDiagram = ({
   }
 
   return (
-    <div className="section fd">
-      <h3>Food{bodyLabel}</h3>
-      <FoodOctave {...current} />
-      <AirOctave {...current} />
-      <ImpressionOctave {...current} />
+    <div className="fd">
+      <button className={cnBtn} onClick={onToggle}>Food{bodyLabel}</button>
+      <div className={cnContent}>
+        <FoodOctave {...current} />
+        <AirOctave {...current} />
+        <ImpressionOctave {...current} />
+      </div>
     </div>
   )
 }

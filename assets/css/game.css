@@ -11,13 +11,20 @@
   max-width: 100rem;
 }
 
-.section.being {
-  width: 58%;
-  display: inline-block;
+.section.ep-fd {
+  display: flex;
+  flex-wrap: wrap;
 }
 
-.section.fd {
-  vertical-align: top;
+.ep-fd .being {
+  margin-right: 4rem;
+}
+
+.fd .collapsible.btn {
+  display: block;
+}
+
+.fd .collapsible.content.active {
   height: 288px;
   width: 288px;
   display: inline-block;
@@ -38,15 +45,21 @@
   margin: 0 8px 0 0;
 }
 
-ul.game-info {
+.game-info dl {
   display: flex;
-  width: 100%;
-  list-style-type: none;
+  flex-flow: column wrap;
+  max-height: 5em;
 }
 
-ul.game-info li {
+.game-info dl dt {
+  padding: 2px 4px;
+  background: #333;
+  color: #fff;
+}
+
+.game-info dl dd {
   margin: 0;
-  padding-right: 8px;
+  padding: 4px;
 }
 
 .turn-message {
@@ -75,6 +88,7 @@ blockquote .board-spaces .space {
 
 .board-spaces {
   display: flex;
+  height: 42px;
   width: 100%;
   list-style-type: none;
   overflow-x: scroll;
@@ -283,6 +297,7 @@ blockquote .board-spaces .space {
 
 .law-card-text {
   font-size: 0.5em;
+  padding-top: 8px;
 }
 
 .card-img {
@@ -491,6 +506,10 @@ span.laws {
   left: 72px;
 }
 
+.being .brain, .being .essence, .being .personality {
+  display: flex;
+}
+
 .being .card, .being .holder {
   margin-right: 8px;
 }
@@ -573,8 +592,36 @@ span.laws {
   color: red;
 }
 
-.game-log.collapse .game-events {
+.collapsible.btn {
+  border: 0;
+  color: gray;
+  background-color: transparent;
+  font-size: 2.2rem;
+  font-weight: 300;
+}
+
+.collapsible.content {
   display: none;
+}
+
+.collapsible.btn:after {
+  /* plus-sign "+" */
+  content: '\02795';
+  float: left;
+  margin-right: 8px;
+}
+
+.collapsible.btn.active {
+  color: black;
+}
+
+.collapsible.btn.active:after {
+  /* minus-sign "-" */
+  content: "\2796";
+}
+
+.collapsible.content.active {
+  display: block;
 }
 
 @keyframes bouncePlayer {

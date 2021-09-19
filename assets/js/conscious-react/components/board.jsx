@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { BOARD_SPACES, LAST_SPACE } from '../constants'
 import { useDoubleClick } from '../hooks/useDoubleClick'
@@ -149,11 +149,21 @@ const BoardSpaces = ({
 
 const Board = ({
   ...props
-}) => (
-  <div className="section board">
-    <h3>Board</h3>
-    <BoardSpaces {...props} />
-  </div>
-)
+}) => {
+  // collapsible
+  const [ expanded, setExpanded ] = useState(false)
+  const onToggle = () => setExpanded(!expanded)
+  const cnBtn = expanded ? 'collapsible btn active' : 'collapsible btn'
+  const cnContent = expanded ? 'collapsible content active' : 'collapsible content'
+
+  return (
+    <div className="section board">
+      <button className={cnBtn} onClick={onToggle}>Board</button>
+      <div className={cnContent}>
+        <BoardSpaces {...props} />
+      </div>
+    </div>
+  )
+}
 
 export default Board

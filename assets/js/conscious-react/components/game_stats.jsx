@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { map } from 'lodash'
 
 import { combinable, playable, selectedCards } from '../reducers/cards'
@@ -115,6 +115,7 @@ export const Buttons = ({
 export const GameInfo = ({
   gid,
   name,
+  message,
   navRef,
   level_of_being,
   card_plays,
@@ -122,22 +123,34 @@ export const GameInfo = ({
   wild_shock,
   all_shocks,
 }) => {
-  let ulStyle = { paddingTop: "110px" }
+  // collapsible
+  const [ expanded, setExpanded ] = useState(false)
+  const onToggle = () => setExpanded(!expanded)
+  const cnBtn = expanded ? 'collapsible btn active' : 'collapsible btn'
+  const cnContent = expanded ? 'collapsible content active' : 'collapsible content'
+
+  let sectionStyle = { paddingTop: "110px" }
   if (navRef && navRef.current) {
     const { height } = navRef.current.getBoundingClientRect()
-    ulStyle.paddingTop = (height + 5) + "px"
-    console.log("ulStyle:", ulStyle)
+    sectionStyle.paddingTop = (height + 5) + "px"
   }
+
   return (
-    <ul style={ulStyle} className="section game-info">
-      <li>Game: {gid}</li>
-      <li>Name: {name}</li>
-      <li>Level: {level_of_being}</li>
-      <li>Card Plays: {card_plays}</li>
-      <li>Transform: {transforms}</li>
-      <li>Wild: {wild_shock}</li>
-      <li>All: {all_shocks}</li>
-    </ul>
+    <div style={sectionStyle} className="section game-info">
+      <button className={cnBtn} onClick={onToggle}>Game Info</button>
+      <div className={cnContent}>
+        {message}
+        <dl className="section game-info">
+          <dt>Game:</dt><dd>{gid}</dd>
+          <dt>Name:</dt><dd>{name}</dd>
+          <dt>Level:</dt><dd>{level_of_being}</dd>
+          <dt>Card Plays:</dt><dd>{card_plays}</dd>
+          <dt>Transform:</dt><dd>{transforms}</dd>
+          <dt>Wild:</dt><dd>{wild_shock}</dd>
+          <dt>All:</dt><dd>{all_shocks}</dd>
+        </dl>
+      </div>
+    </div>
   )
 }
 
@@ -155,18 +168,21 @@ const LogEntry = ({
 export const GameLog = ({
   board,
   entries,
-  expanded,
-  onToggle,
 }) => {
-  const cn = expanded ? 'game-log expand' : 'game-log collapse'
+  // collapsible
+  const [ expanded, setExpanded ] = useState(false)
+  const onToggle = () => setExpanded(!expanded)
+  const cnBtn = expanded ? 'collapsible btn active' : 'collapsible btn'
+  const cnContent = expanded ? 'collapsible content active' : 'collapsible content'
+
   const logEntries = entries.map(
     (entry, index) => <LogEntry key={index} name={getPlayerName(board.players, entry.pid)} {...entry} />
   )
 
   return (
-    <div className={cn}>
-      <button onClick={onToggle}>{expanded ? '' : 'View '}Game Log</button>
-      <div className='game-events'>
+    <div className='game-log'>
+      <button className={cnBtn} onClick={onToggle}>Game Log</button>
+      <div className={cnContent}>
         {logEntries}
       </div>
     </div>

@@ -26,10 +26,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 export class ConsciousBoardgame extends React.Component {
 
-  state = {
-    expandLog: false,
-  }
-
   handleJoinGame = (gid, name, icon) => {
     const pid = getPlayerId()
     this.props.channel.push('game:join', { gid, pid, name, icon })
@@ -103,8 +99,6 @@ export class ConsciousBoardgame extends React.Component {
     const pid = getPlayerId()
     this.props.channel.push('game:log_event', { pid, event })
   }
-
-  toggleEventLog = () => this.setState({ expandLog: !this.state.expandLog })
 
   componentDidMount () {
     this.actions = gameActions(this.props.channel)
@@ -189,7 +183,6 @@ export class ConsciousBoardgame extends React.Component {
             onExit={this.handleGameExit}
             onSaveShareGame={this.handleSaveGame}
           />
-          {TurnMsg}
         </div>
         <TestButtons
           actions={this.actions}
@@ -198,6 +191,7 @@ export class ConsciousBoardgame extends React.Component {
           parts={ep.parts}
         />
         <GameInfo
+          message={TurnMsg}
           gid={gameId}
           pid={playerId}
           name={player.name}
@@ -218,12 +212,12 @@ export class ConsciousBoardgame extends React.Component {
             onSelect={this.actions.onSelectLawCard}
             onChoice={this.actions.handleChooseLaw} />
         }
-        <ThreeBrains {...ep} onSelect={this.actions.onSelectPart} />
-        <FoodDiagram {...fd} />
+        <div className="section ep-fd">
+          <ThreeBrains {...ep} onSelect={this.actions.onSelectPart} />
+          <FoodDiagram {...fd} />
+        </div>
         <GameLog
           board={board}
-          expanded={this.state.expandLog}
-          onToggle={this.toggleEventLog}
           entries={log}
         />
         <GameModal {...modal} />
