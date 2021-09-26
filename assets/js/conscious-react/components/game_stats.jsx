@@ -9,7 +9,6 @@ import {
   selectedPlayedLaws,
 } from '../reducers/laws'
 import { selectedParts } from '../reducers/being'
-import Dice from './dice'
 import { TURNS, getPlayerName } from '../constants'
 
 
@@ -29,7 +28,11 @@ export const TurnMessage = ({ turn, hasLaws, waiting, deathTurn, gameOver }) => 
     message = 'Select 7 cards from your hand to keep after death'
   }
 
-  return <div className="turn-message">{message}</div>
+  return (
+    message.length > 0
+      ? <div className="turn-message">{message}</div>
+      : null
+  )
 }
 
 export const Buttons = ({
@@ -140,15 +143,19 @@ export const GameInfo = ({
       <button className={cnBtn} onClick={onToggle}>Game Info</button>
       <div className={cnContent}>
         {message}
-        <dl className="section game-info">
-          <dt>Game:</dt><dd>{gid}</dd>
-          <dt>Name:</dt><dd>{name}</dd>
-          <dt>Level:</dt><dd>{level_of_being}</dd>
-          <dt>Card Plays:</dt><dd>{card_plays}</dd>
-          <dt>Transform:</dt><dd>{transforms}</dd>
-          <dt>Wild:</dt><dd>{wild_shock}</dd>
-          <dt>All:</dt><dd>{all_shocks}</dd>
-        </dl>
+        <div className="game-stats">
+          <dl>
+            <dt>Game:</dt><dd>{gid}</dd>
+            <dt>Name:</dt><dd>{name}</dd>
+            <dt>Level:</dt><dd>{level_of_being}</dd>
+          </dl>
+          <dl>
+            <dt>Card Plays:</dt><dd>{card_plays}</dd>
+            <dt>Transform:</dt><dd>{transforms}</dd>
+            <dt>Wild:</dt><dd>{wild_shock}</dd>
+            <dt>All:</dt><dd>{all_shocks}</dd>
+          </dl>
+        </div>
       </div>
     </div>
   )

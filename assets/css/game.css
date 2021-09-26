@@ -1,6 +1,6 @@
 .section {
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
 }
 
 .section.actions {
@@ -17,7 +17,8 @@
 }
 
 .ep-fd .being {
-  margin-right: 4rem;
+  margin: 0 4rem 1rem 0;
+
 }
 
 .fd .collapsible.btn {
@@ -45,19 +46,26 @@
   margin: 0 8px 0 0;
 }
 
-.game-info dl {
+.game-stats {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.game-stats dl {
   display: flex;
   flex-flow: column wrap;
   max-height: 5em;
+  min-width: 30rem;
+  margin-bottom: 0;
 }
 
-.game-info dl dt {
+.game-stats dl dt {
   padding: 2px 4px;
   background: #333;
   color: #fff;
 }
 
-.game-info dl dd {
+.game-stats dl dd {
   margin: 0;
   padding: 4px;
 }
@@ -93,7 +101,6 @@ blockquote .board-spaces .space {
   list-style-type: none;
   overflow-x: scroll;
   margin: 1em 0 0 0;
-  padding-bottom: 0.5em;
 }
 
 .board-spaces li {
@@ -283,7 +290,7 @@ blockquote .board-spaces .space {
 }
 
 .cards .card.law {
-  min-height: 22px;
+  margin-top: 22px;
   width: 100px;
   vertical-align: bottom;
 }
@@ -504,6 +511,11 @@ span.laws {
   position: absolute;
   bottom: 192px;
   left: 72px;
+}
+
+.being .brain {
+  flex-wrap: wrap;
+  flex-direction: row-reverse;
 }
 
 .being .brain, .being .essence, .being .personality {

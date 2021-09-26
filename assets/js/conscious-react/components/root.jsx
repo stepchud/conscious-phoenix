@@ -154,7 +154,8 @@ export class ConsciousBoardgame extends React.Component {
       gameOver={gameOver}
     />
 
-    const onRoll = canRoll ? this.handleRoll : () => toast.warn(TurnMsg)
+    const onRoll = this.handleRoll
+    const onCantRoll = () => toast.warn(TurnMsg)
 
     return (
       <div>
@@ -163,6 +164,7 @@ export class ConsciousBoardgame extends React.Component {
             roll={board.roll}
             canRoll={canRoll}
             onRoll={onRoll}
+            onCantRoll={onCantRoll}
           />
           <Buttons
             turn={player.current_turn}
