@@ -76,8 +76,8 @@ export class ConsciousBoardgame extends React.Component {
     this.actions.onSaveGame(pid, saveModal)
   }
 
-  handleRoll = async () => {
-    await this.actions.handleRollClick()
+  handleRoll = async (roll) => {
+    await this.actions.handleRollClick(roll)
     const game = Store.getState()
     const pid = getPlayerId()
     this.props.channel.push('game:end_turn', { pid, game })
@@ -162,6 +162,7 @@ export class ConsciousBoardgame extends React.Component {
         <div ref={this.navRef} className="section actions fixed-nav">
           <Dice
             roll={board.roll}
+            sides={board.sides}
             canRoll={canRoll}
             onRoll={onRoll}
             onCantRoll={onCantRoll}
@@ -175,7 +176,6 @@ export class ConsciousBoardgame extends React.Component {
             ep={ep}
             gameOver={gameOver}
             deathTurn={player.reached_death_space}
-            onRoll={onRoll}
             onObeyLaw={this.actions.handleObeyLaw}
             onCombineSelectedParts={this.actions.onCombineSelectedParts}
             onPlaySelected={this.actions.onPlaySelected}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Dice } from '../constants'
 
 /*
  * Adapted from: https://codesandbox.io/s/xjk3xqnprw
@@ -8,19 +9,22 @@ import React, { useState } from 'react'
  *   The JavaScript is a random number generator that applies CSS classes to dice to display results",
  * "license": "MIT"
  */
-const Dice = ({ roll, canRoll, onRoll, onCantRoll }) => {
+const DiceComponent = ({ roll, sides, canRoll, onRoll, onCantRoll }) => {
   const [ animateRoll, setAnimateRoll ] = useState('odd-roll')
-  const onClick = () => {
-    if (!canRoll) { onCantRoll(); return }
+  const [ currentRoll, setCurrentRoll ] = useState(roll)
 
+  const onCanRoll = () => {
+    const new_roll = Dice(sides).roll()
     setAnimateRoll(animateRoll==='odd-roll' ? 'even-roll' : 'odd-roll')
-    setTimeout(() => { onRoll() }, 1000)
+    setCurrentRoll(new_roll)
+    setTimeout(() => { onRoll(new_roll) }, 1000)
   }
+  const onClick = canRoll ? onCanRoll : onCantRoll
 
   return (
     <div className="dice-container">
       <div className="dice" onClick={onClick}>
-        <ol className={`die-list ${animateRoll}`} data-roll={roll}>
+        <ol className={`die-list ${animateRoll}`} data-roll={currentRoll}>
           <li className="die-item" data-side="1">
             <span className="dot"></span>
           </li>
@@ -60,4 +64,4 @@ const Dice = ({ roll, canRoll, onRoll, onCantRoll }) => {
   )
 }
 
-export default Dice
+export default DiceComponent

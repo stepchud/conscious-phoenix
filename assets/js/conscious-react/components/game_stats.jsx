@@ -44,7 +44,6 @@ export const Buttons = ({
   ep,
   gameOver,
   deathTurn,
-  onRoll,
   onObeyLaw,
   onCombineSelectedParts,
   onPlaySelected,

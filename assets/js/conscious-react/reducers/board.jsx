@@ -79,9 +79,10 @@ const board = (
         ...action.board,
       }
     case 'ROLL_DICE': {
+      const next_roll = action.next_roll || Dice(sides).roll()
       return {
         ...state,
-        roll: Dice(sides).roll(),
+        roll: next_roll,
       }
     }
     case 'TAKE_OPPOSITE':

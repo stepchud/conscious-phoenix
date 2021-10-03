@@ -638,9 +638,9 @@ const handleObeyLaw = async () => {
   await handleStartOver()
 }
 
-const handleRollClick = async () => {
+const handleRollClick = async (roll) => {
   store.dispatch({ type: 'END_TURN' })
-  store.dispatch({ type: 'ROLL_DICE' })
+  store.dispatch({ type: 'ROLL_DICE', next_roll: roll })
 
   const {
     player: { position, direction },
@@ -649,7 +649,6 @@ const handleRollClick = async () => {
     laws: { active },
     board: { spaces, sides },
   } = store.getState()
-  let roll = store.getState().board.roll
   let rollSpace, oppositeSpace
   const opposite = Dice(sides).opposite(roll)
   if (direction > 0) {
