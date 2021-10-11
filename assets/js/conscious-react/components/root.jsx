@@ -44,8 +44,8 @@ export class ConsciousBoardgame extends React.Component {
     this.props.channel.push('game:start_after_wait', {})
   }
 
-  handleWaitGame = (name, sides) => {
-    this.props.channel.push('game:wait', { name, sides })
+  handleWaitGame = (name, icon, sides) => {
+    this.props.channel.push('game:wait', { name, icon, sides })
   }
 
   handleGameOver = () => {
@@ -93,11 +93,6 @@ export class ConsciousBoardgame extends React.Component {
     const pid = getPlayerId()
     const game = Store.getState()
     this.props.channel.push('game:fifth_striving', { pid, game })
-  }
-
-  handleLogEvent = (event) => {
-    const pid = getPlayerId()
-    this.props.channel.push('game:log_event', { pid, event })
   }
 
   componentDidMount () {
@@ -180,7 +175,7 @@ export class ConsciousBoardgame extends React.Component {
             onCombineSelectedParts={this.actions.onCombineSelectedParts}
             onPlaySelected={this.actions.onPlaySelected}
             onRandomLaw={this.actions.handleRandomLaw}
-            onEndDeath={this.actions.handleEndDeath}
+            onEndDeath={this.actions.onEndDeath}
             onGameOver={this.handleGameOver}
             onExit={this.handleGameExit}
             onSaveShareGame={this.handleSaveGame}

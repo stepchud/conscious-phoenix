@@ -25,6 +25,8 @@ export default {
   waitGame,
   joinGame,
   updateGame,
+  resetGame,
   startTurn,
   exchangeDupes,
+  logEvent,
 }

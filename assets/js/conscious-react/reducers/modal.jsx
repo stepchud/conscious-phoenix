@@ -21,16 +21,35 @@ const schoolMessage = (school) => {
   }
 }
 
+const schoolLogMessage = (school) => {
+  switch(school) {
+    case 'Fakir':
+      return "Found a Fakir school."
+    case 'Yogi':
+      return "Found a Yogi school."
+    case 'Monk':
+      return "Found a Monk school."
+    case 'Sly':
+      return "Found a Sly school."
+    case 'Balanced':
+      return "Found a balanced school."
+  }
+}
+
 const modal = (
   state = InitialState,
   action
 ) => {
   switch (action.type) {
-    case 'SHOW_MODAL':
+    case 'SHOW_MODAL': {
+      if (action.logEvent) {
+        action.channel?.push('game:log_event', { pid: action.pid, event: action.logEvent })
+      }
       return {
         ...action,
         show: true,
       }
+    }
     case 'HIDE_MODAL':
       return {
         ...state,
@@ -41,48 +60,67 @@ const modal = (
         ...state,
         [action.field]: action.value,
       }
-    case 'FOUND_SCHOOL':
+    case 'FOUND_SCHOOL': {
+      const message = schoolMessage(action.school_type)
+      const event = schoolLogMessage(action.school_type)
+      action.channel?.push('game:log_event', { pid: action.pid, event })
       return {
         show: true,
         title: 'Found School',
-        body: schoolMessage(action.school_type),
+        body: message,
         onClick: noop,
       }
-    case 'ATTAIN_STEWARD':
+    }
+    case 'ATTAIN_STEWARD': {
+      const event = 'Attained Steward: April Fools'
+      action.channel?.push('game:log_event', { pid: action.pid, event })
       return {
         show: true,
         title: 'April Fools!',
         body: 'You have attained Steward.',
         onClick: noop,
       }
-    case 'ATTAIN_MASTER':
+    }
+    case 'ATTAIN_MASTER': {
+      const event = 'Attained Master: Impartiality'
+      action.channel?.push('game:log_event', { pid: action.pid, event })
       return {
         show: true,
         title: 'Impartiality!',
         body: 'You have attained Master',
         onClick: noop,
       }
-    case 'MENTAL_BODY':
+    }
+    case 'MENTAL_BODY': {
+      const event = 'Chrystallized a Mental Body'
+      action.channel?.push('game:log_event', { pid: action.pid, event })
       return {
         show: true,
         title: 'Mental Body',
         body: 'I am Immortal within the limits of the Sun',
         onClick: noop,
       }
-    case 'ASTRAL_BODY':
+    }
+    case 'ASTRAL_BODY': {
+      const event = 'Chrystallized an Astral Body-kesdjan'
+      action.channel?.push('game:log_event', { pid: action.pid, event })
       return {
         show: true,
         title: "Astral Body",
         body: 'I have crystallized the body Kesdjan',
         onClick: noop,
       }
-    case 'HASNAMUSS':
+    }
+    case 'HASNAMUSS': {
+      const event = 'Turned into a Hasnamuss, shameful'
+      action.channel?.push('game:log_event', { pid: action.pid, event })
       return {
         show: true,
         title: "Hasnamuss!",
         body: 'Shame on you',
         onClick: noop,
       }
+    }
 
     default:
       return state

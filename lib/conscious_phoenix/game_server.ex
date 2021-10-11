@@ -36,8 +36,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :start_after_wait, gid: gid})
   end
 
-  def wait_game(gid, name, sides) do
-    GenServer.cast(__MODULE__, %{action: :wait_game, gid: gid, name: name, sides: sides})
+  def wait_game(gid, name, icon, sides) do
+    GenServer.cast(__MODULE__, %{action: :wait_game, gid: gid, name: name, icon: icon, sides: sides})
   end
 
   def join_game(current_gid, gid, pid, name) do
@@ -99,7 +99,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{action: :save_updated_games}, state) do
-    Logger.debug("Current / Updated games: #{inspect(Map.keys(state.games))} / #{inspect(state.updated_games)}")
+    # Logger.debug("Current / Updated games: #{inspect(Map.keys(state.games))} / #{inspect(state.updated_games)}")
     Enum.each(state.updated_games, fn gid ->
       game = Map.get(state.games, gid)
       # save to DB
@@ -113,7 +113,7 @@ defmodule ConsciousPhoenix.GameServer do
     action: :start_game,
     gid: gid, name: name, icon: icon,  sides: sides
   }, state) do
-    IO.puts "start_game<#{gid}> (#{name}, #{sides})"
+    Logger.info("start_game<#{gid}> (#{name}, #{icon}, #{sides})")
     player = %Player{ name: name, icon: icon, pid: Player.generate_pid() }
     game = %Game{
       gid: gid,
@@ -131,7 +131,7 @@ defmodule ConsciousPhoenix.GameServer do
   end
 
   def handle_cast(%{ action: :start_after_wait, gid: gid }, state) do
-    IO.puts "start_after_wait<#{gid}>"
+    Logger.info("start_after_wait<#{gid}>")
     { game, state } = Game.fetch(state, gid)
     game = put_in(game.board.status, "active")
     first = if (Enum.count(game.turns) > 1) do
@@ -146,10 +146,10 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{
     action: :wait_game,
-    gid: gid, name: name, sides: sides
+    gid: gid, name: name, icon: icon, sides: sides
   }, state) do
-    IO.puts "wait_game<#{gid}> (#{name}, #{sides})"
-    player = %Player{ name: name, pid: Player.generate_pid() }
+    Logger.info("wait_game<#{gid}> (#{name}, #{icon}, #{sides})")
+    player = %Player{ name: name, icon: icon, pid: Player.generate_pid() }
     game = %Game{
       gid: gid,
       players: %{ player.pid => player },
@@ -192,7 +192,7 @@ defmodule ConsciousPhoenix.GameServer do
           )
           {:noreply, state}
         { _, _ } ->
-          IO.puts "existing player continued:#{pid}"
+          Logger.debug("existing player continued:#{pid}")
           Endpoint.broadcast!(
             "game:#{current_gid}",
             "game:continued",
@@ -207,10 +207,10 @@ defmodule ConsciousPhoenix.GameServer do
     :action => :join_game,
     :current_gid => current_gid, :gid => gid, :pid => pid, name: name
   }, state) do
-    IO.puts("join_game")
+    Logger.debug("join_game")
     { game, state } = Game.fetch(state, gid)
     if (is_nil(game)) do
-      IO.puts "game not found! #{gid}"
+      Logger.debug("game not found! #{gid}")
       Endpoint.broadcast!("game:#{current_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
@@ -268,13 +268,13 @@ defmodule ConsciousPhoenix.GameServer do
     game = Game.save_state(game, pid, updates)
     case Game.fifth_striving(game, pid) do
       { :none, game } ->
-        IO.puts("none fifth_striving")
+        Logger.debug("none fifth_striving")
         update_game(state, gid, pid, game)
       { :one, game } ->
-        IO.puts("one fifth_striving")
+        Logger.debug("one fifth_striving")
         update_game(state, gid, pid, game)
       { :multi, { cards, lower, higher } } ->
-        IO.puts("multi fifth_striving")
+        Logger.debug("multi fifth_striving")
         Endpoint.broadcast!("game:#{gid}", "game:fifth_options", %{ pid: higher.pid, lower_pid: lower.pid, options: cards })
         put_state_no_reply(state, game, gid)
     end
@@ -284,7 +284,7 @@ defmodule ConsciousPhoenix.GameServer do
     { game, state } = Game.fetch(state, gid)
     higher = game.players[pid]
     lower = game.players[lower]
-    IO.puts("one fifth_striving")
+    Logger.debug("one fifth_striving")
     update_game(state, gid, pid, Game.exchange_one_fifth(game, lower, higher, card))
   end
 
@@ -328,7 +328,7 @@ defmodule ConsciousPhoenix.GameServer do
     case { pid, game.players[pid] } do
       { nil, _ } ->
         player = %Player{ name: name, pid: Player.generate_pid() }
-        IO.puts "new pid joined: #{player.pid}"
+        Logger.info("new pid joined: #{player.pid}")
         game = put_in(game.players, Map.put(game.players, player.pid, player))
                |> Game.save_turn(player.pid)
                |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })
@@ -336,7 +336,7 @@ defmodule ConsciousPhoenix.GameServer do
         Endpoint.broadcast!( "game:#{current_gid}", "game:joined", %{ gid: new_gid, pid: player.pid, game: game })
         game
       { _, nil } ->
-        IO.puts "existing pid joined: #{pid}"
+        Logger.info("existing pid joined: #{pid}")
         player = %Player{ name: name, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
                |> Game.save_turn(pid)
@@ -345,15 +345,19 @@ defmodule ConsciousPhoenix.GameServer do
         Endpoint.broadcast!( "game:#{current_gid}", "game:joined", %{ gid: new_gid, pid: pid, game: game })
         game
       { _, _ } -> # continue game
-        IO.puts "existing player continued:#{pid}"
+        Logger.info("existing player continued:#{pid}")
         Endpoint.broadcast!( "game:#{current_gid}", "game:continued", %{ gid: new_gid, pid: pid, game: game })
         game
     end
   end
 
   defp broadcast_next_turn(game, gid) do
-    { nextPid, _ } = Player.next_pid(game.players, game.turns)
-    Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
+    case Player.next_pid(game.players, game.turns) do
+      { :noop } ->
+        Logger.debug("nobody left in the game.")
+      { nextPid, _ } ->
+        Endpoint.broadcast!("game:#{gid}", "game:next_turn", %{ pid: nextPid, game: game })
+    end
   end
 
   defp broadcast_offer_astral(game, gid) do

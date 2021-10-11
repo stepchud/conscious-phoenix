@@ -158,17 +158,18 @@ const presentExtra = async (extra) => {
 }
 
 // NOTE: keep synchronous
-const presentEvent = (event) => {
+const presentEvent = (event, channel) => {
+  const pid = getPlayerId()
   switch(event) {
     case 'DEPUTY-STEWARD':
       const { school_type } = store.getState().ep
-			store.dispatch({ type: 'FOUND_SCHOOL', school_type })
+      store.dispatch({ type: 'FOUND_SCHOOL', school_type, pid, channel })
       break
     case 'STEWARD':
-      store.dispatch({ type: 'ATTAIN_STEWARD' })
+      store.dispatch({ type: 'ATTAIN_STEWARD', pid, channel })
       break
     case 'MASTER':
-      store.dispatch({ type: 'ATTAIN_MASTER' })
+      store.dispatch({ type: 'ATTAIN_MASTER', pid, channel })
       break
     case 'CANT-CHOOSE-DEATH':
       dispatchShowModal({
@@ -188,6 +189,9 @@ const presentEvent = (event) => {
       dispatchShowModal({
         title: 'You are dead',
         body: 'With Kesdjan-body you can complete one roundtrip of the board before you perish for good.',
+        pid,
+        channel,
+        logEvent: 'Died with Kesdjan body',
         onClick: () => {
           store.dispatch({ type: 'END_TURN' })
           store.dispatch({ type: 'END_DEATH' })
@@ -198,21 +202,29 @@ const presentEvent = (event) => {
       dispatchShowModal({
         title: 'You are dead',
         body: 'With Mental body you are beyond the reach of death. Play on until you complete yourself.',
+        pid,
+        channel,
+        logEvent: 'Died with Mental body',
         onClick: () => {
           store.dispatch({ type: 'END_TURN' })
           store.dispatch({ type: 'END_DEATH' })
         }
       })
       break
-    case 'REINCARNATE':
+    case 'REINCARNATE': {
       store.dispatch({ type: 'REINCARNATE' })
       const { num_brains } = store.getState().ep
+      const message = `Reincarnated as a ${num_brains}-brained being.`
       dispatchShowModal({
         title: 'Reincarnated',
-        body: `You reincarnated as a ${num_brains}-brained being. Each roll multiplies by ${4-num_brains}.`,
+        body: `${message}. Each roll multiplies by ${4-num_brains}.`,
+        pid,
+        channel,
+        logEvent: message,
         onClick: noop,
       })
       break
+    }
     case 'CAUSAL-DEATH':
       startCausalDeath()
       break
@@ -370,7 +382,7 @@ const rollOptionLaws = async (roll, active, rollSpace, oppositeSpace) => {
   })
 }
 
-const handlePieces = async (action) => {
+const handlePieces = async (channel, action) => {
   store.dispatch(action)
   const {
     cards: { pieces },
@@ -385,12 +397,12 @@ const handlePieces = async (action) => {
   store.dispatch({ type: 'CLEAR_SHOCKS' })
   // harnel-miaznel
   await advanceFood()
-  // handle new levels of being
-  store.getState().ep.new_levels.forEach(level => presentEvent(level))
+  // handle and log new levels of being
+  store.getState().ep.new_levels.forEach(level => presentEvent(level, channel))
   store.dispatch({ type: 'CLEAR_NEW_LEVELS' })
   // check for cleansed hasnamuss
   if (store.getState().ep.pieces[17] > 3 && hasnamuss(active)) {
-    presentEvent('CLEANSE-HASNAMUSS')
+    presentEvent('CLEANSE-HASNAMUSS', channel)
   }
   handleStartOver()
 }
@@ -713,12 +725,12 @@ const handleRollClick = async (roll) => {
   store.dispatch({ type: "WAIT_FOR_TURN" })
 }
 
-const handleEndDeath = () => {
+const handleEndDeath = (channel) => () => {
   const {
     fd: { current: { mental } },
     laws: { active },
   } = store.getState()
-  presentEvent(deathEvent(mental, hasnamuss(active)))
+  presentEvent(deathEvent(mental, hasnamuss(active)), channel)
 }
 
 const handleGameOver = () => {
@@ -787,14 +799,14 @@ export const gameActions = (channel) => {
     onOfferAstral: handleOfferAstral(channel),
     onOfferTakeCard: handleOfferTakeCard(channel),
     handleRollClick,
-    handleEndDeath,
+    onEndDeath: handleEndDeath(channel),
     handleGameOver,
     onDrawCard: () => store.dispatch({type: 'DRAW_CARD'}),
     onDrawLawCard: () => store.dispatch({ type: 'DRAW_LAW_CARD' }),
     onSelectCard: (card) => store.dispatch({ type: 'SELECT_CARD', card }),
     onSelectLawCard: (card) => store.dispatch({ type: 'SELECT_LAW_CARD', card }),
     onSelectPart: (card) => store.dispatch({ type: 'SELECT_PART', card }),
-    onPlaySelected: (cards, lawCards) => handlePieces({
+    onPlaySelected: (cards, lawCards) => handlePieces(channel, {
       type: 'PLAY_SELECTED',
       cards,
       pieces: makeFaceCard(cards.concat(lawCards))
@@ -805,7 +817,7 @@ export const gameActions = (channel) => {
     onTakeImpression: dispatchWithExtras({ type: 'TAKE_IMPRESSION' }),
     onSelfRemember: dispatchWithExtras({ type: 'SELF_REMEMBER' }),
     onTransformEmotions: dispatchWithExtras({ type: 'TRANSFORM_EMOTIONS' }),
-    onCombineSelectedParts: (selected) => handlePieces({ type: 'COMBINE_PARTS', selected }),
+    onCombineSelectedParts: (selected) => handlePieces(channel, { type: 'COMBINE_PARTS', selected }),
     onAdvanceFoodDiagram: dispatchWithExtras({ type: 'ADVANCE_FOOD_DIAGRAM' }),
     onDying: () => store.dispatch({ type: 'DEATH_NOW' }),
     onToast: (message, level) => {

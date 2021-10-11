@@ -12,6 +12,7 @@ const log = (
     case 'JOIN_GAME':
       return [ ...action.state.log ]
     case 'UPDATE_GAME':
+      // pop a toast for all new toast entries
       const new_entries = action.log.slice(state.length)
       new_entries.forEach(toastLogEntry)
       return [ ...action.log ]

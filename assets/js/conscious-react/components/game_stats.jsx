@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { map } from 'lodash'
 
 import { combinable, playable, selectedCards } from '../reducers/cards'
@@ -181,9 +181,9 @@ export const GameLog = ({
   const cnBtn = expanded ? 'collapsible btn active' : 'collapsible btn'
   const cnContent = expanded ? 'collapsible content active' : 'collapsible content'
 
-  const logEntries = entries.map(
-    (entry, index) => <LogEntry key={index} name={getPlayerName(board.players, entry.pid)} {...entry} />
-  )
+  const logEntries = useMemo(() => {
+    return entries.map((entry, index) => <LogEntry key={index} name={getPlayerName(board.players, entry.pid)} {...entry} />)
+  }, [entries])
 
   return (
     <div className='game-log'>

@@ -92,11 +92,14 @@ defmodule ConsciousPhoenix.Player do
   end
 
   def next_pid(players, turns) do
-    players
-    |> filter_active
-    |> filter_min_position
-    |> order_by_turns(turns)
-    |> hd
+    players_by_turn = players
+      |> filter_active
+      |> filter_min_position
+      |> order_by_turns(turns)
+    case players_by_turn do
+      [] -> { :noop }
+      _ -> hd(players_by_turn)
+    end
   end
 
   def other_players_by_turn(players, current, turns) do
@@ -174,17 +177,21 @@ defmodule ConsciousPhoenix.Player do
   end
 
   defp filter_min_position(players) do
-    trips = players
-    |> Enum.map(fn {_, p} -> p.completed_trips end)
-    |> Enum.sort
-    |> hd
-    sort_dir = if(rem(trips, 2) == 0, do: &<=/2, else: &>=/2)
-    position = players
-    |> Enum.filter(fn {_, p} -> p.completed_trips == trips end)
-    |> Enum.map(fn {_, p} -> p.position end)
-    |> Enum.sort(sort_dir)
-    |> hd
-    filter_by_position(players, position, trips)
+    if (Enum.empty?(players)) do
+      []
+    else
+      trips = players
+      |> Enum.map(fn {_, p} -> p.completed_trips end)
+      |> Enum.sort
+      |> hd
+      sort_dir = if(rem(trips, 2) == 0, do: &<=/2, else: &>=/2)
+      position = players
+      |> Enum.filter(fn {_, p} -> p.completed_trips == trips end)
+      |> Enum.map(fn {_, p} -> p.position end)
+      |> Enum.sort(sort_dir)
+      |> hd
+      filter_by_position(players, position, trips)
+    end
   end
 
   defp filter_others(players, current) do

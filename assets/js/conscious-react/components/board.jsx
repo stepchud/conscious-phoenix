@@ -20,7 +20,6 @@ const classMap = {
 }
 
 const SPACE_SIZE = 32
-const MAX_SCROLL = (BOARD_SPACES.length - 30) * SPACE_SIZE
 
 const PlayerPiece = ({
   pid,
@@ -79,7 +78,7 @@ const BoardSpaces = ({
   spaces,
   onFifthStriving,
 }) => {
-  const scrollRef = useRef()
+  const boardRef = useRef()
   const timeoutRef = useRef()
 
   let [ lowestPos, furthestPos ] = [ LAST_SPACE, 0 ]
@@ -90,16 +89,16 @@ const BoardSpaces = ({
 
   // Scroll Right when:
   // player is moving right
-  // & lowest is right of scrollPosition + 3 spaces
+  // & lowest player position is right of scrollPosition + (3 padding spaces for larger screen sizes)
   // & there is room to scroll right
   // Scroll Left when:
   // player is moving left
-  // & furthestPos is left of scrollPosition + 27 spaces
+  // & furthestPos is left of scrollPosition + number of spaces on screen
   // & there is room to scroll left
-  const slowScroll = (scrollPosition) => {
-    if (scrollPosition < 0 || scrollPosition > MAX_SCROLL) { return }
+  const slowScroll = (scrollPosition, maxScroll) => {
+    if (scrollPosition < 0 || scrollPosition > maxScroll) { return }
 
-    const diff = scrollPosition - scrollRef.current.scrollLeft
+    const diff = scrollPosition - boardRef.current.scrollLeft
     const absDiff = Math.abs(diff)
     let step = 0
     if (absDiff < 2) {
@@ -111,35 +110,39 @@ const BoardSpaces = ({
     }
 
     if (step != 0) {
-      scrollRef.current.scrollLeft += step
-      timeoutRef.current = setTimeout(slowScroll, 10, scrollPosition)
+      boardRef.current.scrollLeft += step
+      timeoutRef.current = setTimeout(slowScroll, 10, scrollPosition, maxScroll)
     }
   }
 
   useEffect(() => {
     let scrollTo = 0
-    if (direction > 0 && lowestPos > 3) {
-      if (lowestPos < LAST_SPACE - 27) {
-        scrollTo = (lowestPos - 3) * SPACE_SIZE
+    const boardSpacesWidth = boardRef.current ? boardRef.current.offsetWidth / SPACE_SIZE : 30
+    const maxScroll = (BOARD_SPACES.length - boardSpacesWidth) * SPACE_SIZE
+    const playerOffset = boardSpacesWidth > 20 ? 3 : 0
+    const maxPlayerPos = boardSpacesWidth - playerOffset
+    if (direction > 0 && lowestPos > playerOffset) {
+      if (lowestPos < LAST_SPACE - maxPlayerPos) {
+        scrollTo = (lowestPos - playerOffset) * SPACE_SIZE
       } else {
-        scrollTo = MAX_SCROLL
+        scrollTo = maxScroll
       }
-    } else if (direction < 0 && furthestPos < LAST_SPACE - 3) {
-      if (furthestPos > 27) {
-        scrollTo = (furthestPos - 27) * SPACE_SIZE
+    } else if (direction < 0 && furthestPos < LAST_SPACE - playerOffset) {
+      if (furthestPos > maxPlayerPos) {
+        scrollTo = (furthestPos - maxPlayerPos + 1) * SPACE_SIZE
       } else {
         scrollTo = 0
       }
     } else if (direction < 0) {
-      scrollTo = MAX_SCROLL
+      scrollTo = maxScroll
     }
     //console.log(`${direction}, ${lowestPos}, ${furthestPos}, ${scrollTo}`)
-    timeoutRef.current = !!players && setTimeout(slowScroll, 10, scrollTo)
+    timeoutRef.current = !!players && setTimeout(slowScroll, 10, scrollTo, maxScroll)
     return () => { clearTimeout(timeoutRef.current) }
-  }, [direction, lowestPos, furthestPos])
+  }, [direction, lowestPos, furthestPos, boardRef.current])
 
   return (
-    <ol ref={scrollRef} className="board-spaces">
+    <ol ref={boardRef} className="board-spaces">
       {spaces.split('').map(
         (space, index) => <Space key={index} space={space} position={index} players={players} onFifthStriving={onFifthStriving} />
       )}

@@ -45,16 +45,12 @@ const LawCard = ({
   onClick
 }) => {
   const classes = `card law ${card.selected ? 'selected' : ''}`
-  const cardState = []
-  if (card.obeyed) { cardState.push('O') }
-  if (card.played) { cardState.push('P') }
+  const cardClass = card.obeyed ? "law-card-text obeyed" : "law-card-text"
   return (
     <div className={classes} onClick={onClick} tabIndex='0'>
-      <span className="law-card-state">
-        {cardState.join(',')}
-      </span>
       <CardImage card={card.c.card} />
-      <div className="law-card-text">{card.c.text}</div>
+      {card.played && <div className="law-played"></div>}
+      <div className={cardClass}>{card.c.text}</div>
     </div>
   )
 }
@@ -95,6 +91,41 @@ export const CardHand = ({
   )
 }
 
+const LawsInHand = ({
+  hand,
+  byChoice,
+  onChoice
+}) => {
+  const inHand = !!hand.length
+    ? map(hand, (c, i) => <LawCard key={i} card={c} onClick={() => byChoice && onChoice(i)} />)
+    : <span>Law hand is empty</span>
+  return (
+    <div>
+      <span className="laws">In Hand:</span>
+      {inHand}
+    </div>
+  )
+}
+
+const LawsInPlay = ({
+  inPlay,
+  onSelect
+}) => !!inPlay.length && (
+  <div>
+    <span className="laws">In Play:</span>
+    {map(inPlay, (c, i) => <LawCard key={i} card={c} onClick={() => onSelect(i)} tabIndex='0' />)}
+  </div>
+)
+
+const ActiveLaws = ({
+  active
+}) => !!active.length && (
+  <div>
+    <span className="laws">Active:</span>
+    {map(active, (c, i) => <ActiveLawCard key={i} card={lawAtIndex(c)} covered={c.covered} />)}
+  </div>
+)
+
 export const LawHand = ({
   laws,
   byChoice,
@@ -107,31 +138,13 @@ export const LawHand = ({
   const cnBtn = expanded ? 'collapsible btn active' : 'collapsible btn'
   const cnContent = expanded ? 'collapsible content active' : 'collapsible content'
 
-  const inHand = laws.hand.length ? (
-    map(laws.hand, (c, i) =>
-      <LawCard key={i} card={c} onClick={() => byChoice && onChoice(i)} />
-    )
-  ) : (
-    <span>Empty Law Hand.</span>
-  )
-
   return (
     <div className="section cards laws">
       <button className={cnBtn} onClick={onToggle}>Laws</button>
       <div className={cnContent}>
-        {inHand}
-        { !!laws.in_play.length && <span className="laws">In Play:</span> }
-        { !!laws.in_play.length &&
-          map(laws.in_play, (c, i) =>
-            <LawCard key={i} card={c} onClick={() => onSelect(i)} tabIndex='0' />
-          )
-        }
-        { !!laws.active.length && <span className="laws">Active:</span> }
-        { !!laws.active.length &&
-          map(laws.active, (c, i) =>
-            <ActiveLawCard key={i} card={lawAtIndex(c)} covered={c.covered} />
-          )
-        }
+        <LawsInHand hand={laws.hand} byChoice={byChoice} onChoice={onChoice} />
+        <LawsInPlay inPlay={laws.in_play} onSelect={onSelect} />
+        <ActiveLaws active={laws.active} />
       </div>
     </div>
   )

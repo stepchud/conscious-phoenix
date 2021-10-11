@@ -105,7 +105,7 @@ const NewGameModal = ({
     </div>
   const options =  [
     { text: 'Start now', onClick: () => onStart(name, icon, sides) },
-    { text: 'Wait for players', onClick: () => onWait(name, sides) }
+    { text: 'Wait for players', onClick: () => onWait(name, icon, sides) }
   ]
   const props = {
     show: true,
@@ -138,7 +138,7 @@ export const WaitGameModal = ({
   }
 
   const options = [
-    { text: "Let's begin!", onClick: () => onStart(name, sides) },
+    { text: "Let's begin!", onClick: () => onStart(name, icon, sides) },
   ]
   const props = {
     show: true,
