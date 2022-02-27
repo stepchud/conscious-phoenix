@@ -5,7 +5,7 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 config :conscious_phoenix,
   ecto_repos: [ConsciousPhoenix.Repo]
@@ -22,7 +22,7 @@ config :conscious_phoenix, ConsciousPhoenixWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "rVnGRIGpAlHMfMOVMPgI2JQUkbGX7Ff0v+t/Eg/moKoeNT3ZvR+KwoG8HHawJSrf",
   render_errors: [view: ConsciousPhoenixWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: ConsciousPhoenix.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: ConsciousPhoenix.PubSub
 
 # Configures Elixir's Logger
 config :logger, :console,

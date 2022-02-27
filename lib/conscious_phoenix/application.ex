@@ -9,6 +9,8 @@ defmodule ConsciousPhoenix.Application do
     import Supervisor.Spec
     # List all child processes to be supervised
     children = [
+      # Start the PubSub
+      { Phoenix.PubSub, name: MyApp.PubSub },
       # Start the Ecto repository
       ConsciousPhoenix.Repo,
       # Start the Quantum chron scheduler

@@ -1,0 +1,17 @@
+BUGZ:
+Needs testing: pass law(s) and death on the same turn (esp. for hasnamuss with roll multiples)
+After death w/ Astral - extra chip on air went under note instead of accumulating on end (UI bug, seemed to be accurate for 3-3-1 still)
+After death w/ Astral, gained mental upon death, all notes were wiped (no food) on next facet
+Afetr death w/ Astral & Hasnamuss, reincarnated but the Astral pieces were removed
+After death w/ Astral, gained mental but the notes didn't shift immediately, after a roll they did
+* Started Over - kept playing the game, didn't "start over"
+Cleansed Hasnamuss, rolled 5, took opposite => 95??
+Played XJ to make school w/ KH, KC - said I was a Yogi (not sure what kind of school this is?)
+Active cards not preserved after game save and switch browser session
+Board moving animation on mobile size
+Buttons second row has no top margin
+
+FEATURES:
+Allow player to 'exit' game before others
+Indicaate a player is out of the game instead of "Waiting for turn..." when they don't survive death
+If a player is not responding, timeout to next turn?
