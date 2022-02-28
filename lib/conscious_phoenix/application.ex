@@ -10,7 +10,7 @@ defmodule ConsciousPhoenix.Application do
     # List all child processes to be supervised
     children = [
       # Start the PubSub
-      { Phoenix.PubSub, name: MyApp.PubSub },
+      { Phoenix.PubSub, name: ConsciousPhoenix.PubSub },
       # Start the Ecto repository
       ConsciousPhoenix.Repo,
       # Start the Quantum chron scheduler
