@@ -6013,6 +6013,11 @@ to-regex@^3.0.1, to-regex@^3.0.2:
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
 
+trim-right@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-2.0.0.tgz#19f987a2fca0c81b46ab72a54e0e4d41e099d689"
+  integrity sha512-9oGt49eXLpDY8XbEjVvEH0uSf8hAL08jt+bMy+3v3ad/d/5bDlKa0rfSaT5GI4dLIUtklsLGtoUfFNYqpqX7rQ==
+
 tslib@^1.9.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
