@@ -9,7 +9,6 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
-    "@svgr/webpack": "^5.5.0",
     "file-loader": "^6.2.0",
     "phoenix": "file:deps/phoenix",
     "phoenix_html": "file:deps/phoenix_html",
@@ -29,6 +28,7 @@
     "@babel/plugin-syntax-optional-chaining": "^7.8.3",
     "@babel/preset-env": "^7.15.6",
     "@babel/preset-react": "^7.0.0",
+    "@svgr/webpack": "^6.2.1",
     "babel-loader": "^8.0.0",
     "copy-webpack-plugin": "^4.5.0",
     "css-loader": "^2.1.1",
