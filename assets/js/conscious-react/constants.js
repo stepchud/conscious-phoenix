@@ -1,4 +1,4 @@
-import uuid from 'uuid/v4'
+import { v4 as uuid_v4 } from 'uuid'
 import { findIndex } from 'lodash/array'
 
 export const noop = () => {}
@@ -43,7 +43,7 @@ export const getGameFromParams = () => {
 export const getGameId = () => localStorage.getItem(GAME_ID)
 export const generateGameId = () => {
   // auto-generate a gid locally
-  const gid = uuid().slice(0, 6)
+  const gid = uuid_v4().slice(0, 6)
   console.log("generated new gid="+gid)
   return gid
 }

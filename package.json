@@ -18,7 +18,7 @@
     "react-router-dom": "^5.0.1",
     "react-toastify": "^5.4.0",
     "redux": "^4.0.4",
-    "uuid": "^3.3.3"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -30,17 +30,17 @@
     "@babel/preset-react": "^7.0.0",
     "@svgr/webpack": "^6.2.1",
     "babel-loader": "^8.0.0",
-    "copy-webpack-plugin": "^4.5.0",
-    "css-loader": "^2.1.1",
-    "mini-css-extract-plugin": "^0.4.0",
-    "optimize-css-assets-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^10.2.4",
+    "css-loader": "^6.7.1",
+    "mini-css-extract-plugin": "^2.6.0",
+    "optimize-css-assets-webpack-plugin": "^6.0.1",
     "trim-right": "^2.0.0",
-    "uglifyjs-webpack-plugin": "^1.2.4",
-    "webpack": "4.28.4",
-    "webpack-cli": "^3.2.1"
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "5.70.0",
+    "webpack-cli": "^4.9.2"
   },
   "engines": {
-    "node": "12.7",
+    "node": "12.20",
     "yarn": "1.17.3"
   }
 }

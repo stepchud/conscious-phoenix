@@ -40,7 +40,11 @@ module.exports = (env, options) => ({
   },
   plugins: [
     new MiniCssExtractPlugin({ filename: '../css/app.css' }),
-    new CopyWebpackPlugin([{ from: 'assets/static/', to: '../' }])
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'assets/static/', to: '../' }
+      ]
+    })
   ],
   resolve: {
     // Adds React JSX
