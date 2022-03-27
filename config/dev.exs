@@ -25,8 +25,9 @@ config :conscious_phoenix, ConsciousPhoenixWeb.Endpoint,
       "node_modules/webpack/bin/webpack.js",
       "--mode",
       "development",
-      "--watch-stdin",
-      "--colors",
+      "--watch",
+      "--watch-options-stdin",
+      "--color",
       # cd: Path.expand("../assets", __DIR__)
     ]
   ]
