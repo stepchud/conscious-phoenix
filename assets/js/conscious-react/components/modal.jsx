@@ -19,6 +19,22 @@ const onDiceChange = (event) => onUpdateModal('sides', event.target.value)
 const onIconChange = (value) => onUpdateModal('icon', value)
 const onGameChange = (event) => onUpdateModal('gameId', event.target.value)
 
+const iconList = (icon) => {
+  const icons = []
+  for (const key of Object.keys(PlayerIcons)) {
+    const IconComponent = PlayerIcons[key]
+    const checked = key==icon ? 'selected' : ''
+    icons.push(
+      <li key={key} onClick={() => onIconChange(key)} className={`icon-button ${checked}`}>
+        <div className="player">
+          <IconComponent className="player-svg" />
+        </div>
+      </li>
+    )
+  }
+  return icons
+}
+
 const PickGameModal = () => {
   const options =  [
     { text: 'New Game', onClick: () => onUpdateModal('setup_step', 'name') },
@@ -41,18 +57,23 @@ const JoinGameModal = ({
   onContinueGame,
   errorMessage,
 }) => {
+  const icons = iconList(icon)
   const body =
     <div>
       <label name="name">
         Your name:
         <input type="text" name="name" value={name} onChange={onNameChange} />
       </label>
+      <label name="player-piece">
+        Pick your piece:
+        <ul className="player-icons">{icons}</ul>
+      </label>
       <label name="game">
         Game ID:
         <input type="text" name="game_id" placeholder={'Game ID'} value={gameId} onChange={onGameChange} />
       </label>
     </div>
-  const options = [{ text: 'Join Game', onClick: () => onJoinGame(gameId, name) }]
+  const options = [{ text: 'Join Game', onClick: () => onJoinGame(gameId, name, icon) }]
   if (onContinueGame) {
     options.push({ text: 'Continue Game', onClick: () => onContinueGame(gameId) })
   }
@@ -75,18 +96,7 @@ const NewGameModal = ({
   onStart,
   onWait,
 }) => {
-  const icons = []
-  for (const key of Object.keys(PlayerIcons)) {
-    const IconComponent = PlayerIcons[key]
-    const checked = key==icon ? 'selected' : ''
-    icons.push(
-      <li key={key} onClick={() => onIconChange(key)} className={`icon-button ${checked}`}>
-        <div className="player">
-          <IconComponent className="player-svg" />
-        </div>
-      </li>
-    )
-  }
+  const icons = iconList(icon)
   const body =
     <div>
       <label name="name">
@@ -168,6 +178,7 @@ export const SetupModal = ({
   case 'join':
     return <JoinGameModal
       name={name}
+      icon={icon}
       gameId={gameId}
       onJoinGame={onJoinGame}
       onContinueGame={onContinueGame}

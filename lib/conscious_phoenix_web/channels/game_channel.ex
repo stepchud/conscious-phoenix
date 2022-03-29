@@ -25,8 +25,8 @@ defmodule ConsciousPhoenixWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_in("game:join", %{"gid" => gid, "pid" => pid, "name" => name}, socket) do
-    GameServer.join_game(socket.assigns.gid, gid, pid, name)
+  def handle_in("game:join", %{"gid" => gid, "pid" => pid, "name" => name, "icon" => icon}, socket) do
+    GameServer.join_game(socket.assigns.gid, gid, pid, name, icon)
     {:noreply, socket}
   end
 

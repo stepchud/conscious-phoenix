@@ -40,8 +40,8 @@ defmodule ConsciousPhoenix.GameServer do
     GenServer.cast(__MODULE__, %{action: :wait_game, gid: gid, name: name, icon: icon, sides: sides})
   end
 
-  def join_game(current_gid, gid, pid, name) do
-    GenServer.cast(__MODULE__, %{action: :join_game, current_gid: current_gid, gid: gid, pid: pid, name: name})
+  def join_game(current_gid, gid, pid, name, icon) do
+    GenServer.cast(__MODULE__, %{action: :join_game, current_gid: current_gid, gid: gid, pid: pid, name: name, icon: icon})
   end
 
   def continue_game(current_gid, gid, pid) do
@@ -205,7 +205,7 @@ defmodule ConsciousPhoenix.GameServer do
 
   def handle_cast(%{
     :action => :join_game,
-    :current_gid => current_gid, :gid => gid, :pid => pid, name: name
+    :current_gid => current_gid, :gid => gid, :pid => pid, name: name, icon: icon
   }, state) do
     Logger.debug("join_game")
     { game, state } = Game.fetch(state, gid)
@@ -214,7 +214,7 @@ defmodule ConsciousPhoenix.GameServer do
       Endpoint.broadcast!("game:#{current_gid}", "modal:error", %{ error: %{ message: "Game not found!" } })
       {:noreply, state}
     else
-      game = join_player(current_gid, gid, game, pid, name)
+      game = join_player(current_gid, gid, game, pid, name, icon)
       put_state_no_reply(state, game, gid)
     end
   end
@@ -324,10 +324,10 @@ defmodule ConsciousPhoenix.GameServer do
     {:noreply, state}
   end
 
-  defp join_player(current_gid, new_gid, game, pid, name) do
+  defp join_player(current_gid, new_gid, game, pid, name, icon) do
     case { pid, game.players[pid] } do
       { nil, _ } ->
-        player = %Player{ name: name, pid: Player.generate_pid() }
+        player = %Player{ name: name, icon: icon, pid: Player.generate_pid() }
         Logger.info("new pid joined: #{player.pid}")
         game = put_in(game.players, Map.put(game.players, player.pid, player))
                |> Game.save_turn(player.pid)
@@ -337,7 +337,7 @@ defmodule ConsciousPhoenix.GameServer do
         game
       { _, nil } ->
         Logger.info("existing pid joined: #{pid}")
-        player = %Player{ name: name, pid: pid }
+        player = %Player{ name: name, icon: icon, pid: pid }
         game = put_in(game.players, Map.put(game.players, player.pid, player))
                |> Game.save_turn(pid)
                |> Game.log_event(%{ pid: player.pid, entry: "#{player.name} joined the game" })

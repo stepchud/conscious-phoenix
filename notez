@@ -1,4 +1,6 @@
 BUGZ:
+Join Game - backspacing the existing number it reappears automatically
+cbg.stephenchudleigh.com - hostname routing not working, redirects to localhost
 Needs testing: pass law(s) and death on the same turn (esp. for hasnamuss with roll multiples)
 After death w/ Astral - extra chip on air went under note instead of accumulating on end (UI bug, seemed to be accurate for 3-3-1 still)
 After death w/ Astral, gained mental upon death, all notes were wiped (no food) on next facet
@@ -10,6 +12,8 @@ Played XJ to make school w/ KH, KC - said I was a Yogi (not sure what kind of sc
 Active cards not preserved after game save and switch browser session
 Board moving animation on mobile size
 Buttons second row has no top margin
+  __MULTIPLAYER__
+  board space multi-player icon is cropped by margin
 
 FEATURES:
 Allow player to 'exit' game before others
