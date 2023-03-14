@@ -36,7 +36,7 @@
     "optimize-css-assets-webpack-plugin": "^6.0.1",
     "trim-right": "^2.0.0",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "5.70.0",
+    "webpack": "5.76.0",
     "webpack-cli": "^4.9.2"
   },
   "engines": {
